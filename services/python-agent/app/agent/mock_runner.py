@@ -238,6 +238,11 @@ async def mock_stream(
 
     cite_map = {claim_id: (quote, source, chunk_ids) for claim_id, quote, source, chunk_ids in DEMO_CITATIONS}
 
+    # 引用绑定是一个独立节点：前端顶部轨道上有一盏「引用」的灯，
+    # 不在这里发 step，那盏灯就会一直灰着，而正文里明明有 4 处角标——演示时会露馅。
+    yield es.step("citation", "running", "绑定引用出处")
+    await asyncio.sleep(step_delay_ms / 1000)
+
     # 按段落生成：每段先发 citation，再逐片发 token。
     # 不要靠扫描 "\n\n" 来判断段落边界——分片时换行符可能被切开，判定会错位。
     paragraphs = [p for p in DEMO_ANSWER.split("\n\n") if p.strip()]
@@ -251,6 +256,7 @@ async def mock_stream(
             yield es.token(piece)
             await asyncio.sleep(token_delay_ms / 1000)
 
+    yield es.step("citation", "ok", f"绑定 {len(cite_map)} 处引用")
     yield es.step("generator", "ok", "生成完成")
 
     # ---------- 9. 结束 ----------
