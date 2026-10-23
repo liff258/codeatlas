@@ -1,0 +1,54 @@
+.env
+.env.local
+.env.*.local
+
+# ---- Java ----
+target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
+
+# ---- Python ----
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# ---- Node / Frontend ----
+node_modules/
+dist/
+dist-ssr/
+.vite/
+*.local
+
+# ---- 知识库原始素材（版权规避：只提交 sources.manifest.yaml，不提交原文）----
+data/raw/
+data/downloads/
+*.pdf
+!docs/**/*.pdf
+
+# ---- 数据库与运行时产物 ----
+pgdata/
+*.dump
+!db/snapshots/*.dump
+logs/
+*.log
+
+# ---- 录屏与素材（体积大，走网盘，不进仓库）----
+media/
+*.mp4
+*.mov
+recordings/
+
+# ---- IDE ----
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.iml
+.DS_Store
+Thumbs.db
