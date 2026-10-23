@@ -105,6 +105,42 @@ CREATE TABLE eval_run (
 -- 二、PYTHON 拥有的表
 -- ============================================================================
 
+-- ---------------------------------------------------------------------------
+-- 【学科分类体系 — 唯一真相，两侧都从这里读，不要在代码里硬编码枚举】
+--   后端域 backend：JVM / 并发 / MySQL / Redis / Spring / 网络 / 分布式 / 消息队列
+--   AI 域  ai     ：LLM基础 / RAG / Agent / 向量检索 / Prompt工程
+--   通用   common ：工程实践
+-- 新增分类只需往本表插一行，不用改代码。
+--
+-- 所有权：参考数据，随 schema 初始化，运行时只读（两侧均可读，均不写）。
+-- 唯一允许的写操作是运维手工补录新学科。
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE subject_taxonomy (
+    code         VARCHAR(40) PRIMARY KEY,
+    domain       VARCHAR(10) NOT NULL CHECK (domain IN ('backend', 'ai', 'common')),
+    display_name VARCHAR(60) NOT NULL,
+    sort_order   SMALLINT    NOT NULL DEFAULT 100,
+    -- 前端分栏配色，图谱跨域边也用它区分
+    color        VARCHAR(20) NOT NULL DEFAULT '#64748b'
+);
+
+INSERT INTO subject_taxonomy (code, domain, display_name, sort_order, color) VALUES
+  ('JVM',        'backend', 'JVM',        10, '#f97316'),
+  ('并发',        'backend', 'Java 并发',  20, '#ef4444'),
+  ('MySQL',      'backend', 'MySQL',      30, '#3b82f6'),
+  ('Redis',      'backend', 'Redis',      40, '#dc2626'),
+  ('Spring',     'backend', 'Spring',     50, '#22c55e'),
+  ('网络',        'backend', '计算机网络',  60, '#0ea5e9'),
+  ('分布式',      'backend', '分布式系统',  70, '#8b5cf6'),
+  ('消息队列',    'backend', '消息队列',    80, '#14b8a6'),
+  ('LLM基础',    'ai',      'LLM 基础',    110, '#a855f7'),
+  ('RAG',        'ai',      'RAG',        120, '#ec4899'),
+  ('Agent',      'ai',      'Agent',      130, '#f43f5e'),
+  ('向量检索',    'ai',      '向量检索',    140, '#06b6d4'),
+  ('Prompt工程', 'ai',      'Prompt 工程', 150, '#eab308'),
+  ('工程实践',    'common',  '工程实践',    200, '#64748b');
+
 -- 切片（父子块：parent 1024 token 供生成，child 256 token 供检索）
 CREATE TABLE chunk (
     id              BIGSERIAL PRIMARY KEY,
@@ -117,7 +153,7 @@ CREATE TABLE chunk (
     heading_path    TEXT,
     ordinal         INT          NOT NULL DEFAULT 0,   -- 文档内顺序
     -- 自动打标结果
-    subject         VARCHAR(40),                        -- JVM / 并发 / MySQL / Redis / Spring
+    subject         VARCHAR(40) REFERENCES subject_taxonomy(code),  -- 见上方学科分类体系
     difficulty      SMALLINT CHECK (difficulty BETWEEN 1 AND 5),
     knowledge_points TEXT[]     NOT NULL DEFAULT '{}',  -- 知识点标签
     content_hash    CHAR(64)    NOT NULL,
@@ -147,6 +183,8 @@ CREATE TABLE entity (
     name           VARCHAR(200) NOT NULL,
     canonical_name VARCHAR(200) NOT NULL,       -- 归一化后的标准名，如 "G1" / "Garbage First"
     entity_type    VARCHAR(40)  NOT NULL,       -- 概念 / 组件 / 算法 / 参数 / 问题
+    -- 实体归属学科。前端用它给节点上色；一条边的两端 domain 不同 → 渲染成跨域边
+    subject        VARCHAR(40)  REFERENCES subject_taxonomy(code),
     description    TEXT,
     doc_freq       INT          NOT NULL DEFAULT 1,
     created_at     TIMESTAMPTZ  NOT NULL DEFAULT now()

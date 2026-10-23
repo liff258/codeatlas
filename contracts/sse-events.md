@@ -141,23 +141,32 @@ Java 转发时额外注入：
 ```json
 {"seq":11,"trace_id":"t_8f2a1c","ts":1761195604100,
  "nodes":[
-   {"id":"G1","label":"G1 收集器","type":"组件","weight":3},
-   {"id":"SATB","label":"SATB","type":"算法","weight":2}
+   {"id":"RAG","label":"RAG","type":"概念","subject":"RAG","domain":"ai","weight":6},
+   {"id":"HNSW","label":"HNSW","type":"算法","subject":"向量检索","domain":"ai","weight":3},
+   {"id":"B+树","label":"B+ 树索引","type":"算法","subject":"MySQL","domain":"backend","weight":4}
  ],
  "edges":[
-   {"source":"G1","target":"SATB","rel":"使用","weight":1.0}
+   {"source":"RAG","target":"HNSW","rel":"使用","weight":1.0,"cross_domain":false},
+   {"source":"RAG","target":"B+树","rel":"对比","weight":0.8,"cross_domain":true}
  ],
- "active_path":["G1","SATB"],
+ "active_path":["RAG","B+树"],
  "replace":false}
 ```
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
 | `nodes[].id` | string | 用 `canonical_name`，前后一致才能合并 |
-| `nodes[].type` | string | 概念 / 组件 / 算法 / 参数 / 问题（决定节点颜色） |
+| `nodes[].type` | string | 概念 / 组件 / 算法 / 参数 / 问题（决定节点形状） |
+| `nodes[].subject` | string | 学科代码，决定节点颜色 |
+| `nodes[].domain` | string | `backend` / `ai` / `common` |
 | `nodes[].weight` | int | 度数，决定节点大小 |
+| `edges[].cross_domain` | bool | 两端 domain 不同。**前端必须用虚线 + 异色渲染** |
 | `active_path` | string[] | 本次推理路径，前端给这条链上的节点/边加高亮和粒子流动 |
 | `replace` | bool | `false` 表示增量合并到现有图；`true` 表示清空重画（切换话题时用） |
+
+> **跨域边是这个产品最核心的可视化证据。** 评委看到「RAG —虚线→ B+ 树」这条边，
+> 就立刻明白：纯向量检索永远做不到这件事，因为「B+ 树」这个词根本不在问题里。
+> 演示时一定要把这条边讲出来。
 
 > **性能硬约束**：单次 `graph` 事件节点数 ≤ 80。超了前端必卡。全图浏览走单独的 `GET /api/graph/overview` 接口，且必须做度数聚合。
 

@@ -2,11 +2,9 @@
 
 > 让 AI 走完一条**有出处、可追问、可验证**的学习路径。
 
-面向计算机专业学生与 Java 后端求职者。不是又一个 AI 聊天框 —— 它会先规划要查什么、查几次，检索后自评证据是否足够，不够就改写查询重查，最后给出**逐句可溯源**的答案，并在知识图谱上点亮推理路径。
+面向计算机专业学生与后端求职者，知识库覆盖**后端（JVM / 并发 / MySQL / Redis / Spring / 网络 / 分布式）**与 **AI（LLM 基础 / RAG / Agent / 向量检索 / Prompt 工程）**两个域。不是又一个 AI 聊天框 —— 它会先规划要查什么、查几次，检索后自评证据是否足够，不够就改写查询重查，最后给出**逐句可溯源**的答案，并在知识图谱上点亮推理路径。
 
-<p align="center">
-  <img src="docs/assets/cover.png" alt="CodeAtlas" width="720">
-</p>
+**它最特别的一点**：图谱里存在**跨域边**。当你问「向量检索为什么不能用 B+ 树加速」，它会把 AI 域的「HNSW」和后端域的「B+ 树」用一条虚线连起来 —— 纯向量检索做不到这件事，因为它不知道这两段知识该放在一起对比。
 
 ---
 
@@ -16,6 +14,7 @@
 |---|---|---|
 | 八股答案碎片化、无法验证真伪 | 聊天框给不出「这句话出自哪本书第几节」 | claim 级引用，点角标跳原文高亮 |
 | 知识点孤立，面试官追问一层就崩 | 单轮问答不会主动补上下文 | 多跳检索 + 知识图谱邻居扩展 |
+| **后端和 AI 的知识各学各的，连不起来** | 向量检索按语义相似度召回，召不回「关系」 | **跨域边**：图谱显式记录两个学科间的对比/依赖关系 |
 | 不知道自己的理解对不对 | 没有反馈闭环 | 出题器从图谱抽知识点，按引用评分 |
 
 ---
@@ -100,12 +99,19 @@ DeepSeek V4.1-Flash · BGE-M3 · bge-reranker-v2-m3
 
 本项目知识库仅使用**明确开源协议**的资料，原始文件不随仓库分发，由 `scripts/fetch_sources.py` 按 `sources.manifest.yaml` 拉取。
 
-| 来源 | 许可证 |
-|---|---|
-| JavaGuide | CC BY-SA 4.0 |
-| CS-Notes | CC BY-SA 4.0 |
-| OSTEP《操作系统导论》中文版 | 开源（原作者授权） |
-| MySQL / Redis 官方文档 | 各自官方条款 |
+| 来源 | 域 | 许可证 |
+|---|---|---|
+| JavaGuide | 后端 | CC BY-SA 4.0 |
+| CS-Notes | 后端 | CC BY-SA 4.0 |
+| MySQL / Redis 官方文档 | 后端 | 各自官方条款 |
+| JVM 规范（JVMS） | 后端 | Oracle 规范许可 |
+| HNSW 原论文（Malkov & Yashunin） | AI | arXiv 预印本，引用+摘要 |
+| RAG 原论文（Lewis et al.） | AI | arXiv 预印本，引用+摘要 |
+| Anthropic《Building effective agents》 | AI | 官方博客，引用+摘要 |
+| Lilian Weng《LLM Powered Autonomous Agents》 | AI | 博客，引用+摘要 |
+| Prompt Engineering Guide（dair-ai） | AI | CC BY-NC 4.0 |
+
+原始文件**不随仓库分发**，由 `scripts/fetch_sources.py` 按 `sources.manifest.yaml` 拉取；论文类只保留自写摘要与原文链接，不转存全文。
 
 署名与完整清单见 [`sources.manifest.yaml`](sources.manifest.yaml)。
 

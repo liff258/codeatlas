@@ -261,7 +261,8 @@ paths:
           schema: { type: integer, default: 120, maximum: 300 }
         - name: subject
           in: query
-          schema: { type: string, enum: [JVM, 并发, MySQL, Redis, Spring] }
+          description: 学科代码，取值见 `GET /api/subjects`（不在契约里硬编码枚举）
+          schema: { type: string, example: RAG }
       responses:
         '200':
           description: OK
@@ -297,6 +298,28 @@ paths:
                   - type: object
                     properties:
                       data: { $ref: '#/components/schemas/GraphData' }
+
+  /api/subjects:
+    get:
+      tags: [graph]
+      summary: 学科分类列表（前端分栏与图谱配色的数据源）
+      description: |
+        返回 `subject_taxonomy` 全部条目，附带每个学科已入库的切片数。
+        前端用它渲染「后端 / AI」两栏导航，以及判断某个学科资料是否充足。
+        **不要在前后端硬编码学科枚举**，一律走本接口。
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Result'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Subject' }
 
   /api/chunks/{chunkId}:
     get:
@@ -600,6 +623,11 @@ components:
         id: { type: string, description: 使用 canonical_name }
         label: { type: string }
         type: { type: string, enum: [概念, 组件, 算法, 参数, 问题] }
+        subject: { type: string, description: 学科代码，决定节点颜色 }
+        domain:
+          type: string
+          enum: [backend, ai, common]
+          description: 学科所属域。**两端 domain 不同的边即为跨域边，前端用虚线+异色渲染**
         weight: { type: integer, description: 度数，决定节点大小 }
 
     GraphEdge:
@@ -610,6 +638,21 @@ components:
         target: { type: string }
         rel: { type: string, enum: [依赖, 属于, 对比, 导致, 解决, 使用] }
         weight: { type: number }
+        cross_domain:
+          type: boolean
+          default: false
+          description: 两端属于不同 domain。前端高亮显示——这是本产品相对纯向量检索的核心价值证据
+
+    Subject:
+      type: object
+      description: 学科分类项，来自 `subject_taxonomy` 表
+      properties:
+        code: { type: string, example: RAG }
+        domain: { type: string, enum: [backend, ai, common] }
+        display_name: { type: string, example: RAG }
+        sort_order: { type: integer }
+        color: { type: string, example: '#ec4899' }
+        chunk_count: { type: integer, description: 该学科下已有多少切片，用于前端显示"资料充足度" }
 
     GraphData:
       type: object
