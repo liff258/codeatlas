@@ -74,6 +74,53 @@ docker exec -i codeatlas-db psql -U codeatlas -d codeatlas \
 > ⚠️ `contracts/db-schema.sql` 只在数据卷为空时执行。改了 schema 要重建：
 > `docker compose down -v && docker compose up -d`
 
+### 当前可用：知识库摄入与检索基线
+
+**不需要 API Key，也不需要任何模型**——切片和 BM25 都是纯本地的。
+
+```bash
+# 1. 先把素材拉到 data/raw/（不进 git，版权原因只提交 manifest）
+#    当前用的是 sparse checkout + GitHub Contents API，见下面「素材获取」
+
+# 2. 只统计，不写库。先看切片质量再决定要不要入库
+python scripts/ingest.py --dry-run
+
+# 3. 确认没问题再落库（幂等，重复跑不会产生重复数据）
+python scripts/ingest.py --apply
+
+# 4. 检索冒烟测试：不写断言，只打印结果，用眼睛看召回质量
+python scripts/search_test.py
+```
+
+**素材获取（当前的实际情况）**
+
+原始文件不随仓库分发。JavaGuide（Apache-2.0）用 sparse checkout 只拉需要的目录：
+
+```bash
+git clone --depth 1 --filter=blob:none --sparse https://github.com/Snailclimb/JavaGuide.git /tmp/jg
+cd /tmp/jg && git sparse-checkout set --no-cone 'docs/java/basis/*.md' 'docs/java/collection/*.md' ...
+```
+
+拉完按 `sources.manifest.yaml` 的 `id` 归档到 `data/raw/<id>/`。
+`scripts/fetch_sources.py` 还没写——目前是手工执行，这一步还没自动化。
+
+**当前数据量**（2026-10-23）：131 个文档 / 853 个 parent chunk / 5219 个 child chunk，
+覆盖后端 9 个学科。child 平均 170 token，p95 290，超 256 预算的 8.5%——
+那些都是单个代码块或表格，为了语义完整刻意不切。
+
+**检索基线**（BM25，5219 chunk，构建 2.3s，单次查询 2-5ms）：
+
+| 查询 | top-1 是否命中 |
+|---|---|
+| MySQL 索引为什么用 B+ 树 | ✓ MySQL 索引详解 |
+| Spring 循环依赖三级缓存 | ✓ Spring 循环依赖（51.6 分） |
+| ConcurrentHashMap 怎么保证线程安全 | ✓ CHM 与 Hashtable 的区别 |
+| G1 收集器的 SATB 是什么 | ✓ JVM 垃圾回收详解 > G1 |
+| Redis 跳表为什么比红黑树快 | ✗ 命中「参考」列表，正文排第 2 |
+
+最后一条是 BM25 的固有缺陷：短文档词密度高、容易排前面，而「参考」列表恰好罗列了
+所有关键词。这类问题要靠向量检索 + RRF 融合来解，不是调 BM25 参数能解决的。
+
 ### 当前可用：Agent 服务（Mock 模式）
 
 P0 阶段不接真实模型，先跑通 SSE 协议。**不需要 API Key。**
@@ -125,6 +172,8 @@ python scripts/e2e_check.py
 | Tomcat 起在随机端口、报 `already in use` | 环境里存在 `SERVER_PORT` 变量，优先级高于 `application.yml` | 显式传 `-Dspring-boot.run.arguments=--server.port=8080` |
 | 数据库连接失败 | 忘了 `source .env`，用了 yml 里的占位密码 | 启动前先 `set -a && source .env && set +a` |
 | HTTP 200 但前端收不到事件 | SSE 帧 `event:step` 与 `event: step` 两种写法只认了一种 | 解析器必须容忍冒号后有无空格，见 `contracts/sse-events.md` |
+| `git clone` 报 `CONNECT tunnel failed, response 502` | 环境变量里挂着失效的 HTTP 代理，curl 加了 `--noproxy` 但 git 没绕过 | `env -u HTTP_PROXY -u HTTPS_PROXY git ...` |
+| `raw.githubusercontent.com` 打不开，但 `github.com` 正常 | 部分 DNS 污染，raw 域名被拦 | 走 `codeload` 下 tarball，或用 `api.github.com` 的 Contents API 取 base64 内容 |
 
 ### 路径 A：全量 Docker（P3 后可用）
 
@@ -178,7 +227,9 @@ DeepSeek V4.1-Flash · BGE-M3 · bge-reranker-v2-m3
 
 - [x] P0 骨架与契约（数据库层 / Agent Mock / Java 网关 / E2E 20 项全过）
 - [x] P3-a 前端骨架与流式渲染（对话流 · 思考面板 · 图谱 · 引用 · Mock 回放）
-- [ ] P1 知识库摄入与检索基线
+- [x] P1-a 知识库摄入与 BM25 基线（131 文档 / 5219 child chunk / 29 个单测）
+- [ ] P1-b 向量检索与混合检索（RRF 融合）
+- [ ] P1-c 50 题 gold set 与评测指标
 - [ ] P2 Agent 状态机（真模型）
 - [ ] P3-b 前端视觉打磨
 - [ ] P4 打磨与冻结
