@@ -74,6 +74,36 @@ docker exec -i codeatlas-db psql -U codeatlas -d codeatlas \
 > ⚠️ `contracts/db-schema.sql` 只在数据卷为空时执行。改了 schema 要重建：
 > `docker compose down -v && docker compose up -d`
 
+### 当前可用：Agent 服务（Mock 模式）
+
+P0 阶段不接真实模型，先跑通 SSE 协议。**不需要 API Key。**
+
+```bash
+cd services/python-agent
+uvicorn app.main:app --reload --port 8000
+```
+
+健康检查（`db` 应为 `ok`，`llm` 为 `missing_key`，`mode` 为 `mock`）：
+
+```bash
+curl -H "X-Internal-Token: $INTERNAL_TOKEN" http://127.0.0.1:8000/internal/health
+```
+
+看完整事件流（51 个事件，约 2 秒）：
+
+```bash
+curl -N -X POST http://127.0.0.1:8000/internal/agent/stream \
+  -H "X-Internal-Token: $INTERNAL_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"trace_id":"t_demo","question":"向量检索为什么不能用 B+ 树加速？"}'
+```
+
+跑协议一致性测试（13 个用例，守住 `contracts/sse-events.md` 的 5 条顺序保证）：
+
+```bash
+cd services/python-agent && pytest -v
+```
+
 ### 路径 A：全量 Docker（P3 后可用）
 
 ```bash

@@ -1,0 +1,26 @@
+# CodeAtlas Agent 服务依赖
+# 白名单见 contracts/deps.md —— 新增依赖必须先登记再动代码
+
+fastapi>=0.115,<0.130
+uvicorn[standard]>=0.32,<0.40
+pydantic>=2.9,<3
+pydantic-settings>=2.5,<3
+
+# 数据层（P1 启用，P0 仅用于健康检查）
+sqlalchemy>=2.0,<2.1
+psycopg[binary]>=3.2,<4
+pgvector>=0.3,<0.4
+
+# LLM 与检索（P1/P2 启用）
+openai>=1.50,<3
+jieba>=0.42,<0.43
+rank-bm25>=0.2,<0.3
+tenacity>=9,<10
+
+# 文档解析（P1 启用）
+pymupdf>=1.24,<2
+
+# 测试
+httpx>=0.27,<0.29
+pytest>=8,<9
+pytest-asyncio>=0.24,<2

@@ -97,7 +97,7 @@ Java 转发时额外注入：
 
 ```json
 {"seq":6,"trace_id":"t_8f2a1c","ts":1761195602100,
- "query_id":"q1","engine":"hybrid",
+ "query_id":"q1","engine":"hybrid","rewrite_round":0,
  "chunks":[
    {"id":"c_102","doc_id":3,"score":0.83,"vec_rank":2,"bm25_rank":1,"rrf_score":0.032,
     "heading_path":"第3章 > 3.2 G1 > 3.2.4 SATB","preview":"SATB 全称 Snapshot-At-The-Beginning…"}
@@ -106,8 +106,9 @@ Java 转发时额外注入：
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
-| `query_id` | string | 对应 `plan.sub_queries[].id` |
+| `query_id` | string | `rewrite_round=0` 时对应 `plan.sub_queries[].id`；`≥1` 时是改写产生的新查询 |
 | `engine` | string | `vector` `bm25` `hybrid` |
+| `rewrite_round` | int | 0 = 首轮检索；1、2 = 第几次改写后的检索。**前端据此区分"补检索"和"初检索"，不要混在一起渲染** |
 | `chunks[].id` | string | `c_<数字>`，与 `chunk.id` 对应 |
 | `chunks[].score` | float | 归一化后 0–1，**重排后的最终分** |
 | `chunks[].vec_rank` | int? | 向量召回排名，调试台展示用 |
@@ -273,7 +274,7 @@ event: done       data: {"seq":22,"stop_reason":"normal",...}
 **顺序保证（前端可以依赖）**
 1. `step(running)` 一定在同类事件之前
 2. `plan` 一定在所有 `retrieval` 之前
-3. 每个 `retrieval.query_id` 必须能在 `plan.sub_queries[].id` 里找到
+3. `retrieval.query_id` 满足：`rewrite_round=0` 时必须能在 `plan.sub_queries[].id` 里找到；`rewrite_round≥1` 时是新查询，不受此约束
 4. `citation` 一定在其引用的 token 之前或同时
 5. `done` 一定是最后一个事件（`error` 之后也必有 `done`）
 
