@@ -52,3 +52,6 @@ recordings/
 *.iml
 .DS_Store
 Thumbs.db
+
+# ---- 本地工作区元数据（不进参赛仓库）----
+.workbuddy-ai/
