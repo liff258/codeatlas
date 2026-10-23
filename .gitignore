@@ -25,6 +25,8 @@ dist/
 dist-ssr/
 .vite/
 *.local
+# tsc -b 产生的增量构建缓存，不该进仓库
+*.tsbuildinfo
 
 # ---- 知识库原始素材（版权规避：只提交 sources.manifest.yaml，不提交原文）----
 data/raw/
