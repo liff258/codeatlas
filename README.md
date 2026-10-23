@@ -45,7 +45,7 @@
 
 ## 10 分钟极速复现
 
-> 🚧 本节在 P5 阶段补齐完整内容。目标：评委无需申请 API Key 也能跑通全部演示。
+> 🚧 完整复现指南在 P5 阶段补齐。当前已完成数据库层，可独立验证。
 
 三条路径，任选其一：
 
@@ -55,18 +55,35 @@
 | **B. 前端 Mock 回放** | 只需 Node | 无网、无 Key 也能看完整交互 |
 | **C. 在线 Demo** | 浏览器 | 最快 |
 
-### 路径 A：全量 Docker
+### 当前可用：数据库层
 
 ```bash
-git clone <repo-url> && cd codeatlas
-cp .env.example .env      # 按需填入 SILICONFLOW_API_KEY
-docker compose up -d
+cp .env.example .env
+docker compose up -d          # 只起 postgres + pgvector
+```
+
+验证建库是否正确（在一个事务里跑完并回滚，不留脏数据）：
+
+```bash
+docker exec -i codeatlas-db psql -U codeatlas -d codeatlas \
+  -v ON_ERROR_STOP=1 -f - < db/smoke-test.sql
+```
+
+期望输出 5 个 ✓：向量写入、跨域边查询、外键约束、唯一约束、自环约束。
+
+> ⚠️ `contracts/db-schema.sql` 只在数据卷为空时执行。改了 schema 要重建：
+> `docker compose down -v && docker compose up -d`
+
+### 路径 A：全量 Docker（P3 后可用）
+
+```bash
+docker compose --profile app up -d
 # 打开 http://localhost:5173
 ```
 
-数据库镜像已内置知识库快照（含 embedding），**不需要重新建库，不需要 API Key 也能看到完整数据**。
+数据库镜像将内置知识库快照（含 embedding），**不需要重新建库，不需要 API Key 也能看到完整数据**。
 
-### 路径 B：前端 Mock 回放
+### 路径 B：前端 Mock 回放（P3 后可用）
 
 ```bash
 cd web && npm install && VITE_MOCK=1 npm run dev

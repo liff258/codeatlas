@@ -1,0 +1,112 @@
+# CodeAtlas 本地开发与服务编排
+#
+# 用法：
+#   docker compose up -d              # 只起 postgres（默认，日常开发用这个）
+#   docker compose --profile app up -d  # 起全部四个服务（验收/录屏用）
+#
+# 注意：db-schema.sql 只在数据卷为空时执行一次。
+#       改了 schema 需要重建：docker compose down -v && docker compose up -d
+
+name: codeatlas
+
+services:
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: codeatlas-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-codeatlas}
+      POSTGRES_USER: ${POSTGRES_USER:-codeatlas}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-codeatlas_dev}
+      # 中文排序与编码，避免建库时出现 collation 警告
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      # 宿主 5433，避开本机可能存在的 5432
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./contracts/db-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-codeatlas} -d ${POSTGRES_DB:-codeatlas}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    command:
+      - postgres
+      - -c
+      - shared_buffers=256MB
+      - -c
+      - work_mem=32MB
+      - -c
+      - maintenance_work_mem=256MB
+      # HNSW 建索引需要；建库期临时调大，之后可回落
+      - -c
+      - max_parallel_maintenance_workers=2
+
+  python-agent:
+    profiles: ["app"]
+    build:
+      context: ./services/python-agent
+      dockerfile: Dockerfile
+    container_name: codeatlas-agent
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-codeatlas}:${POSTGRES_PASSWORD:-codeatlas_dev}@postgres:5432/${POSTGRES_DB:-codeatlas}
+      SILICONFLOW_API_KEY: ${SILICONFLOW_API_KEY}
+      SILICONFLOW_BASE_URL: ${SILICONFLOW_BASE_URL:-https://api.siliconflow.cn/v1}
+      LLM_MODEL: ${LLM_MODEL:-deepseek-ai/DeepSeek-V4.1-Flash}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-BAAI/bge-m3}
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN:-dev_internal_token}
+      AGENT_MAX_STEPS: ${AGENT_MAX_STEPS:-8}
+      AGENT_MAX_REWRITE: ${AGENT_MAX_REWRITE:-2}
+    ports:
+      # 只绑 127.0.0.1 —— 内部接口绝不对外暴露
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/internal/health').status==200 else 1)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  java-gateway:
+    profiles: ["app"]
+    build:
+      context: ./services/java-gateway
+      dockerfile: Dockerfile
+    container_name: codeatlas-gateway
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-codeatlas}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-codeatlas}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-codeatlas_dev}
+      AGENT_SERVICE_BASE_URL: http://python-agent:8000
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN:-dev_internal_token}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      python-agent:
+        condition: service_started
+
+  web:
+    profiles: ["app"]
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: codeatlas-web
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - java-gateway
+
+volumes:
+  pgdata:
+    name: codeatlas_pgdata
