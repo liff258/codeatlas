@@ -104,6 +104,28 @@ curl -N -X POST http://127.0.0.1:8000/internal/agent/stream \
 cd services/python-agent && pytest -v
 ```
 
+### 当前可用：Java 网关
+
+```bash
+# ⚠️ 必须先加载 .env，否则数据库密码用的是 application.yml 里的占位默认值，连不上
+set -a && source .env && set +a
+cd services/java-gateway && mvn spring-boot:run
+```
+
+端到端验收（健康检查 → SSE 流 → 落库，三段全过才算 P0 完成）：
+
+```bash
+python scripts/e2e_check.py
+```
+
+**排障提示**
+
+| 现象 | 原因 | 处理 |
+|---|---|---|
+| Tomcat 起在随机端口、报 `already in use` | 环境里存在 `SERVER_PORT` 变量，优先级高于 `application.yml` | 显式传 `-Dspring-boot.run.arguments=--server.port=8080` |
+| 数据库连接失败 | 忘了 `source .env`，用了 yml 里的占位密码 | 启动前先 `set -a && source .env && set +a` |
+| HTTP 200 但前端收不到事件 | SSE 帧 `event:step` 与 `event: step` 两种写法只认了一种 | 解析器必须容忍冒号后有无空格，见 `contracts/sse-events.md` |
+
 ### 路径 A：全量 Docker（P3 后可用）
 
 ```bash

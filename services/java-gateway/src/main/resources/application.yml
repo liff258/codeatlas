@@ -1,0 +1,55 @@
+server:
+  port: ${GATEWAY_PORT:8080}
+  tomcat:
+    # SSE 是长连接，占一个 Tomcat 线程；单人自用 50 足够，留余量防演示时并发
+    threads:
+      max: 50
+    connection-timeout: 20s
+
+spring:
+  application:
+    name: codeatlas-gateway
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/codeatlas}
+    username: ${SPRING_DATASOURCE_USERNAME:codeatlas}
+    password: ${SPRING_DATASOURCE_PASSWORD:codeatlas_dev}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 5000
+      pool-name: codeatlas-pool
+
+  mvc:
+    async:
+      # 必须 ≥ Agent 的 60s 预算 + 排队余量；小于这个值会在流未结束时被 Tomcat 掐断
+      request-timeout: 300000
+
+  jackson:
+    default-property-inclusion: non_null
+    time-zone: Asia/Shanghai
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    # 开发期打印 SQL，P4 打磨时关掉
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
+
+codeatlas:
+  agent:
+    base-url: ${AGENT_SERVICE_BASE_URL:http://localhost:8000}
+    internal-token: ${INTERNAL_TOKEN:dev_internal_token}
+    stream-timeout-seconds: 300
+    connect-timeout-ms: 3000
+    # 0 = 关闭。SSE 靠心跳保活，这里设超时会在等首 token 时被掐断
+    response-timeout-ms: 0
+
+logging:
+  level:
+    root: INFO
+    com.codeatlas: DEBUG
+    org.springframework.web.servlet.mvc.method.annotation: INFO

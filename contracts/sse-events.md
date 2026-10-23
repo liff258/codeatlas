@@ -35,6 +35,24 @@ X-Accel-Buffering: no          ← 必须，否则 Nginx 会攒批
 
 **前端必须用 `fetch + ReadableStream` 解析**。`EventSource` 只支持 GET，问题文本放不进 URL，且无法带自定义 Header。
 
+### ⚠️ 冒号后是否有空格，两种都可能
+
+实测发现：Java 的 `SseEmitter` 输出 `event:step` / `data:{...}`（**无空格**），
+Python 手写输出 `event: step` / `data: {...}`（**有空格**）。两者都符合 SSE 规范
+——规范只规定「值若以一个空格开头则去掉该空格」，不要求必须有空格。
+
+**任何解析器都必须两种都认**。写法：
+
+```js
+const idx = line.indexOf(':')
+const field = line.slice(0, idx)
+let value = line.slice(idx + 1)
+if (value.startsWith(' ')) value = value.slice(1)
+```
+
+只认一种格式的客户端，会在换一层实现时**静默收不到任何事件**（HTTP 200 但流是空的），
+排查起来非常费时间。这个坑已经踩过一次。
+
 ## 3. 通用信封
 
 每个事件的 `data` 都是一个 JSON 对象，**至少包含以下三个字段**：

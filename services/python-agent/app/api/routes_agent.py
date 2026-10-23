@@ -47,6 +47,7 @@ async def _guarded_stream(req: InternalChatRequest) -> AsyncIterator[str]:
         question=req.question,
         session_id=req.session_id,
         history=[h.model_dump() for h in req.history],
+        trace_id=req.trace_id,  # 必须沿用上游给的 trace_id，不要自己生成
     )
 
     try:

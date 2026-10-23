@@ -76,6 +76,31 @@ def test_seq_monotonic_from_one(frames):
     assert seqs == list(range(1, len(seqs) + 1)), f"seq 不连续: {seqs}"
 
 
+def test_trace_id_comes_from_caller():
+    """trace_id 必须沿用调用方传入的值，不能自己生成。
+
+    这条曾经真的错过：Python 自己造了一个 trace_id，Java 落库用的是它自己那个，
+    同一次问答出现两个 ID，「回放思考过程」直接失效。跨服务链路追踪的前提是
+    上游生成的 ID 全程贯穿，任何一环重新生成都会断链。
+    """
+    import asyncio
+
+    fixed = "t_fixed01"
+
+    async def collect() -> list[str]:
+        return [
+            f
+            async for f in mock_stream(
+                DEMO_QUESTION, trace_id=fixed, token_delay_ms=0, step_delay_ms=0
+            )
+        ]
+
+    parsed = parse_frames(asyncio.run(collect()))
+    assert parsed, "没有产出事件"
+    for name, payload in parsed:
+        assert payload["trace_id"] == fixed, f"{name} 事件的 trace_id 被改写了"
+
+
 def test_all_eight_event_types_present(frames):
     """8 种事件必须全部出现，缺一种就说明协议没跑全。"""
     expected = {"step", "plan", "retrieval", "grade", "graph", "token", "citation", "done"}

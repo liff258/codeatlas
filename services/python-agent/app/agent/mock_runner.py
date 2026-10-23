@@ -129,11 +129,17 @@ async def mock_stream(
     question: str,
     session_id: int | None = None,
     history: list[dict] | None = None,
+    trace_id: str | None = None,
     token_delay_ms: int = 22,
     step_delay_ms: int = 120,
 ) -> AsyncIterator[str]:
-    """产出完整的 SSE 事件序列。"""
-    es = EventStream(_new_trace_id())
+    """产出完整的 SSE 事件序列。
+
+    trace_id 必须由调用方（Java 网关）传入并全程沿用。
+    这里绝不能自己生成一个 —— 否则 Java 落库的 trace_id 与流里的对不上，
+    「点历史消息回放思考过程」这个功能会直接失效。
+    """
+    es = EventStream(trace_id or _new_trace_id())
     started = asyncio.get_event_loop().time()
 
     # ---------- 1. 意图路由 ----------
