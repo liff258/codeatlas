@@ -11,7 +11,7 @@
 
 version: 1
 updated: 2026-10-23
-total_documents: 23
+total_documents: 24
 target_chunks: 3500-4000
 
 license_policy:
@@ -28,13 +28,27 @@ sources:
   - id: jg-java-basis
     domain: backend
     subject: Java基础
-    title: JavaGuide · Java 基础与集合
+    title: JavaGuide · Java 语言基础
     url: https://github.com/Snailclimb/JavaGuide/tree/main/docs/java/basis
     license: Apache-2.0
     fetch_mode: fulltext
     attribution: JavaGuide by Snailclimb (Apache-2.0)
-    expected_chunks: 320
-    covers: [String, 泛型, 反射, 异常, HashMap, ConcurrentHashMap, ArrayList]
+    expected_chunks: 200
+    covers: [String, 泛型, 反射, 异常, 序列化, SPI]
+
+  # ⚠️ 2026-10-23 修正：原清单把集合框架错挂在 docs/java/basis 下，
+  #    实际在 docs/java/collection。做检索基线时发现「负载因子」0 命中才暴露出来。
+  #    教训：manifest 的 covers 字段必须和真实目录对齐，否则素材缺口要到检索阶段才发现。
+  - id: jg-collection
+    domain: backend
+    subject: Java基础
+    title: JavaGuide · 集合框架源码分析
+    url: https://github.com/Snailclimb/JavaGuide/tree/main/docs/java/collection
+    license: Apache-2.0
+    fetch_mode: fulltext
+    attribution: JavaGuide by Snailclimb (Apache-2.0)
+    expected_chunks: 260
+    covers: [HashMap, ConcurrentHashMap, ArrayList, LinkedList, 扩容, 红黑树, 负载因子]
 
   - id: jg-concurrency
     domain: backend
