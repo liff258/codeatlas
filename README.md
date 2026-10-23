@@ -99,19 +99,26 @@ DeepSeek V4.1-Flash · BGE-M3 · bge-reranker-v2-m3
 
 本项目知识库仅使用**明确开源协议**的资料，原始文件不随仓库分发，由 `scripts/fetch_sources.py` 按 `sources.manifest.yaml` 拉取。
 
-| 来源 | 域 | 许可证 |
-|---|---|---|
-| JavaGuide | 后端 | CC BY-SA 4.0 |
-| CS-Notes | 后端 | CC BY-SA 4.0 |
-| MySQL / Redis 官方文档 | 后端 | 各自官方条款 |
-| JVM 规范（JVMS） | 后端 | Oracle 规范许可 |
-| HNSW 原论文（Malkov & Yashunin） | AI | arXiv 预印本，引用+摘要 |
-| RAG 原论文（Lewis et al.） | AI | arXiv 预印本，引用+摘要 |
-| Anthropic《Building effective agents》 | AI | 官方博客，引用+摘要 |
-| Lilian Weng《LLM Powered Autonomous Agents》 | AI | 博客，引用+摘要 |
-| Prompt Engineering Guide（dair-ai） | AI | CC BY-NC 4.0 |
+| 来源 | 域 | 许可证 | 入库方式 |
+|---|---|---|---|
+| JavaGuide（Snailclimb） | 后端 | **Apache-2.0** | 全文 |
+| MySQL 8.0 Reference Manual | 后端 | 官方文档 | 结构化摘录 |
+| Redis Documentation | 后端 | 官方文档 | 结构化摘录 |
+| Qdrant Documentation | AI | **Apache-2.0** | 全文 |
+| Prompt Engineering Guide（DAIR.AI） | AI | **MIT** | 全文 |
+| HNSW 原论文（Malkov & Yashunin, arXiv:1603.09320） | AI | arXiv 预印本 | 结构化摘录 + 链接 |
+| RAG 原论文（Lewis et al., arXiv:2005.11401） | AI | arXiv 预印本 | 结构化摘录 + 链接 |
+| Anthropic《Building Effective Agents》 | AI | 版权归 Anthropic | 结构化摘录 + 链接 |
+| Lilian Weng《LLM Powered Autonomous Agents》 | AI | 版权归作者 | 结构化摘录 + 链接 |
+| The Illustrated Transformer（Jay Alammar） | AI | 版权归作者 | 结构化摘录 + 链接 |
+| LlamaIndex《Production RAG》 | AI | 官方文档 | 结构化摘录 + 链接 |
+| 本人学习笔记（4 篇） | 后端 / AI | 原创 | 全文 |
 
-原始文件**不随仓库分发**，由 `scripts/fetch_sources.py` 按 `sources.manifest.yaml` 拉取；论文类只保留自写摘要与原文链接，不转存全文。
+**入库方式说明**：只有 Apache-2.0 / MIT 这类允许全文使用的源才整篇入库；其余一律只保留**自己重写的结构化摘录 + 原文链接**，不转存原文。这样既规避版权风险，也让知识库内容本身构成原创。
+
+原始文件**不随仓库分发**，由 `scripts/fetch_sources.py` 按 [`sources.manifest.yaml`](sources.manifest.yaml) 拉取。
+
+> 注：本清单刻意**未采用 CS-Notes**——它的许可证是 CC BY-NC-SA 4.0，含「不可商用」与「相同方式共享」条款，与参赛作品的授权方式存在冲突。JavaGuide（Apache-2.0）已覆盖后端各学科，无需它补充。
 
 署名与完整清单见 [`sources.manifest.yaml`](sources.manifest.yaml)。
 

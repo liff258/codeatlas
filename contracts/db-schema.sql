@@ -107,7 +107,7 @@ CREATE TABLE eval_run (
 
 -- ---------------------------------------------------------------------------
 -- 【学科分类体系 — 唯一真相，两侧都从这里读，不要在代码里硬编码枚举】
---   后端域 backend：JVM / 并发 / MySQL / Redis / Spring / 网络 / 分布式 / 消息队列
+--   后端域 backend：Java基础 / JVM / 并发 / MySQL / Redis / Spring / 网络 / 分布式 / 消息队列
 --   AI 域  ai     ：LLM基础 / RAG / Agent / 向量检索 / Prompt工程
 --   通用   common ：工程实践
 -- 新增分类只需往本表插一行，不用改代码。
@@ -126,6 +126,7 @@ CREATE TABLE subject_taxonomy (
 );
 
 INSERT INTO subject_taxonomy (code, domain, display_name, sort_order, color) VALUES
+  ('Java基础',   'backend', 'Java 基础',  5,  '#fb923c'),
   ('JVM',        'backend', 'JVM',        10, '#f97316'),
   ('并发',        'backend', 'Java 并发',  20, '#ef4444'),
   ('MySQL',      'backend', 'MySQL',      30, '#3b82f6'),
@@ -200,6 +201,10 @@ CREATE TABLE relation (
     rel_type        VARCHAR(40) NOT NULL,   -- 依赖 / 属于 / 对比 / 导致 / 解决
     weight          NUMERIC(4,2) NOT NULL DEFAULT 1.0,
     source_chunk_id BIGINT REFERENCES chunk(id) ON DELETE SET NULL,  -- 关系出处
+    -- 关系来源：extracted=从 chunk 抽取；inferred=图谱补全脚本推断；manual=人工确认
+    -- 前端对 inferred 的边用更低透明度，诚实展示"这是推断出来的"
+    inferred_by     VARCHAR(16) NOT NULL DEFAULT 'extracted'
+                    CHECK (inferred_by IN ('extracted', 'inferred', 'manual')),
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
     CONSTRAINT chk_no_self_loop CHECK (src_entity_id <> dst_entity_id)
 );
@@ -273,3 +278,30 @@ CREATE INDEX idx_eval_result_run ON eval_result (run_id);
 
 INSERT INTO session (user_id, title) VALUES ('local', '演示会话')
 ON CONFLICT DO NOTHING;
+
+-- ============================================================================
+-- 四、验收查询（建库后必须跑，结果写进技术文档）
+-- ============================================================================
+
+-- 【最重要】跨域边数量。低于 30 条，演示时的虚线画不出来，核心卖点不成立
+-- SELECT count(*) AS cross_domain_edges
+-- FROM relation r
+-- JOIN entity a ON a.id = r.src_entity_id
+-- JOIN entity b ON b.id = r.dst_entity_id
+-- JOIN subject_taxonomy sa ON sa.code = a.subject
+-- JOIN subject_taxonomy sb ON sb.code = b.subject
+-- WHERE sa.domain <> sb.domain;
+
+-- 每个学科的切片数，低于 80 说明该学科召不到东西
+-- SELECT t.code, t.domain, count(c.id) AS chunks
+-- FROM subject_taxonomy t
+-- LEFT JOIN chunk c ON c.subject = t.code AND c.level = 'child'
+-- GROUP BY t.code, t.domain, t.sort_order
+-- ORDER BY t.sort_order;
+
+-- 图谱规模
+-- SELECT
+--   (SELECT count(*) FROM entity)   AS entities,
+--   (SELECT count(*) FROM relation) AS relations,
+--   (SELECT count(*) FROM chunk WHERE level = 'child') AS child_chunks;
+

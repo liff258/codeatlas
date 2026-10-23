@@ -1,0 +1,315 @@
+# CodeAtlas 素材清单
+#
+# 本文件是知识库内容的唯一来源声明。仓库不提交任何原始文件，由 scripts/fetch_sources.py 按此拉取。
+#
+# ⚠️ 许可证策略（提交前必须遵守，这是评委可能抽查的点）：
+#   fulltext —— 许可证允许全文使用（Apache-2.0 / MIT），可完整入库
+#   excerpt  —— 只做「结构化摘录」：用我们自己的话重写核心章节，保留原文链接与出处
+#   summary  —— 只做「一句话摘要 + 链接」，不保留大段原文
+#
+#   任何 CC-NC（不可商用）、未声明许可证、或来源不明的材料，一律不得 fulltext 入库。
+
+version: 1
+updated: 2026-10-23
+total_documents: 23
+target_chunks: 3500-4000
+
+license_policy:
+  fulltext_allowed: [Apache-2.0, MIT, BSD-3-Clause, CC0-1.0]
+  excerpt_only: [CC-BY-4.0, CC-BY-SA-4.0, CC-BY-NC-SA-4.0, 官方文档, arXiv 预印本, 个人博客]
+  forbidden: [无许可证, 扫描版教材, 培训机构付费资料, 未标注出处的转载]
+
+# ============================================================================
+# 后端域 · 11 篇
+# ============================================================================
+
+sources:
+
+  - id: jg-java-basis
+    domain: backend
+    subject: Java基础
+    title: JavaGuide · Java 基础与集合
+    url: https://github.com/Snailclimb/JavaGuide/tree/main/docs/java/basis
+    license: Apache-2.0
+    fetch_mode: fulltext
+    attribution: JavaGuide by Snailclimb (Apache-2.0)
+    expected_chunks: 320
+    covers: [String, 泛型, 反射, 异常, HashMap, ConcurrentHashMap, ArrayList]
+
+  - id: jg-concurrency
+    domain: backend
+    subject: 并发
+    title: JavaGuide · Java 并发
+    url: https://github.com/Snailclimb/JavaGuide/tree/main/docs/java/concurrent
+    license: Apache-2.0
+    fetch_mode: fulltext
+    attribution: JavaGuide by Snailclimb (Apache-2.0)
+    expected_chunks: 300
+    covers: [AQS, 线程池, synchronized, volatile, CAS, ThreadLocal, 锁升级]
+    note: 演示第二问（SATB 写屏障）的对照材料在这里，讲清楚"并发场景下的一致性维护"
+
+  - id: jg-jvm
+    domain: backend
+    subject: JVM
+    title: JavaGuide · JVM
+    url: https://github.com/Snailclimb/JavaGuide/tree/main/docs/java/jvm
+    license: Apache-2.0
+    fetch_mode: fulltext
+    attribution: JavaGuide by Snailclimb (Apache-2.0)
+    expected_chunks: 280
+    covers: [内存区域, 垃圾回收, G1, ZGC, 类加载, 双亲委派, 三色标记]
+
+  - id: jg-mysql
+    domain: backend
+    subject: MySQL
+    title: JavaGuide · MySQL
+    url: https://github.com/Snailclimb/JavaGuide/tree/main/docs/database/mysql
+    license: Apache-2.0
+    fetch_mode: fulltext
+    attribution: JavaGuide by Snailclimb (Apache-2.0)
+    expected_chunks: 300
+    covers: [B+树索引, 事务, MVCC, 锁, 执行计划, 索引失效, 分库分表]
+    note: ★ 主线问题的第一跳靠它。必须确认 B+ 树的「适用范围」讲清楚了
+
+  - id: jg-redis
+    domain: backend
+    subject: Redis
+    title: JavaGuide · Redis
+    url: https://github.com/Snailclimb/JavaGuide/tree/main/docs/database/redis
+    license: Apache-2.0
+    fetch_mode: fulltext
+    attribution: JavaGuide by Snailclimb (Apache-2.0)
+    expected_chunks: 260
+    covers: [数据结构, 持久化, 集群, 缓存穿透/击穿/雪崩, 过期策略]
+
+  - id: jg-spring
+    domain: backend
+    subject: Spring
+    title: JavaGuide · Spring
+    url: https://github.com/Snailclimb/JavaGuide/tree/main/docs/system-design/framework/spring
+    license: Apache-2.0
+    fetch_mode: fulltext
+    attribution: JavaGuide by Snailclimb (Apache-2.0)
+    expected_chunks: 220
+    covers: [IOC, AOP, 事务传播, 循环依赖, Bean 生命周期]
+
+  - id: jg-network
+    domain: backend
+    subject: 网络
+    title: JavaGuide · 计算机网络
+    url: https://github.com/Snailclimb/JavaGuide/tree/main/docs/cs-basics/network
+    license: Apache-2.0
+    fetch_mode: fulltext
+    attribution: JavaGuide by Snailclimb (Apache-2.0)
+    expected_chunks: 200
+    covers: [TCP 三次握手, HTTP/1.1 vs 2, HTTPS, 拥塞控制]
+
+  - id: jg-distributed
+    domain: backend
+    subject: 分布式
+    title: JavaGuide · 分布式系统
+    url: https://github.com/Snailclimb/JavaGuide/tree/main/docs/distributed-system
+    license: Apache-2.0
+    fetch_mode: fulltext
+    attribution: JavaGuide by Snailclimb (Apache-2.0)
+    expected_chunks: 240
+    covers: [CAP, BASE, 一致性协议, 分布式事务, 限流熔断]
+
+  - id: jg-mq
+    domain: backend
+    subject: 消息队列
+    title: JavaGuide · 消息队列
+    url: https://github.com/Snailclimb/JavaGuide/tree/main/docs/high-performance/message-queue
+    license: Apache-2.0
+    fetch_mode: fulltext
+    attribution: JavaGuide by Snailclimb (Apache-2.0)
+    expected_chunks: 160
+    covers: [消息顺序性, 幂等, 堆积处理, 事务消息]
+
+  - id: mysql-official-innodb
+    domain: backend
+    subject: MySQL
+    title: MySQL 8.0 官方文档 · InnoDB 索引与事务
+    url: https://dev.mysql.com/doc/refman/8.0/en/innodb-index-types.html
+    license: 官方文档
+    fetch_mode: excerpt
+    attribution: MySQL 8.0 Reference Manual, Oracle
+    expected_chunks: 120
+    covers: [聚集索引, 二级索引, 索引条件下推, 事务隔离级别]
+
+  - id: redis-official-datatypes
+    domain: backend
+    subject: Redis
+    title: Redis 官方文档 · 数据类型与持久化
+    url: https://redis.io/docs/latest/develop/data-types/
+    license: 官方文档
+    fetch_mode: excerpt
+    attribution: Redis Documentation, Redis Ltd.
+    expected_chunks: 100
+    covers: [SDS, 跳表, 压缩列表, RDB, AOF]
+
+# ============================================================================
+# AI 域 · 8 篇
+# ============================================================================
+
+  - id: hnsw-paper
+    domain: ai
+    subject: 向量检索
+    title: HNSW 原论文 · Efficient and robust ANN search using Hierarchical NSW graphs
+    url: https://arxiv.org/abs/1603.09320
+    license: arXiv 预印本
+    fetch_mode: excerpt
+    attribution: Malkov & Yashunin, arXiv:1603.09320
+    expected_chunks: 140
+    covers: [分层图结构, 贪心搜索, M 参数, ef_construction, ef_search, 召回率与延迟权衡]
+    note: ★ 主线问题第二、三跳的核心。必须把「为什么是图结构而不是树结构」摘出来
+
+  - id: vector-db-concepts
+    domain: ai
+    subject: 向量检索
+    title: Qdrant 官方文档 · 向量检索概念（ANN / 距离度量 / 过滤）
+    url: https://qdrant.tech/documentation/concepts/
+    license: Apache-2.0
+    fetch_mode: fulltext
+    attribution: Qdrant Documentation (Apache-2.0)
+    expected_chunks: 160
+    covers: [向量相似度, 余弦vs内积, ANN 索引族, IVF, PQ, 混合检索, 过滤]
+
+  - id: rag-paper
+    domain: ai
+    subject: RAG
+    title: RAG 原论文 · Retrieval-Augmented Generation for Knowledge-Intensive NLP
+    url: https://arxiv.org/abs/2005.11401
+    license: arXiv 预印本
+    fetch_mode: excerpt
+    attribution: Lewis et al., arXiv:2005.11401
+    expected_chunks: 120
+    covers: [参数化vs非参数化记忆, 检索器与生成器联合, RAG-Sequence, RAG-Token]
+
+  - id: rag-engineering
+    domain: ai
+    subject: RAG
+    title: RAG 工程实践 · 切片策略、混合检索与重排
+    url: https://docs.llamaindex.ai/en/stable/optimizing/production_rag/
+    license: 官方文档
+    fetch_mode: excerpt
+    attribution: LlamaIndex Documentation
+    expected_chunks: 180
+    covers: [切片粒度, 父子块, 混合检索, rerank, 查询改写, 召回评估]
+    note: ★ 主线问题第四跳（召回率怎么提）靠它
+
+  - id: anthropic-agents
+    domain: ai
+    subject: Agent
+    title: Anthropic · Building Effective Agents
+    url: https://www.anthropic.com/engineering/building-effective-agents
+    license: 个人博客
+    fetch_mode: excerpt
+    attribution: Anthropic Engineering Blog
+    expected_chunks: 130
+    covers: [workflow vs agent, 路由, 编排, 评估-优化循环, 何时不该用 agent]
+
+  - id: lilian-weng-agents
+    domain: ai
+    subject: Agent
+    title: Lilian Weng · LLM Powered Autonomous Agents
+    url: https://lilianweng.github.io/posts/2023-06-23-agent/
+    license: 个人博客
+    fetch_mode: excerpt
+    attribution: Lilian Weng
+    expected_chunks: 150
+    covers: [规划, 记忆, 工具使用, ReAct, 反思, 多智能体协作]
+
+  - id: prompt-guide
+    domain: ai
+    subject: Prompt工程
+    title: Prompt Engineering Guide (dair-ai)
+    url: https://github.com/dair-ai/Prompt-Engineering-Guide
+    license: MIT
+    fetch_mode: fulltext
+    attribution: Prompt Engineering Guide by DAIR.AI (MIT)
+    expected_chunks: 220
+    covers: [结构化输出, few-shot, CoT, 自一致性, 提示注入防御]
+
+  - id: illustrated-transformer
+    domain: ai
+    subject: LLM基础
+    title: The Illustrated Transformer（含中文解读）
+    url: https://jalammar.github.io/illustrated-transformer/
+    license: 个人博客
+    fetch_mode: excerpt
+    attribution: Jay Alammar
+    expected_chunks: 140
+    covers: [Self-Attention, 多头注意力, 位置编码, O(n²) 复杂度, 上下文窗口]
+
+# ============================================================================
+# 自写笔记 · 4 篇（最值钱的素材，也是「原创性」的直接证据）
+# ============================================================================
+
+  - id: own-vector-vs-btree
+    domain: ai
+    subject: 向量检索
+    title: 【自写】向量检索 vs B+ 树：为什么数据库索引救不了 RAG
+    url: local://notes/vector-vs-btree.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 60
+    covers: [B+树的一维有序假设, 高维空间的距离退化, ANN 的近似换速度, 两者的取舍]
+    note: ★★★ 最重要的一篇。主线问题的答案骨架就在这，而且是天然跨域材料。
+             没有它，主线问题一定答不完整。优先级最高。
+
+  - id: own-rag-pitfalls
+    domain: ai
+    subject: RAG
+    title: 【自写】我踩过的 RAG 坑：切片、召回、rerank
+    url: local://notes/rag-pitfalls.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 50
+    covers: [固定长度切片的失败案例, 父子块, 纯向量vs混合检索的实测差异, rerank 收益]
+
+  - id: own-agent-loop
+    domain: ai
+    subject: Agent
+    title: 【自写】Agent 状态机：怎么用预算和终止条件防止死循环
+    url: local://notes/agent-loop.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 50
+    covers: [状态机 vs 黑盒 AgentExecutor, 预算设计, 查询哈希去重, 降级策略]
+
+  - id: own-g1-satb
+    domain: backend
+    subject: JVM
+    title: 【自写】G1 收集器与 SATB 写屏障
+    url: local://notes/g1-satb.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 50
+    covers: [三色标记, 漏标问题, SATB 快照, 写屏障, 浮动垃圾]
+    note: 演示第二问的答案主要来自这里，也是唯一有「深度」的自写材料
+
+# ============================================================================
+# 统计与验收
+# ============================================================================
+
+summary:
+  backend_documents: 11
+  ai_documents: 8
+  own_documents: 4
+  total: 23
+  # 按 domain 字段统计（自写笔记里有 3 篇属 AI 域、1 篇属后端域）
+  by_domain: { backend: 12, ai: 11 }
+  expected_total_chunks: 3950
+  fulltext_sources: 15
+  excerpt_sources: 8
+
+acceptance_criteria:
+  - 每个 subject 至少 80 个 chunk，否则该学科在检索时几乎召不到东西（当前最低 LLM基础 140，达标）
+  - 跨域边（两端 domain 不同）不少于 30 条 —— 建库后跑 contracts/db-schema.sql 第四节的统计 SQL
+  - 抽取实体数 400-700，三元组 1200-1800
+  - 随机抽 20 个 chunk 人工质检，标注准确率 ≥ 85%
