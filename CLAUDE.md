@@ -19,7 +19,8 @@
 1. **依赖单向**：`浏览器 → Java Gateway → Python Agent`。Python **永远不回调** Java，Python 不知道 Java 存在。
 2. **表所有权隔离**：单库 Postgres，但两侧各写各的表，禁止双写同一张表。
    - Java 写：`session` `message` `document` `ingest_task` `feedback` `eval_run`
-   - Python 写：`chunk` `chunk_embedding` `entity` `relation` `agent_trace` `agent_step`
+   - Python 写：`chunk` `chunk_embedding` `entity` `relation` `agent_trace` `agent_step` `eval_case` `eval_result`
+   - 完整定义见 `contracts/db-schema.sql`，该文件是唯一真相
    - 唯一交叉点：`document.status` 只由 Python 更新，Java 只读。
 3. **契约先行**：任何跨服务接口变更，先改 `contracts/` 下的文件，再改实现。契约是唯一真相。
 4. **SSE 只能用 `fetch + ReadableStream` 解析**。禁止 `EventSource`（它只支持 GET，问题文本放不进 URL）。

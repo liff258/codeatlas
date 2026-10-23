@@ -1,0 +1,658 @@
+openapi: 3.1.0
+
+info:
+  title: CodeAtlas API
+  version: 1.0.0
+  description: |
+    CodeAtlas 计算机知识库智能体的接口契约。
+
+    **两套接口，两套鉴权：**
+
+    - **公开接口 `/api/**`** —— 由 Java Gateway 提供，浏览器唯一调用入口。
+      单人自用，鉴权走简单 Header（`X-User-Id`），不引入完整账号体系。
+    - **内部接口 `/internal/**`** —— 由 Python Agent 服务提供，**不对浏览器暴露**。
+      Java 调用时必须带 `X-Internal-Token`，该 token 只存在于服务端环境变量。
+
+    **依赖方向**：`浏览器 → Java → Python`，Python 永不回调 Java。
+
+    SSE 事件协议的完整字段定义见 `contracts/sse-events.md`，本文件只声明端点与请求体。
+
+servers:
+  - url: http://localhost:8080
+    description: Java Gateway（公开接口）
+  - url: http://localhost:8000
+    description: Python Agent（内部接口，仅内网）
+
+tags:
+  - name: chat
+    description: 问答与流式生成
+  - name: session
+    description: 会话管理
+  - name: document
+    description: 文档与摄入
+  - name: graph
+    description: 知识图谱
+  - name: eval
+    description: 评测
+  - name: internal
+    description: 服务间内部接口
+
+# ============================================================================
+paths:
+
+  # ---------------------------------------------------------------- 公开接口
+  /api/chat/stream:
+    post:
+      tags: [chat]
+      summary: 提问并流式接收答案
+      description: |
+        返回 `text/event-stream`。事件类型与字段见 `contracts/sse-events.md`。
+        Java 收到 Python 的流后逐事件转发，并在 `done` 事件里注入 `message_id`。
+
+        **前端必须用 `fetch + ReadableStream` 解析，不能用 EventSource。**
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/LastEventId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+            examples:
+              demo:
+                summary: 演示主线提问
+                value:
+                  session_id: 1
+                  question: G1 的 SATB 为什么要配写屏障？漏标会怎样？
+                  stream: true
+      responses:
+        '200':
+          description: SSE 流
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: 事件流，见 contracts/sse-events.md
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '503':
+          description: Agent 服务不可用
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+
+  /api/sessions:
+    get:
+      tags: [session]
+      summary: 会话列表
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20, maximum: 100 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Result'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Session' }
+    post:
+      tags: [session]
+      summary: 新建会话
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string, maxLength: 200, default: 新对话 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Result'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/Session' }
+
+  /api/sessions/{sessionId}/messages:
+    get:
+      tags: [session]
+      summary: 会话消息历史
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Result'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Message' }
+
+  /api/traces/{traceId}:
+    get:
+      tags: [chat]
+      summary: 回放某次问答的完整思考链路
+      description: |
+        前端点击历史消息的「查看思考过程」时调用。
+        数据来自 `agent_trace` + `agent_step`，由 Python 写入、Java 读取。
+      parameters:
+        - name: traceId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Result'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/Trace' }
+
+  /api/documents:
+    get:
+      tags: [document]
+      summary: 文档列表（含摄入状态）
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, parsing, chunking, embedding, done, failed]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Result'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Document' }
+    post:
+      tags: [document]
+      summary: 上传文档并触发摄入
+      description: |
+        Java 落盘 + 写 `document` 记录（status=pending），随后调用
+        `POST /internal/ingest` 触发 Python 的摄入管线。
+        Python 负责更新 `document.status`，Java 只读。
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 支持 .md / .pdf / .txt，单文件 ≤ 20MB
+      responses:
+        '200':
+          description: 已接收，摄入异步进行
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Result'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/Document' }
+        '409':
+          description: 文件内容重复（content_hash 命中），直接返回已有文档
+
+  /api/documents/{docId}:
+    delete:
+      tags: [document]
+      summary: 删除文档（级联删除 chunk / embedding / 关联关系）
+      parameters:
+        - name: docId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Result' }
+
+  /api/graph/overview:
+    get:
+      tags: [graph]
+      summary: 知识图谱总览
+      description: |
+        **必须做度数聚合**：默认只返回度数最高的 N 个节点，避免前端渲染全图卡死。
+        SSE 的 `graph` 事件是增量，本接口是全景。
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 120, maximum: 300 }
+        - name: subject
+          in: query
+          schema: { type: string, enum: [JVM, 并发, MySQL, Redis, Spring] }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Result'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/GraphData' }
+
+  /api/graph/neighbors:
+    get:
+      tags: [graph]
+      summary: 查询某实体的邻居子图
+      parameters:
+        - name: entity
+          in: query
+          required: true
+          schema: { type: string }
+        - name: depth
+          in: query
+          schema: { type: integer, default: 1, maximum: 2 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Result'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/GraphData' }
+
+  /api/chunks/{chunkId}:
+    get:
+      tags: [document]
+      summary: 取 chunk 原文（点击引用角标时跳转）
+      parameters:
+        - name: chunkId
+          in: path
+          required: true
+          schema: { type: string, example: c_102 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Result'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/ChunkDetail' }
+
+  /api/feedback:
+    post:
+      tags: [chat]
+      summary: 对答案反馈（点赞/点踩 + 原因）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message_id, rating]
+              properties:
+                message_id: { type: integer, format: int64 }
+                rating: { type: integer, enum: [-1, 1] }
+                reason:
+                  type: string
+                  enum: [no_source, off_topic, wrong_citation, other]
+                comment: { type: string, maxLength: 500 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Result' }
+
+  /api/eval/runs:
+    post:
+      tags: [eval]
+      summary: 触发一次评测（跑 50 题 gold set）
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, default: baseline }
+                config:
+                  type: object
+                  description: '检索参数快照，如 {top_k: 20, use_rerank: true}'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Result'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/EvalRun' }
+    get:
+      tags: [eval]
+      summary: 评测历史
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Result'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/EvalRun' }
+
+  /api/health:
+    get:
+      tags: [chat]
+      summary: 健康检查（同时探测 Python 侧）
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Result'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          gateway: { type: string, example: up }
+                          agent: { type: string, example: up }
+                          db: { type: string, example: up }
+
+  # ---------------------------------------------------------------- 内部接口
+  /internal/agent/stream:
+    post:
+      tags: [internal]
+      summary: Agent 流式推理（仅供 Java 调用）
+      description: |
+        与 `/api/chat/stream` 事件完全一致，但不含 `message_id`。
+        必须带 `X-Internal-Token`，校验失败返回 401。
+      security:
+        - InternalToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InternalChatRequest'
+      responses:
+        '200':
+          description: SSE 流
+          content:
+            text/event-stream:
+              schema: { type: string }
+        '401':
+          description: Token 无效
+
+  /internal/ingest:
+    post:
+      tags: [internal]
+      summary: 触发文档摄入（仅供 Java 调用）
+      description: |
+        异步执行，立即返回 202。进度通过 `document.status` 与
+        `GET /api/documents` 轮询获取（P1 阶段再升级为 SSE 推送）。
+      security:
+        - InternalToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [document_id, storage_path, file_type]
+              properties:
+                document_id: { type: integer, format: int64 }
+                storage_path: { type: string }
+                file_type: { type: string, enum: [md, pdf, txt, html] }
+      responses:
+        '202':
+          description: 已入队
+        '401':
+          description: Token 无效
+
+  /internal/health:
+    get:
+      tags: [internal]
+      summary: Agent 服务健康检查
+      security:
+        - InternalToken: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+                  db: { type: string, example: ok }
+                  llm: { type: string, example: ok }
+
+# ============================================================================
+components:
+
+  securitySchemes:
+    InternalToken:
+      type: apiKey
+      in: header
+      name: X-Internal-Token
+
+  parameters:
+    UserId:
+      name: X-User-Id
+      in: header
+      required: false
+      schema: { type: string, default: local }
+      description: 单人自用阶段固定为 local，为后续多用户预留
+    LastEventId:
+      name: Last-Event-ID
+      in: header
+      required: false
+      schema: { type: string }
+      description: 断线续传时带最后收到的 seq
+
+  responses:
+    BadRequest:
+      description: 参数错误
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Result' }
+
+  schemas:
+
+    Result:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: integer, example: 0, description: 0 表示成功 }
+        message: { type: string, example: ok }
+        data: {}
+
+    ChatRequest:
+      type: object
+      required: [question]
+      properties:
+        session_id:
+          type: integer
+          format: int64
+          description: 不传则自动新建会话
+        question:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        stream:
+          type: boolean
+          default: true
+
+    InternalChatRequest:
+      type: object
+      required: [question, trace_id]
+      properties:
+        trace_id: { type: string }
+        session_id: { type: integer, format: int64 }
+        question: { type: string }
+        history:
+          type: array
+          description: 最近 3 轮对话，供 Router 做指代消解
+          items:
+            type: object
+            properties:
+              role: { type: string, enum: [user, assistant] }
+              content: { type: string }
+
+    Session:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        title: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    Message:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        session_id: { type: integer, format: int64 }
+        role: { type: string, enum: [user, assistant, system] }
+        content: { type: string }
+        trace_id: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+
+    Document:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        filename: { type: string }
+        file_type: { type: string, enum: [md, pdf, txt, html] }
+        size_bytes: { type: integer, format: int64 }
+        status:
+          type: string
+          enum: [pending, parsing, chunking, embedding, done, failed]
+        chunk_count: { type: integer }
+        error_msg: { type: string, nullable: true }
+        uploaded_at: { type: string, format: date-time }
+
+    ChunkDetail:
+      type: object
+      properties:
+        id: { type: string, example: c_102 }
+        document_id: { type: integer, format: int64 }
+        doc_name: { type: string }
+        heading_path: { type: string }
+        content: { type: string }
+        subject: { type: string }
+        knowledge_points:
+          type: array
+          items: { type: string }
+
+    GraphNode:
+      type: object
+      required: [id, label, type]
+      properties:
+        id: { type: string, description: 使用 canonical_name }
+        label: { type: string }
+        type: { type: string, enum: [概念, 组件, 算法, 参数, 问题] }
+        weight: { type: integer, description: 度数，决定节点大小 }
+
+    GraphEdge:
+      type: object
+      required: [source, target, rel]
+      properties:
+        source: { type: string }
+        target: { type: string }
+        rel: { type: string, enum: [依赖, 属于, 对比, 导致, 解决, 使用] }
+        weight: { type: number }
+
+    GraphData:
+      type: object
+      properties:
+        nodes:
+          type: array
+          items: { $ref: '#/components/schemas/GraphNode' }
+        edges:
+          type: array
+          items: { $ref: '#/components/schemas/GraphEdge' }
+        truncated:
+          type: boolean
+          description: 是否因 limit 被截断（前端提示"仅展示核心节点"）
+
+    Trace:
+      type: object
+      properties:
+        trace_id: { type: string }
+        question: { type: string }
+        answer: { type: string }
+        intent: { type: string }
+        coverage: { type: number }
+        rewrite_count: { type: integer }
+        stop_reason: { type: string }
+        latency_ms: { type: integer }
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              seq: { type: integer }
+              node: { type: string }
+              status: { type: string, enum: [running, ok, degraded, failed] }
+              payload: { type: object }
+              duration_ms: { type: integer }
+
+    EvalRun:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string }
+        recall_at_5: { type: number }
+        citation_accuracy: { type: number }
+        no_source_rate: { type: number }
+        case_count: { type: integer }
+        created_at: { type: string, format: date-time }
