@@ -135,13 +135,34 @@ docker compose --profile app up -d
 
 数据库镜像将内置知识库快照（含 embedding），**不需要重新建库，不需要 API Key 也能看到完整数据**。
 
-### 路径 B：前端 Mock 回放（P3 后可用）
+### 当前可用：前端（Mock 流，不需要后端和 API Key）
 
 ```bash
-cd web && npm install && VITE_MOCK=1 npm run dev
+cd web && npm install && npm run dev
+# 打开 http://localhost:5173
 ```
 
-前端加载预录的 SSE 事件流（`web/src/mock/stream.jsonl`），完整复现演示视频里的每一个交互。
+默认走 mock 流（`web/.env.development` 里 `VITE_MOCK=1`），加载 `web/src/mock/stream.jsonl`，
+**不需要数据库、不需要启动 Java/Python、不需要任何 API Key**，就能看到完整的流式问答。
+
+接真实链路时把 `VITE_MOCK` 改成 `0`，先起 Java 8080 与 Python 8000。
+
+**几个开发期入口**
+
+| 入口 | 用途 |
+|---|---|
+| `http://localhost:5173/?q=<问题>` | 带问题直接打开（演示和自动化截图用） |
+| `http://localhost:5173/graph-preview.html` | 单独看知识图谱渲染，调样式不用跑完整流程 |
+| `npm test` | SSE 解析器单测（13 个用例，含对真实 mock 流的顺序校验） |
+| `npm run typecheck` | 类型检查 |
+
+**这份 mock 不是手写的。** `scripts/gen_mock_stream.py` 直接跑 Python 的 `mock_runner`，
+把 SSE 帧解析成 jsonl 落盘，所以事件顺序与真实链路逐字节一致。
+改了 `mock_runner` 之后重跑一次脚本即可，前端自动跟上：
+
+```bash
+python scripts/gen_mock_stream.py
+```
 
 ---
 
@@ -155,11 +176,12 @@ DeepSeek V4.1-Flash · BGE-M3 · bge-reranker-v2-m3
 
 ## 开发进度
 
-- [x] P0 骨架与契约
+- [x] P0 骨架与契约（数据库层 / Agent Mock / Java 网关 / E2E 20 项全过）
+- [x] P3-a 前端骨架与流式渲染（对话流 · 思考面板 · 图谱 · 引用 · Mock 回放）
 - [ ] P1 知识库摄入与检索基线
-- [ ] P2 Agent 状态机
-- [ ] P3 前端视觉
-- [ ] P4 打磨
+- [ ] P2 Agent 状态机（真模型）
+- [ ] P3-b 前端视觉打磨
+- [ ] P4 打磨与冻结
 - [ ] P5 参赛材料
 
 ---
