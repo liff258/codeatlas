@@ -35,8 +35,28 @@
 | pymupdf | 1.24.x | PDF 解析 |
 | jieba | 0.42.x | 中文分词（BM25 用） |
 | rank-bm25 | 0.2.x | 关键词检索 |
+| torch | 2.4+ (**CPU 版**) | 本地 bge-m3 推理 |
+| transformers | 4.44+ | 模型加载与 tokenizer |
+| safetensors | 0.4+ | 模型权重格式 |
 | httpx | 0.27.x | 测试与内部调用 |
 | tenacity | 9.x | 重试（LLM 限流退避） |
+
+**关于 torch/transformers 的登记理由**（P1 新增）：
+
+需求是「不花 API 预算也能做向量检索」。可选方案有三条，都评估过：
+
+| 方案 | 体积 | 结论 |
+|---|---|---|
+| 硅基流动 embedding API | 0 | **否决**：需要 API key，用户明确说没预算 |
+| sentence-transformers | 含 torch | **否决**：多一层封装，我们的 mean-pooling 只有 5 行，自己写更能看清 attention mask 的处理 |
+| torch + transformers（CPU） | ~2.3GB | **采纳** |
+
+必须注意：**torch 要装 CPU 版**，`pip install torch` 在 Windows 上会拉 CUDA 运行时（多 2GB）：
+```bash
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+```
+
+模型文件不进仓库（`data/models/` 已 gitignore），由 `scripts/fetch_model.py` 从 ModelScope 下载。
 
 **禁用**：langchain / llamaindex（黑盒封装会吃掉"创新性"分，且版本地狱）、chromadb（本方案不用）、celery（单人项目不需要任务队列，用 asyncio 后台任务即可）、任何 async SQLAlchemy 驱动（`asyncpg`）。
 

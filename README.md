@@ -74,9 +74,9 @@ docker exec -i codeatlas-db psql -U codeatlas -d codeatlas \
 > ⚠️ `contracts/db-schema.sql` 只在数据卷为空时执行。改了 schema 要重建：
 > `docker compose down -v && docker compose up -d`
 
-### 当前可用：知识库摄入与检索基线
+### 当前可用：知识库摄入与检索
 
-**不需要 API Key，也不需要任何模型**——切片和 BM25 都是纯本地的。
+**不需要 API Key**——切片、BM25、向量全部本地跑。
 
 ```bash
 # 1. 先把素材拉到 data/raw/（不进 git，版权原因只提交 manifest）
@@ -88,8 +88,20 @@ python scripts/ingest.py --dry-run
 # 3. 确认没问题再落库（幂等，重复跑不会产生重复数据）
 python scripts/ingest.py --apply
 
-# 4. 检索冒烟测试：不写断言，只打印结果，用眼睛看召回质量
-python scripts/search_test.py
+# 4. 下载本地 embedding 模型（bge-m3，约 2.2GB，走 ModelScope）
+python scripts/fetch_model.py
+
+# 5. 先验证模型能起来、维度对、语义排序正常（不要跳过）
+python scripts/embed_chunks.py --dry-run
+
+# 6. 编码全部 chunk（CPU 约 40 分钟，2.2 条/秒，幂等可断点续跑）
+python scripts/embed_chunks.py --apply
+
+# 7. 三种检索模式随便看
+python scripts/search_test.py --mode hybrid
+
+# 8. 跑评测，出数字
+python scripts/eval_retrieval.py
 ```
 
 **素材获取（当前的实际情况）**
@@ -104,22 +116,41 @@ cd /tmp/jg && git sparse-checkout set --no-cone 'docs/java/basis/*.md' 'docs/jav
 拉完按 `sources.manifest.yaml` 的 `id` 归档到 `data/raw/<id>/`。
 `scripts/fetch_sources.py` 还没写——目前是手工执行，这一步还没自动化。
 
-**当前数据量**（2026-10-23）：131 个文档 / 853 个 parent chunk / 5219 个 child chunk，
+**当前数据量**（2026-10-24）：131 个文档 / 853 个 parent chunk / 5219 个 child chunk，
 覆盖后端 9 个学科。child 平均 170 token，p95 290，超 256 预算的 8.5%——
 那些都是单个代码块或表格，为了语义完整刻意不切。
+全部 5219 条已有 1024 维向量（bge-m3 本地推理）。
 
-**检索基线**（BM25，5219 chunk，构建 2.3s，单次查询 2-5ms）：
+**检索评测**（20 题：15 道关键词题 + 5 道语义题，候选池 5219）
 
-| 查询 | top-1 是否命中 |
-|---|---|
-| MySQL 索引为什么用 B+ 树 | ✓ MySQL 索引详解 |
-| Spring 循环依赖三级缓存 | ✓ Spring 循环依赖（51.6 分） |
-| ConcurrentHashMap 怎么保证线程安全 | ✓ CHM 与 Hashtable 的区别 |
-| G1 收集器的 SATB 是什么 | ✓ JVM 垃圾回收详解 > G1 |
-| Redis 跳表为什么比红黑树快 | ✗ 命中「参考」列表，正文排第 2 |
+| 模式 | 关键词 Hit@1 | 关键词 Recall@5 | 语义 Recall@5 | **总体 Recall@5** |
+|---|---|---|---|---|
+| BM25 | **60.0%** | 93.3% | 40.0% | 80.0% |
+| 向量 | 33.3% | 73.3% | 80.0% | 75.0% |
+| 混合（RRF） | 46.7% | 93.3% | **80.0%** | **90.0%** |
 
-最后一条是 BM25 的固有缺陷：短文档词密度高、容易排前面，而「参考」列表恰好罗列了
-所有关键词。这类问题要靠向量检索 + RRF 融合来解，不是调 BM25 参数能解决的。
+**怎么读这张表**（这部分比数字本身重要）：
+
+1. **BM25 在关键词题上碾压**（60% vs 33%）。问「SATB」「AQS」这种罕见缩写，
+   精确词命中就是最强信号，向量反而会被「G1 收集器」这类高频主题词带偏。
+
+2. **向量是唯一在语义题上能打的**。问「多个线程同时改一个数怎么保证不出错」，
+   BM25 召回的是读写锁（词面相近但不对），向量召回的是 CAS 乐观锁（正确答案）。
+   语义题 Recall@5 80% vs BM25 的 40%，差距是碾压性的。
+
+3. **混合的价值在召回率，不在第一名**。90% 的总体 Recall@5 是三者最高——
+   它同时拿到了 BM25 的关键词召回和向量的语义召回。这对 RAG 才是关键指标：
+   检索之后还有 LLM 在筛，Recall@5 高就意味着"正确答案一定在候选里"。
+
+4. **混合的 Hit@1 反而不如 BM25**（46.7% vs 60%）。原因是 RRF 只看排名，
+   BM25 那个又准又强的第一名，被向量的第 3、第 5 名稀释了。
+   **这个问题调 RRF 的 k 修不了**（实测 k=1/3/5/10/20/60 全试过，最好也只有 46.7%），
+   也不该用「BM25 分数门控」修（实测关键词题 10~44 分、语义题 15~20 分，
+   分布完全重叠，找不到可分的阈值）。**正确解法是加 reranker**，那是 P1-c。
+
+> 评测集在 `eval/gold_set.yaml`。判相关用可判定的关键词/标题条件，
+> 不追求绝对准确，追求**三种模式面对同一把尺子**。
+> 已知局限：关键词判定天然偏袒 BM25，所以语义题单独用标题判定，分开统计。
 
 ### 当前可用：Agent 服务（Mock 模式）
 
@@ -227,9 +258,10 @@ DeepSeek V4.1-Flash · BGE-M3 · bge-reranker-v2-m3
 
 - [x] P0 骨架与契约（数据库层 / Agent Mock / Java 网关 / E2E 20 项全过）
 - [x] P3-a 前端骨架与流式渲染（对话流 · 思考面板 · 图谱 · 引用 · Mock 回放）
-- [x] P1-a 知识库摄入与 BM25 基线（131 文档 / 5219 child chunk / 29 个单测）
-- [ ] P1-b 向量检索与混合检索（RRF 融合）
-- [ ] P1-c 50 题 gold set 与评测指标
+- [x] P1-a 知识库摄入与 BM25 基线（131 文档 / 5219 child chunk）
+- [x] P1-b 本地向量检索 + RRF 混合检索（44 个单测 / 20 题评测集）
+- [ ] P1-c reranker（解决混合检索 Hit@1 偏低）
+- [ ] P1-d 素材补齐：AI 域 8 篇 + 自写 4 篇
 - [ ] P2 Agent 状态机（真模型）
 - [ ] P3-b 前端视觉打磨
 - [ ] P4 打磨与冻结

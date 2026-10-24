@@ -1,11 +1,13 @@
 """检索效果冒烟测试。
 
 不写断言，只打印结果——这一步的目的是**用眼睛看**召回质量，
-再决定阈值、分词、融合权重怎么调。
+再决定阈值、分词、融合权重怎么调。断言留给 tests/。
 
 用法：
-    python scripts/search_test.py
-    python scripts/search_test.py --query "HashMap 扩容" --top 8
+    python scripts/search_test.py                     # 默认 hybrid，全部示例查询
+    python scripts/search_test.py --mode bm25         # 只看关键词召回（秒出，不加载模型）
+    python scripts/search_test.py --mode vector       # 只看向量召回
+    python scripts/search_test.py --query "HashMap 扩容" --top 5
 """
 
 from __future__ import annotations
@@ -31,57 +33,88 @@ DEFAULT_QUERIES = [
 ]
 
 
-def main() -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--query", action="append", help="只跑指定查询")
-    ap.add_argument("--top", type=int, default=3, help="每条查询显示前 n 个结果")
-    args = ap.parse_args()
-
-    t0 = time.time()
-    index = build_from_db()
-    build_ms = (time.time() - t0) * 1000
-
-    print(f"索引：{len(index)} 个 child chunk，构建耗时 {build_ms:.0f}ms\n")
-
-    queries = args.query or DEFAULT_QUERIES
-
-    for q in queries:
-        toks = tokenize(q)
-        print("=" * 74)
-        print(f"Q: {q}")
-        print(f"   分词：{' / '.join(toks)}")
-
-        t = time.time()
-        hits = index.search(q, top_k=args.top)
-        ms = (time.time() - t) * 1000
-
-        if not hits:
-            print("   ⚠ 无结果")
-            continue
-
-        for h in hits:
-            row = fetch_chunk(h.chunk_id)
-            if not row:
-                continue
-            heading, content = row
-            preview = " ".join(content.split())[:110]
-            print(f"   #{h.rank} [{h.score:6.2f}] {heading or '(无标题)'}")
-            print(f"        {preview}…")
-        print(f"   ({ms:.0f}ms)\n")
-
-    return 0
-
-
-def fetch_chunk(chunk_id: int) -> tuple[str, str] | None:
+def fetch_chunks(ids: list[int]) -> dict[int, tuple[str, str]]:
     from sqlalchemy import text
 
     from app.infra.db import SessionLocal
 
+    if not ids:
+        return {}
     with SessionLocal() as db:
-        r = db.execute(
-            text("SELECT heading_path, content FROM chunk WHERE id = :id"), {"id": chunk_id}
-        ).first()
-    return (r[0] or "", r[1]) if r else None
+        rows = db.execute(
+            text("SELECT id, heading_path, content FROM chunk WHERE id = ANY(:ids)"),
+            {"ids": ids},
+        ).all()
+    return {r[0]: (r[1] or "", r[2]) for r in rows}
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--query", action="append")
+    ap.add_argument("--top", type=int, default=3)
+    ap.add_argument("--mode", choices=["bm25", "vector", "hybrid"], default="hybrid")
+    args = ap.parse_args()
+
+    t0 = time.time()
+    bm25 = build_from_db()
+    print(f"BM25 索引：{len(bm25)} 个 child chunk，构建 {(time.time()-t0)*1000:.0f}ms")
+
+    provider = None
+    if args.mode in ("vector", "hybrid"):
+        from app.rag.embedding import LocalBGEEmbedding
+
+        t1 = time.time()
+        provider = LocalBGEEmbedding()
+        print(f"向量模型：{provider.model_name}（{provider.dim} 维），加载 {(time.time()-t1):.1f}s")
+
+    print(f"检索模式：{args.mode}\n")
+
+    for q in args.query or DEFAULT_QUERIES:
+        print("=" * 74)
+        print(f"Q: {q}")
+        if args.mode != "vector":
+            print(f"   分词：{' / '.join(tokenize(q))}")
+
+        t = time.time()
+        ids: list[int] = []
+        detail: list[str] = []
+
+        b = bm25.search(q, top_k=20) if args.mode in ("bm25", "hybrid") else []
+        v = []
+        if args.mode in ("vector", "hybrid"):
+            from app.rag.vector_index import search as vec_search
+
+            qvec = provider.encode([q], is_query=True)[0]
+            v = vec_search(qvec, top_k=20)
+
+        if args.mode == "bm25":
+            ids = [h.chunk_id for h in b[: args.top]]
+            detail = [f"bm25#{h.rank}" for h in b[: args.top]]
+        elif args.mode == "vector":
+            ids = [h.chunk_id for h in v[: args.top]]
+            detail = [f"vec#{h.rank} d={h.distance:.3f}" for h in v[: args.top]]
+        else:
+            from app.rag.retrieve import rrf_fuse
+
+            fused = rrf_fuse(b, v, top_n=args.top)
+            ids = [h.chunk_id for h in fused]
+            detail = [h.sources for h in fused]
+
+        ms = (time.time() - t) * 1000
+        chunks = fetch_chunks(ids)
+
+        if not ids:
+            print("   ⚠ 无结果\n")
+            continue
+
+        for i, cid in enumerate(ids):
+            heading, content = chunks.get(cid, ("", ""))
+            preview = " ".join(content.split())[:100]
+            print(f"   #{i+1} [{detail[i]:<16}] {heading or '(无标题)'}")
+            print(f"        {preview}…")
+        print(f"   ({ms:.0f}ms)\n")
+
+    return 0
 
 
 if __name__ == "__main__":

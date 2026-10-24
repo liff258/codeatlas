@@ -17,6 +17,15 @@ jieba>=0.42,<0.43
 rank-bm25>=0.2,<0.3
 tenacity>=9,<10
 
+# 本地 embedding（P1 启用）
+# 为什么不装 sentence-transformers：它把 tokenizer/pooling 全包了，但我们的
+# mean-pooling 逻辑只有 5 行，自己写反而能看清 attention mask 的处理。
+# torch 必须装 CPU 版（--index-url https://download.pytorch.org/whl/cpu），
+# 默认 PyPI 的 Windows 轮子会连带 2GB 的 CUDA 运行时。
+torch>=2.4
+transformers>=4.44
+safetensors>=0.4
+
 # 文档解析（P1 启用）
 pymupdf>=1.24,<2
 
