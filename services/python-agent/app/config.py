@@ -40,6 +40,8 @@ class Settings(BaseSettings):
     embedding_batch_size: int = 128
     rerank_model: str = "BAAI/bge-reranker-v2-m3"
     rerank_enabled: bool = True
+    # 本地模型缓存目录（gitignore，约 2.2GB）
+    model_cache_dir: str = str(Path(__file__).resolve().parents[3] / "data" / "models")
 
     # ---------- Agent 预算（防死循环的硬约束）----------
     agent_max_steps: int = 8
