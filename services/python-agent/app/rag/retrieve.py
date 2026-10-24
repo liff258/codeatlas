@@ -97,10 +97,13 @@ class RetrievedChunk:
     subject: str | None
     doc_id: int
     doc_name: str
-    score: float
+    score: float            # RRF 融合分
     bm25_rank: int | None
     vec_rank: int | None
     preview: str = field(default="")
+    # 重排分（0~1）。没开重排或该条没进重排窗口时为 None。
+    # 单独存一个字段而不是覆盖 score，是为了能对比"融合排第几 / 重排排第几"。
+    rerank_score: float | None = None
 
 
 class HybridRetriever:
@@ -121,7 +124,14 @@ class HybridRetriever:
             self._provider = get_provider()
         return self._provider
 
-    def search(self, query: str, *, top_k: int = 20, top_n: int = 12) -> list[RetrievedChunk]:
+    def search(
+        self,
+        query: str,
+        *,
+        top_k: int = 20,
+        top_n: int = 12,
+        rerank: bool = True,
+    ) -> list[RetrievedChunk]:
         from app.rag.vector_index import search as vec_search
 
         bm25_hits = self._bm25.search(query, top_k=top_k)
@@ -136,7 +146,26 @@ class HybridRetriever:
             print(f"[retrieve] 向量检索降级：{type(e).__name__}: {e}")
 
         fused = rrf_fuse(bm25_hits, vec_hits, top_n=top_n)
-        return self._hydrate(fused)
+        chunks = self._hydrate(fused)
+
+        if rerank and chunks:
+            chunks = self._rerank(query, chunks)
+
+        return chunks
+
+    def _rerank(self, query: str, chunks: list[RetrievedChunk]) -> list[RetrievedChunk]:
+        """重排。失败时退回融合顺序，不抛异常。
+
+        重排是「锦上添花」的一步，它挂了不该让整个检索失败——
+        融合后的结果本来就能用，只是排序没那么准。
+        """
+        try:
+            from app.rag.rerank import get_reranker
+
+            return get_reranker().rerank(query, chunks)
+        except Exception as e:  # noqa: BLE001
+            print(f"[retrieve] 重排降级：{type(e).__name__}: {e}")
+            return chunks
 
     def _hydrate(self, hits: list[FusedHit]) -> list[RetrievedChunk]:
         if not hits:
