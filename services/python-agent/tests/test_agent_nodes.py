@@ -237,8 +237,16 @@ async def test_rewrite_rejects_duplicate_queries():
 # ---------------------------------------------------------------- 图谱
 
 
+@pytest.fixture
+def llm_graph(monkeypatch):
+    """打开 LLM 图谱路径。默认是关的（确定性版本更快也更好）。"""
+    from app.agent import nodes as n
+
+    monkeypatch.setattr(n.settings, "agent_llm_graph", True)
+
+
 @pytest.mark.asyncio
-async def test_graph_cross_domain_computed_not_trusted():
+async def test_graph_cross_domain_computed_not_trusted(llm_graph):
     """跨域边必须由 domain 计算。
 
     这里故意让模型输出一个跨域边的组合，但两个实体同域 ——
@@ -265,7 +273,7 @@ async def test_graph_cross_domain_computed_not_trusted():
 
 
 @pytest.mark.asyncio
-async def test_graph_detects_real_cross_domain():
+async def test_graph_detects_real_cross_domain(llm_graph):
     evidence = [
         ev(1, subject="RAG", domain="ai", content="RAG 使用向量检索"),
         ev(2, subject="MySQL", domain="backend", content="B+ 树用于索引"),
@@ -286,7 +294,7 @@ async def test_graph_detects_real_cross_domain():
 
 
 @pytest.mark.asyncio
-async def test_graph_drops_invented_entities():
+async def test_graph_drops_invented_entities(llm_graph):
     """模型编出来的实体（不在给定列表里）必须丢弃。"""
     payload = {
         "nodes": [
@@ -307,3 +315,106 @@ async def test_graph_skips_when_no_entities():
     assert n == [] and e == []
     assert degraded is True
     assert "实体" in detail
+
+
+def test_extract_json_repairs_unbalanced_brackets():
+    """实测 GLM-4.5-Flash 会吐出多一个 ] 的 JSON。
+
+    这种错误可以精确修掉（栈跟踪期望的闭合符），比让模型重试一次便宜得多。
+    """
+    broken = '{"hops": 1, "sub_queries": [{"id": "q4", "entities": ["G1", "SATB"]]}]}'
+    data = extract_json(broken)
+    assert data is not None
+    assert data["hops"] == 1
+    assert data["sub_queries"][0]["id"] == "q4"
+
+
+def test_extract_json_handles_trailing_garbage():
+    """模型在 JSON 后面又写了一句话时，要能取到前面那个对象。"""
+    assert extract_json('{"a": 1} 希望有帮助 {"b": 2}') == {"a": 1}
+
+
+@pytest.mark.asyncio
+async def test_graph_unknown_domain_is_not_cross_domain(llm_graph):
+    """实体在证据里找不到时 domain=common，那是「未知」不是「另一个域」。
+
+    把它算成跨域会产生假边——演示时指着一条假跨域边讲，比没有这条边糟得多。
+    """
+    evidence = [ev(1, subject="JVM", domain="backend", content="完全没提到那两个词")]
+    payload = {
+        "nodes": [
+            {"id": "甲", "label": "甲", "type": "概念"},
+            {"id": "乙", "label": "乙", "type": "概念"},
+        ],
+        "edges": [{"source": "甲", "target": "乙", "rel": "对比"}],
+    }
+    _, edges_out, _, _, _ = await nodes.extract_graph(FakeLLM(payload), "问题", evidence, ["甲", "乙"])
+    assert edges_out[0].cross_domain is False
+
+
+@pytest.mark.asyncio
+async def test_graph_matches_entity_ignoring_spaces(llm_graph):
+    """实体「B+树」要能匹配到正文里的「B+ 树」，否则 domain 会丢。"""
+    evidence = [
+        ev(1, subject="RAG", domain="ai", content="RAG 依赖向量检索"),
+        ev(2, subject="MySQL", domain="backend", content="B+ 树用于索引"),
+    ]
+    payload = {
+        "nodes": [
+            {"id": "RAG", "label": "RAG", "type": "概念"},
+            {"id": "B+树", "label": "B+ 树", "type": "算法"},
+        ],
+        "edges": [{"source": "RAG", "target": "B+树", "rel": "对比"}],
+    }
+    _, edges_out, _, _, _ = await nodes.extract_graph(
+        FakeLLM(payload), "问题", evidence, ["RAG", "B+树"]
+    )
+    assert edges_out[0].cross_domain is True
+
+
+# ---------------------------------------------------------------- 确定性图谱（默认路径）
+
+
+@pytest.mark.asyncio
+async def test_deterministic_graph_builds_cross_domain_edge():
+    """默认不调模型：节点来自实体，边来自「同一条证据里共现」。
+
+    这条路是默认的，因为实测比 LLM 版更快（0.5s vs 10s+）而且边更多。
+    """
+    evidence = [
+        ev(1, subject="向量检索", domain="ai", content="向量检索使用 HNSW，无法用 B+ 树加速，两者是对比关系"),
+    ]
+    n, e, path, degraded, _ = await nodes.extract_graph(
+        FakeLLM("不该被调用"), "问题", evidence, ["向量检索", "B+ 树"]
+    )
+    assert degraded is False
+    assert {x.id for x in n} == {"向量检索", "B+ 树"}
+    assert len(e) == 1
+    assert e[0].cross_domain is True
+
+
+@pytest.mark.asyncio
+async def test_deterministic_graph_infers_relation_from_text():
+    """关系类型要从共现文本里推断，不能一律标「使用」。
+
+    「向量检索 使用 B+ 树」这种边演示时会被评委一眼看出不对。
+    """
+    evidence = [
+        ev(1, subject="向量检索", domain="ai", content="B+ 树和向量检索是对比关系，两者解决的问题不同"),
+    ]
+    _, edges, _, _, _ = await nodes.extract_graph(
+        FakeLLM("不该被调用"), "问题", evidence, ["向量检索", "B+ 树"]
+    )
+    assert edges[0].rel == "对比"
+
+
+@pytest.mark.asyncio
+async def test_deterministic_graph_skips_non_cooccurring():
+    """两个实体从没在同一条证据里出现，就不该有边。"""
+    evidence = [
+        ev(1, subject="JVM", domain="backend", content="只有甲"),
+        ev(2, subject="JVM", domain="backend", content="只有乙"),
+    ]
+    n, e, _, _, _ = await nodes.extract_graph(FakeLLM(""), "问题", evidence, ["甲", "乙"])
+    assert len(n) == 2
+    assert e == []
