@@ -55,7 +55,18 @@ class Settings(BaseSettings):
     # .env 里已经写了 LLM_MODEL=deepseek-ai/DeepSeek-V4.1-Flash，
     # 拿它去调智谱会直接 404（模型不存在）。
     agent_model: str = "glm-4.5-flash"
-    llm_timeout_seconds: int = 20
+    # 首次调用有冷启动（实测 6s+），20s 在慢的时候会误判超时。
+    # 但也不能设太大，否则真的卡住时用户要等很久。
+    llm_timeout_seconds: int = 30
+    # GLM-4.5 是混合推理模型，默认会先"思考"再回答。
+    # 关掉的理由：这条链路有 5 次 LLM 调用（路由/规划/自评/改写/生成），
+    # 每次思考多 2~4 秒，累计能到十几秒。而且这些任务都是结构化抽取，
+    # 不需要深度推理。如果发现生成质量不够，可以只给 generator 单独打开。
+    agent_thinking: bool = False
+    # 图谱是否用 LLM 抽关系。默认关——实测 LLM 版要 9~13 秒，
+    # 而且效果还不如「共现 + 关键词推断关系」的确定性版本
+    # （7 节点/10 边/5 跨域 vs 6 节点/5 边/1 跨域）。慢且更差，没有开的理由。
+    agent_llm_graph: bool = False
 
     # ---------- Agent 预算（防死循环的硬约束）----------
     agent_max_steps: int = 8

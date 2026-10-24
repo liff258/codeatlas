@@ -70,13 +70,81 @@ class _UsageCounter:
         )
 
 
+def _repair_brackets(text: str) -> str:
+    """修括号失衡。
+
+    实测 GLM-4.5-Flash 会吐出这种：
+        {"entities": ["G1", "SATB"]]}
+    多了一个 ]。整段 json.loads 直接失败，但这个错误是可以精确修掉的：
+    用一个栈跟踪当前期望的闭合符，遇到不匹配的闭合符就丢掉。
+
+    为什么值得写这个：小模型的 JSON 错误集中在括号和逗号上，
+    修一次比让它重试一次便宜得多（重试要 5 秒）。
+    """
+    out: list[str] = []
+    stack: list[str] = []
+    in_str = False
+    escape = False
+
+    for ch in text:
+        if escape:
+            out.append(ch)
+            escape = False
+            continue
+        if ch == "\\":
+            out.append(ch)
+            escape = True
+            continue
+        if ch == '"':
+            in_str = not in_str
+            out.append(ch)
+            continue
+        if in_str:
+            out.append(ch)
+            continue
+
+        if ch in "{[":
+            stack.append(ch)
+            out.append(ch)
+        elif ch in "}]":
+            want = "{" if ch == "}" else "["
+            if stack and stack[-1] == want:
+                stack.pop()
+                out.append(ch)
+            # 不匹配的闭合符直接丢弃
+        else:
+            out.append(ch)
+
+    return "".join(out)
+
+
+def _try_parse(candidate: str) -> dict | None:
+    for attempt in (
+        candidate,
+        _TRAILING_COMMA.sub(r"\1", candidate),
+        _TRAILING_COMMA.sub(r"\1", candidate.translate(_SMART_QUOTES)),
+        _TRAILING_COMMA.sub(r"\1", _repair_brackets(candidate).translate(_SMART_QUOTES)),
+    ):
+        try:
+            parsed = json.loads(attempt)
+        except (json.JSONDecodeError, ValueError):
+            continue
+        if isinstance(parsed, dict):
+            return parsed
+    return None
+
+
 def extract_json(text: str) -> dict | None:
     """从任意文本里抠出第一个 JSON 对象。抠不出来返回 None。
 
-    步骤：去围栏 → 括号配对扫描（容忍前后有废话）→ 修中文引号和尾逗号 → 解析。
+    四级容错，从保守到激进：
+        1. 括号配对扫描找到完整对象，直接解析
+        2. 修尾逗号和中文引号
+        3. 修括号失衡（多余或缺失的 ] }）
+        4. 从后往前试每个 } 作为结束位置（处理尾部有多余内容）
 
-    为什么用括号配对而不是 `find('{')` + `rfind('}')`：
-    后者在模型输出两个对象、或者字符串里含 `}` 时会截错。
+    被 max_tokens 截断的 JSON（括号完全不闭合）在第 4 步也救不回来，
+    这时老实返回 None——猜出来的半个对象比没有更危险。
     """
     if not text or not text.strip():
         return None
@@ -87,6 +155,7 @@ def extract_json(text: str) -> dict | None:
     if start == -1:
         return None
 
+    # 1. 括号配对扫描，找到第一个结构完整的对象
     depth = 0
     in_str = False
     escape = False
@@ -113,18 +182,23 @@ def extract_json(text: str) -> dict | None:
                 end = i
                 break
 
-    # 括号没闭合（输出被 max_tokens 截断）→ 直接放弃，不要猜
-    if end == -1:
-        return None
+    if end != -1:
+        parsed = _try_parse(cleaned[start : end + 1])
+        if parsed is not None:
+            return parsed
 
-    candidate = cleaned[start : end + 1]
+    # 2. 结构不闭合或解析失败：对「第一个 { 到最后一个 }」整段做修复
+    last = cleaned.rfind("}")
+    if last > start:
+        parsed = _try_parse(cleaned[start : last + 1])
+        if parsed is not None:
+            return parsed
 
-    for attempt in (candidate, _TRAILING_COMMA.sub(r"\1", candidate.translate(_SMART_QUOTES))):
-        try:
-            parsed = json.loads(attempt)
-        except (json.JSONDecodeError, ValueError):
-            continue
-        if isinstance(parsed, dict):
+    # 3. 从后往前试每个 } 作为结束位置（尾部有多余内容时）
+    ends = [i for i in range(start + 1, len(cleaned)) if cleaned[i] == "}"]
+    for candidate_end in reversed(ends[-40:]):
+        parsed = _try_parse(cleaned[start : candidate_end + 1])
+        if parsed is not None:
             return parsed
 
     return None
@@ -163,17 +237,36 @@ class LLMClient:
         return self._usage.snapshot()
 
     async def _post(
-        self, messages: list[dict], *, stream: bool, temperature: float, max_tokens: int
+        self,
+        messages: list[dict],
+        *,
+        stream: bool,
+        temperature: float,
+        max_tokens: int,
+        json_mode: bool = False,
     ):
         """统一处理异常映射。SDK 的异常类型太细，上层只关心三类。"""
+        # 只有智谱的接口认 thinking 参数，换别的 OpenAI 兼容服务要跳过，
+        # 否则会 400（未知参数）。
+        extra = {}
+        if "bigmodel.cn" in str(self._client.base_url):
+            extra["extra_body"] = {
+                "thinking": {"type": "enabled" if settings.agent_thinking else "disabled"}
+            }
+
         try:
-            return await self._client.chat.completions.create(
+            kwargs = dict(
                 model=self.model,
                 messages=messages,
                 temperature=temperature,
                 max_tokens=max_tokens,
                 stream=stream,
+                **extra,
             )
+            if json_mode:
+                kwargs["response_format"] = {"type": "json_object"}
+
+            return await self._client.chat.completions.create(**kwargs)
         except asyncio.TimeoutError as e:
             raise LLMError("LLM_TIMEOUT", f"模型响应超时（{self._timeout}s）") from e
         except Exception as e:  # noqa: BLE001
@@ -193,13 +286,30 @@ class LLMClient:
         temperature: float = 0.1,
         max_tokens: int = 1200,
     ) -> LLMResult:
-        """要一个 JSON 对象。解析失败不抛异常，返回 degraded=True。"""
-        resp = await self._post(
-            [{"role": "system", "content": system}, {"role": "user", "content": user}],
-            stream=False,
-            temperature=temperature,
-            max_tokens=max_tokens,
-        )
+        """要一个 JSON 对象。解析失败不抛异常，返回 degraded=True。
+
+        优先用 response_format={"type":"json_object"}——实测智谱支持，
+        开了之后模型不会再包 markdown 围栏、也不会在前面加"好的，以下是结果："。
+        万一某个兼容端点不认这个参数（400），自动去掉重试一次。
+        """
+        messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
+
+        try:
+            resp = await self._post(
+                messages,
+                stream=False,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                json_mode=True,
+            )
+        except LLMError as e:
+            # 不支持 json_object 的端点会报 400/参数错误，降级重试
+            if e.code == "INTERNAL" and "400" in str(e):
+                resp = await self._post(
+                    messages, stream=False, temperature=temperature, max_tokens=max_tokens
+                )
+            else:
+                raise
 
         if resp.usage:
             self._usage.add(resp.usage.prompt_tokens or 0, resp.usage.completion_tokens or 0)
