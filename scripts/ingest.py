@@ -28,7 +28,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "services" / "python-agent"))
 
 from app.rag.chunker import chunk_markdown  # noqa: E402
-from app.rag.loader import load_dir  # noqa: E402
+from app.rag.loader import load_dir, load_file  # noqa: E402
 
 
 def load_manifest() -> dict[str, dict]:
@@ -165,16 +165,24 @@ def main() -> int:
     if not args.dry_run and not args.apply:
         ap.error("必须指定 --dry-run 或 --apply")
 
+    # 素材分两处：
+    #   data/raw/<id>/  —— 从外部抓的（gitignore，版权原因不入库）
+    #   notes/*.md      —— 项目自写的（必须进仓库，这是原创内容的主体）
+    # 自写笔记的 source_id 约定为 own-<文件名>，与 manifest 的 local://notes/xxx.md 对应。
     raw_root = ROOT / "data" / "raw"
-    if not raw_root.exists():
-        print(f"✗ 素材目录不存在：{raw_root}")
-        return 1
+    notes_root = ROOT / "notes"
 
-    dirs = sorted(p for p in raw_root.iterdir() if p.is_dir())
+    units: list[tuple[Path, str]] = []
+    if raw_root.exists():
+        units += [(d, d.name) for d in sorted(raw_root.iterdir()) if d.is_dir()]
+    if notes_root.exists():
+        for f in sorted(notes_root.glob("*.md")):
+            units.append((f, f"own-{f.stem}"))
+
     if args.source:
-        dirs = [d for d in dirs if d.name in set(args.source)]
-    if not dirs:
-        print("✗ 没有匹配的素材目录")
+        units = [u for u in units if u[1] in set(args.source)]
+    if not units:
+        print("✗ 没有匹配的素材")
         return 1
 
     total_docs = 0
@@ -191,8 +199,9 @@ def main() -> int:
     print(f"{'素材':<18}{'文档':>5}{'parent':>8}{'child':>7}{'平均tok':>9}{'最大tok':>9}")
     print("-" * 60)
 
-    for d in dirs:
-        docs = load_dir(d, d.name)
+    for unit, source_id in units:
+        # 单个文件（notes/）和目录（data/raw/<id>/）两种形态
+        docs = [load_file(unit, source_id)] if unit.is_file() else load_dir(unit, source_id)
         if not docs:
             continue
 
@@ -201,7 +210,7 @@ def main() -> int:
         src_tokens: list[int] = []
 
         for doc in docs:
-            entries.append((d.name, doc))
+            entries.append((source_id, doc))
             groups = chunk_markdown(doc.text)
             src_parents += len(groups)
             for g in groups:
@@ -213,16 +222,16 @@ def main() -> int:
                     if "```" in c.content:
                         code_chunks += 1
                     if len(samples) < args.show * 3:
-                        samples.append((d.name, doc.filename, c.heading_path, c.token_count))
+                        samples.append((source_id, doc.filename, c.heading_path, c.token_count))
 
         total_docs += len(docs)
         total_parents += src_parents
         total_children += src_children
-        per_source[d.name] = src_children
+        per_source[source_id] = src_children
 
         avg = sum(src_tokens) / len(src_tokens) if src_tokens else 0
         mx = max(src_tokens) if src_tokens else 0
-        print(f"{d.name:<18}{len(docs):>5}{src_parents:>8}{src_children:>7}{avg:>9.0f}{mx:>9}")
+        print(f"{source_id:<18}{len(docs):>5}{src_parents:>8}{src_children:>7}{avg:>9.0f}{mx:>9}")
 
     print("-" * 60)
     print(
