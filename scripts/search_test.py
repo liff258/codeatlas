@@ -52,7 +52,9 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--query", action="append")
     ap.add_argument("--top", type=int, default=3)
-    ap.add_argument("--mode", choices=["bm25", "vector", "hybrid"], default="hybrid")
+    ap.add_argument(
+        "--mode", choices=["bm25", "vector", "hybrid", "rerank"], default="hybrid"
+    )
     args = ap.parse_args()
 
     t0 = time.time()
@@ -60,12 +62,20 @@ def main() -> int:
     print(f"BM25 索引：{len(bm25)} 个 child chunk，构建 {(time.time()-t0)*1000:.0f}ms")
 
     provider = None
-    if args.mode in ("vector", "hybrid"):
+    if args.mode in ("vector", "hybrid", "rerank"):
         from app.rag.embedding import LocalBGEEmbedding
 
         t1 = time.time()
         provider = LocalBGEEmbedding()
         print(f"向量模型：{provider.model_name}（{provider.dim} 维），加载 {(time.time()-t1):.1f}s")
+
+    reranker = None
+    if args.mode == "rerank":
+        from app.rag.rerank import Reranker
+
+        t2 = time.time()
+        reranker = Reranker()
+        print(f"重排模型：{reranker.model_name}，加载 {(time.time()-t2):.1f}s")
 
     print(f"检索模式：{args.mode}\n")
 
@@ -79,9 +89,9 @@ def main() -> int:
         ids: list[int] = []
         detail: list[str] = []
 
-        b = bm25.search(q, top_k=20) if args.mode in ("bm25", "hybrid") else []
+        b = bm25.search(q, top_k=20) if args.mode in ("bm25", "hybrid", "rerank") else []
         v = []
-        if args.mode in ("vector", "hybrid"):
+        if args.mode in ("vector", "hybrid", "rerank"):
             from app.rag.vector_index import search as vec_search
 
             qvec = provider.encode([q], is_query=True)[0]
@@ -93,12 +103,22 @@ def main() -> int:
         elif args.mode == "vector":
             ids = [h.chunk_id for h in v[: args.top]]
             detail = [f"vec#{h.rank} d={h.distance:.3f}" for h in v[: args.top]]
-        else:
+        elif args.mode == "hybrid":
             from app.rag.retrieve import rrf_fuse
 
             fused = rrf_fuse(b, v, top_n=args.top)
             ids = [h.chunk_id for h in fused]
             detail = [h.sources for h in fused]
+        else:  # rerank：先融合 20 条，再重排取前 top 条
+            from app.rag.retrieve import rrf_fuse
+
+            fused = rrf_fuse(b, v, top_n=20)
+            cand_ids = [h.chunk_id for h in fused]
+            cand = fetch_chunks(cand_ids)
+            scores = reranker.score(q, [cand.get(i, ("", ""))[1] for i in cand_ids])
+            order = sorted(range(len(cand_ids)), key=lambda k: -scores[k])
+            ids = [cand_ids[k] for k in order[: args.top]]
+            detail = [f"rr={scores[k]:.3f}" for k in order[: args.top]]
 
         ms = (time.time() - t) * 1000
         chunks = fetch_chunks(ids)

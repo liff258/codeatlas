@@ -91,12 +91,18 @@ def run_mode(mode: str, cases: list[dict], contents: dict[int, tuple[str, str]],
     print(f"\n{'='*64}\n模式：{mode}\n{'='*64}")
 
     t0 = time.time()
-    bm25 = build_from_db() if mode in ("bm25", "hybrid") else None
+    bm25 = build_from_db() if mode in ("bm25", "hybrid", "rerank") else None
     provider = None
-    if mode in ("vector", "hybrid"):
+    if mode in ("vector", "hybrid", "rerank"):
         from app.rag.embedding import LocalBGEEmbedding
 
         provider = LocalBGEEmbedding()
+
+    reranker = None
+    if mode == "rerank":
+        from app.rag.rerank import Reranker
+
+        reranker = Reranker()
     print(f"准备耗时 {time.time()-t0:.1f}s（{len(bm25) if bm25 else 0} 条 BM25 文档）\n")
 
     hits1 = rec5 = 0
@@ -114,11 +120,22 @@ def run_mode(mode: str, cases: list[dict], contents: dict[int, tuple[str, str]],
         elif mode == "vector":
             qvec = provider.encode([q], is_query=True)[0]
             ranked = [h.chunk_id for h in vec_search(qvec, top_k=TOP_K)]
-        else:
+        elif mode == "hybrid":
             b = bm25.search(q, top_k=TOP_K)
             qvec = provider.encode([q], is_query=True)[0]
             v = vec_search(qvec, top_k=TOP_K)
             ranked = [h.chunk_id for h in rrf_fuse(b, v, top_n=TOP_K)]
+        else:  # rerank：融合出更多候选，再重排取前 TOP_K
+            b = bm25.search(q, top_k=TOP_K)
+            qvec = provider.encode([q], is_query=True)[0]
+            v = vec_search(qvec, top_k=TOP_K)
+            fused = rrf_fuse(b, v, top_n=max(TOP_K, 20))
+            ids = [h.chunk_id for h in fused]
+            # 重排只看内容，不需要 heading，这里用空 heading 占位
+            pairs = [(contents.get(i, ("", ""))[0], contents.get(i, ("", ""))[1]) for i in ids]
+            scores = reranker.score(q, [c for _, c in pairs])
+            order = sorted(range(len(ids)), key=lambda k: -scores[k])
+            ranked = [ids[k] for k in order][:TOP_K]
 
         h1, r5, rr = score(ranked, contents, case)
         hits1 += h1
@@ -171,7 +188,9 @@ def run_mode(mode: str, cases: list[dict], contents: dict[int, tuple[str, str]],
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", choices=["bm25", "vector", "hybrid"], action="append")
+    ap.add_argument(
+        "--mode", choices=["bm25", "vector", "hybrid", "rerank"], action="append"
+    )
     ap.add_argument("--show-miss", action="store_true")
     args = ap.parse_args()
 
@@ -179,7 +198,7 @@ def main() -> int:
     contents = load_contents()
     print(f"评测集：{len(cases)} 题；候选池：{len(contents)} 个 child chunk")
 
-    modes = args.mode or ["bm25", "vector", "hybrid"]
+    modes = args.mode or ["bm25", "vector", "hybrid", "rerank"]
     results = [run_mode(m, cases, contents, show_miss=args.show_miss) for m in modes]
 
     if len(results) > 1:
