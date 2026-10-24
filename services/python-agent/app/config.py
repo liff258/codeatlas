@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     )
 
     # ---------- 模型 ----------
+    # ⚠️ 这一组是 embedding API 的 key，和下面的 llm_api_key 必须分开。
+    # embedding.py 用它判断「要不要走 API embedding」——如果把智谱的 key 塞进来，
+    # embedding 会被路由到智谱，模型名和维度全错，而且不会报错，只是检索质量莫名其妙地差。
     siliconflow_api_key: str = ""
     siliconflow_base_url: str = "https://api.siliconflow.cn/v1"
     llm_model: str = "deepseek-ai/DeepSeek-V4.1-Flash"
@@ -42,6 +45,17 @@ class Settings(BaseSettings):
     rerank_enabled: bool = True
     # 本地模型缓存目录（gitignore，约 2.2GB）
     model_cache_dir: str = str(Path(__file__).resolve().parents[3] / "data" / "models")
+
+    # ---------- Agent 用的对话模型（P2）----------
+    # 默认智谱 GLM-4.5-Flash：免费、OpenAI SDK 兼容。
+    # 注意模型 ID 是 glm-4.5-flash，不是上一代的 glm-4-flash。
+    llm_api_key: str = ""
+    llm_base_url: str = "https://open.bigmodel.cn/api/paas/v4"
+    # 注意：不能复用上面的 llm_model。那个字段是给硅基流动的 DeepSeek 用的，
+    # .env 里已经写了 LLM_MODEL=deepseek-ai/DeepSeek-V4.1-Flash，
+    # 拿它去调智谱会直接 404（模型不存在）。
+    agent_model: str = "glm-4.5-flash"
+    llm_timeout_seconds: int = 20
 
     # ---------- Agent 预算（防死循环的硬约束）----------
     agent_max_steps: int = 8
@@ -58,7 +72,12 @@ class Settings(BaseSettings):
 
     @property
     def has_llm_key(self) -> bool:
-        return bool(self.siliconflow_api_key.strip())
+        """Agent 能不能调真实模型。
+
+        只认 llm_api_key，不看 siliconflow_api_key——后者是 embedding API 用的，
+        两者指向完全不同的服务。
+        """
+        return bool(self.llm_api_key.strip())
 
 
 @lru_cache
