@@ -116,10 +116,23 @@ cd /tmp/jg && git sparse-checkout set --no-cone 'docs/java/basis/*.md' 'docs/jav
 拉完按 `sources.manifest.yaml` 的 `id` 归档到 `data/raw/<id>/`。
 `scripts/fetch_sources.py` 还没写——目前是手工执行，这一步还没自动化。
 
-**当前数据量**（2026-10-24）：131 个文档 / 853 个 parent chunk / 5219 个 child chunk，
-覆盖后端 9 个学科。child 平均 170 token，p95 290，超 256 预算的 8.5%——
-那些都是单个代码块或表格，为了语义完整刻意不切。
-全部 5219 条已有 1024 维向量（bge-m3 本地推理）。
+**当前数据量**（2026-10-24）：141 个文档 / 880 个 parent chunk / 5365 个 child chunk，
+覆盖 **双域**：后端 9 个学科 5228 条 + AI 4 个学科 137 条（向量检索 39 / RAG 41 / Agent 40 / LLM 基础 17）。
+child 平均 170 token，p95 290，超 256 预算的 8.5%——那些都是单个代码块或表格，
+为了语义完整刻意不切。全部 5365 条已有 1024 维向量（bge-m3 本地推理）。
+
+AI 域素材分两类：
+- **自写 4 篇**（`notes/`，进仓库）：《向量检索为什么不能用 B+ 树加速》是演示主线的答案来源，
+  公开资料里没有这个对比，必须自己写；另外三篇是 RAG 工程坑、Agent 循环、G1 SATB。
+- **外部 6 篇**（`data/raw/`，gitignore）：HNSW 论文、RAG 论文、Anthropic/ Lilian Weng 的 Agent 文章等，
+  excerpt 模式只保留节选，文件头写明来源和许可证。
+
+**跨域检索验证**（演示主线的关键证据）：
+
+| 查询 | 召回分布 |
+|---|---|
+| B+ 树和 HNSW 的区别是什么 | AI 域 5 条 + 后端域 3 条（MySQL / Redis） |
+| 向量索引和数据库索引有什么不同 | 后端域 6 条（MySQL）+ AI 域 1 条 |
 
 **检索评测**（20 题：15 道关键词题 + 5 道语义题，候选池 5219）
 
