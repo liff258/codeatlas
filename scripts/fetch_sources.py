@@ -34,9 +34,9 @@ RAW = ROOT / "data" / "raw"
 UA = "Mozilla/5.0 (compatible; CodeAtlas/0.1; +https://github.com/liff258/codeatlas)"
 
 # excerpt 模式最多保留多少字符。不是随便定的：
-# 约 12000 字符 ≈ 6000 token ≈ 20 个 chunk，足够覆盖摘要 + 核心章节，
+# 约 30000 字符 ≈ 15000 token ≈ 60 个 chunk，覆盖摘要 + 主要章节，
 # 又不至于把整篇文章复制进来（许可证要求）。
-EXCERPT_CHARS = 12000
+EXCERPT_CHARS = 30000
 
 # 这些标签里的文字对检索没用，直接整块丢掉
 _DROP_TAGS = {"script", "style", "nav", "header", "footer", "aside", "noscript", "form", "svg"}

@@ -39,6 +39,28 @@ def load_manifest() -> dict[str, dict]:
     return {s["id"]: s for s in data["sources"]}
 
 
+def delete_by_source(source_ids: set[str]) -> int:
+    """删掉这些素材已有的文档（级联删 chunk 和 chunk_embedding）。
+
+    为什么需要这个：document 的去重键是 content_hash。素材内容一变（比如调大了
+    excerpt 上限），hash 就变了，直接重跑只会新增一份，旧的那份还在库里——
+    结果同一个文档有两份不同长度的内容，检索时互相打架。
+    """
+    from sqlalchemy import text
+
+    from app.infra.db import SessionLocal
+
+    deleted = 0
+    with SessionLocal() as db:
+        for sid in source_ids:
+            n = db.execute(
+                text("DELETE FROM document WHERE filename LIKE :p"), {"p": f"{sid}/%"}
+            ).rowcount
+            deleted += n
+        db.commit()
+    return deleted
+
+
 def apply_to_db(entries: list[tuple[str, object]]) -> tuple[int, int]:
     """写库。返回 (新增文档数, 跳过的重复文档数)。
 
@@ -160,6 +182,12 @@ def main() -> int:
     ap.add_argument("--apply", action="store_true", help="写入数据库")
     ap.add_argument("--source", action="append", help="只处理指定素材 id，可重复")
     ap.add_argument("--show", type=int, default=0, help="抽样打印 n 个 child chunk")
+    ap.add_argument(
+        "--replace",
+        action="store_true",
+        help="先删掉这些素材的旧文档再重新入库。素材内容变化（如调大 excerpt 上限）时必须加，"
+        "否则会留下旧版本形成重复。",
+    )
     args = ap.parse_args()
 
     if not args.dry_run and not args.apply:
@@ -255,6 +283,11 @@ def main() -> int:
             print(f"  heading: {hp}")
 
     if args.apply:
+        if args.replace:
+            sids = {sid for sid, _ in entries}
+            n = delete_by_source(sids)
+            print(f"\n已删除旧文档 {n} 个（{', '.join(sorted(sids))}）")
+
         print(f"\n{'='*60}\n开始落库：{len(entries)} 个文档\n{'='*60}")
         inserted, skipped = apply_to_db(entries)
         print(f"\n✓ 新增 {inserted} 个文档，跳过 {skipped} 个已存在（content_hash 相同）")
