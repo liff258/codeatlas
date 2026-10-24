@@ -43,12 +43,24 @@ async def _guarded_stream(req: InternalChatRequest) -> AsyncIterator[str]:
     为什么必须这样做：前端状态机靠 done 收尾。如果异常直接抛出，
     连接会断在半路，前端会永远停在"正在思考"，演示时非常致命。
     """
-    source: AsyncIterator[str] = mock_stream(
-        question=req.question,
-        session_id=req.session_id,
-        history=[h.model_dump() for h in req.history],
-        trace_id=req.trace_id,  # 必须沿用上游给的 trace_id，不要自己生成
-    )
+    # mock_agent 决定走假流还是真实推理。默认 true（P0 阶段的历史默认），
+    # 配好 LLM_API_KEY 后改成 false 即可切到真实链路。
+    if settings.mock_agent:
+        source: AsyncIterator[str] = mock_stream(
+            question=req.question,
+            session_id=req.session_id,
+            history=[h.model_dump() for h in req.history],
+            trace_id=req.trace_id,  # 必须沿用上游给的 trace_id，不要自己生成
+        )
+    else:
+        from app.agent.graph import agent_stream
+
+        source = agent_stream(
+            question=req.question,
+            session_id=req.session_id,
+            history=[h.model_dump() for h in req.history],
+            trace_id=req.trace_id,
+        )
 
     try:
         async for chunk in source:
