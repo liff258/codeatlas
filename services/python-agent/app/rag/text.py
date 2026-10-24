@@ -71,6 +71,10 @@ def split_sentences(text: str) -> list[str]:
 def normalize_ws(text: str) -> str:
     """折叠多余空白，但保留段落分隔（\\n\\n）。"""
     text = text.replace("\r\n", "\n").replace("\r", "\n")
+    # 去掉 NUL 和其他控制字符（保留 \n 和 \t）。
+    # PDF 抽取经常带进 \x00，而 PostgreSQL 的 text 字段直接拒收，
+    # 报错信息是 "cannot contain NUL (0x00) bytes"，不看清楚会以为是编码问题。
+    text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", text)
     # 行内多空格折叠成一个
     text = re.sub(r"[ \t]{2,}", " ", text)
     # 三个以上连续换行折叠成两个
