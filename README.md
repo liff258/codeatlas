@@ -175,14 +175,69 @@ AI 域素材分两类：
 > 不追求绝对准确，追求**三种模式面对同一把尺子**。
 > 已知局限：关键词判定天然偏袒 BM25，所以语义题单独用标题判定，分开统计。
 
-### 当前可用：Agent 服务（Mock 模式）
+### 当前可用：Agent 服务
 
-P0 阶段不接真实模型，先跑通 SSE 协议。**不需要 API Key。**
+两种模式，由 `.env` 的 `MOCK_AGENT` 切换：
+
+| 模式 | 依赖 | 答案 |
+|---|---|---|
+| `MOCK_AGENT=true`（默认） | 无 | 预录的固定答案，用于演示前端和契约 |
+| `MOCK_AGENT=false` | `LLM_API_KEY` | 真实推理：检索是真的，答案是模型生成的 |
 
 ```bash
 cd services/python-agent
 uvicorn app.main:app --reload --port 8000
 ```
+
+#### 接真实模型（P2）
+
+默认用**智谱 GLM-4.5-Flash，免费**。注册 https://bigmodel.cn 后创建 API Key：
+
+```bash
+# .env
+LLM_API_KEY=你的key
+AGENT_MODEL=glm-4.5-flash      # 注意不是上一代的 glm-4-flash
+MOCK_AGENT=false
+```
+
+先验证 key 和模型名（最省 token 的检查）：
+
+```bash
+python scripts/agent_smoke.py --ping
+```
+
+再跑完整链路，不依赖前端和 Java，直接打印事件时间轴：
+
+```bash
+python scripts/agent_smoke.py --question "向量检索为什么不能用 B+ 树加速"
+```
+
+**Agent 的六个节点**（`services/python-agent/app/agent/`）：
+
+```
+router → planner → retriever → grader ─┬→ generator
+                        ↑              │
+                        └── rewriter ←─┘（覆盖率不足时）
+```
+
+- `router` 意图分类（concept/compare/debug/quiz/chitchat）
+- `planner` 拆 2~4 个检索子查询 + 抽实体
+- `retriever` **真实混合检索**（BM25 + 向量 + 重排），多子查询合并后**只重排一次**
+- `grader` 自评覆盖率，低于阈值（0.6）触发改写
+- `rewriter` 换角度重查，最多 2 轮
+- `generator` 流式生成，`[n]` 角标绑定到真实 chunk
+
+**三个工程细节**（细节决定演示会不会翻车）：
+
+1. **重排只做一次**。单次重排 12 条候选约 5 秒；4 个子查询各排一次就是 20 秒。
+   所以每个子查询只做融合召回（约 50ms），合并去重后统一重排。
+2. **引用编号由代码建立**。证据按 `[1][2]` 编号写进 prompt，模型只能引用已存在的编号；
+   越界编号（如 `[99]`）保留在正文里但不发 `citation`，前端显示「无出处」。
+3. **跨域边由 domain 计算**，不看模型输出。这是产品的核心视觉证据，不能让模型随口判断。
+
+**降级矩阵**（任一节点失败都不中断流）：JSON 解析失败 → 该节点标 `degraded` 继续；
+模型超时 → 重试 1 次后降级；检索为空 → `error(RETRIEVAL_EMPTY)` + `done`；
+生成失败 → 抽取式兜底（把证据原文拼出来）。
 
 健康检查（`db` 应为 `ok`，`llm` 为 `missing_key`，`mode` 为 `mock`）：
 
@@ -285,7 +340,7 @@ DeepSeek V4.1-Flash · BGE-M3 · bge-reranker-v2-m3
 - [x] P1-b 本地向量检索 + RRF 混合检索（44 个单测 / 20 题评测集）
 - [x] P1-c 重排（Hit@1 从 40% → 75%，MRR 0.609 → 0.822）
 - [x] P1-d 素材补齐：AI 域 6 篇外部 + 4 篇自写，双域打通
-- [ ] P2 Agent 状态机（真模型）
+- [x] P2 Agent 状态机（智谱 GLM-4.5-Flash，6 节点全链路）
 - [ ] P3-b 前端视觉打磨
 - [ ] P4 打磨与冻结
 - [ ] P5 参赛材料
