@@ -1,0 +1,143 @@
+# 检索评测集（gold set）
+
+# ## 为什么用关键词而不是人工标注
+
+# 人工标注「这个 chunk 是否相关」最准，但有两个问题：不可复现（换个人标结果不同）、
+# 成本高到不可能每改一次切片就重标一遍。
+
+# 这里用**可判定的关键词条件**代替：一个 chunk 算相关，当且仅当它同时包含
+# `must_have` 里的所有词、且至少包含 `any_of` 里的一个词。
+# 这个标准偏严（会漏掉一些语义相关但用词不同的 chunk），但对**相对比较**是有效的——
+# 三种检索模式面对同一套标准，谁高谁低是可信的。
+
+# ## 字段
+
+# - `must_have`：必须同时出现的词（用来锁定主题）
+# - `any_of`：至少出现一个（用来锁定"这段确实在讲答案"）
+# - `subject`：期望命中的学科，用于检查跨学科误召回
+
+# ## 维护原则
+
+# 新增题目时，先在库里用 SQL 确认确实存在满足条件的 chunk。
+# 如果一道题在库里根本没有答案，那它测的是素材覆盖度，不是检索质量，不该放进这里。
+
+
+cases:
+  - id: q01
+    question: HashMap 的扩容机制是怎样的
+    subject: Java基础
+    must_have: [扩容]
+    any_of: [负载因子, resize, 2 的幂, 阈值, 重新计算]
+
+  - id: q02
+    question: ConcurrentHashMap 是怎么保证线程安全的
+    subject: 并发
+    must_have: [ConcurrentHashMap]
+    any_of: [CAS, synchronized, 分段锁, Node]
+
+  - id: q03
+    question: MySQL 索引为什么用 B+ 树而不是 B 树
+    subject: MySQL
+    must_have: [B+树]
+    any_of: [磁盘, IO, 叶子节点, 矮胖, 范围查询]
+
+  - id: q04
+    question: 什么是回表，怎么避免回表
+    subject: MySQL
+    must_have: [回表]
+    any_of: [覆盖索引, 聚簇索引, 二级索引, 主键]
+
+  - id: q05
+    question: Redis 的跳表是怎么实现的
+    subject: Redis
+    must_have: [跳表]
+    any_of: [索引, 层级, 随机, O(log n), 指针]
+
+  - id: q06
+    question: Spring 循环依赖怎么解决
+    subject: Spring
+    must_have: [循环依赖]
+    any_of: [三级缓存, singletonFactories, 提前暴露, 二级缓存]
+
+  - id: q07
+    question: G1 收集器的 SATB 是什么
+    subject: JVM
+    must_have: [SATB]
+    any_of: [快照, 写屏障, 漏标, 并发标记]
+
+  - id: q08
+    question: 类加载的双亲委派机制
+    subject: JVM
+    must_have: [双亲委派]
+    any_of: [ClassLoader, 父加载器, 沙箱, 打破]
+
+  - id: q09
+    question: TCP 三次握手为什么不能是两次
+    subject: 网络
+    must_have: [三次握手]
+    any_of: [两次, 序列号, 历史连接, SYN, 确认]
+
+  - id: q10
+    question: 线程池的核心参数有哪些
+    subject: 并发
+    must_have: [线程池]
+    any_of: [核心线程数, 最大线程数, 队列, 拒绝策略, keepAlive]
+
+  - id: q11
+    question: AQS 是怎么实现的
+    subject: 并发
+    must_have: [AQS]
+    any_of: [state, CLH, 队列, 独占, 共享]
+
+  - id: q12
+    question: 缓存穿透、击穿、雪崩的区别
+    subject: Redis
+    must_have: [缓存]
+    any_of: [穿透, 击穿, 雪崩, 布隆过滤器, 空值]
+
+  - id: q13
+    question: MVCC 是怎么实现的
+    subject: MySQL
+    must_have: [MVCC]
+    any_of: [版本链, undo log, ReadView, 事务ID, 快照读]
+
+  - id: q14
+    question: 分布式锁有哪些实现方式
+    subject: 分布式
+    must_have: [分布式锁]
+    any_of: [Redis, ZooKeeper, 续期, 误删, Lua]
+
+  - id: q15
+    question: 消息队列怎么保证消息不丢失
+    subject: 消息队列
+    must_have: [消息]
+    any_of: [确认, ACK, 持久化, 重试, 死信, 丢失]
+
+  # ---- 语义型题：故意不含专业术语，考的是「能不能理解人话」----
+  # 这组题用 expect_heading 判定（命中的 chunk 标题里包含指定词之一），
+  # 而不是 content 关键词——因为语义题的正确文档往往不含问题里的原词，
+  # 用 content 关键词判会系统性判错向量检索。
+  - id: s01
+    kind: semantic
+    question: 数据库查一行数据为什么也会很慢
+    expect_heading: [索引失效, 慢查询, 执行计划]
+
+  - id: s02
+    kind: semantic
+    question: 多个线程同时改一个数怎么保证不出错
+    expect_heading: [CAS, 乐观锁, 原子]
+
+  - id: s03
+    kind: semantic
+    question: 服务重启之后内存里的东西怎么恢复
+    expect_heading: [持久化]
+
+  - id: s04
+    kind: semantic
+    question: 怎么让系统在流量高峰时不被压垮
+    expect_heading: [限流, 熔断, 降级]
+
+  - id: s05
+    kind: semantic
+    question: 同一个请求重复发两次怎么保证只生效一次
+    expect_heading: [幂等]
