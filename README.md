@@ -293,7 +293,11 @@ docker compose --profile app up -d
 
 数据库镜像将内置知识库快照（含 embedding），**不需要重新建库，不需要 API Key 也能看到完整数据**。
 
-### 当前可用：前端（Mock 流，不需要后端和 API Key）
+### 当前可用：前端
+
+两种跑法：**只看界面**（mock，零依赖）和**跑真实链路**（三端联调）。
+
+#### 跑法一：只看界面（不需要后端和 API Key）
 
 ```bash
 cd web && npm install && npm run dev
@@ -322,6 +326,54 @@ cd web && npm install && npm run dev
 python scripts/gen_mock_stream.py
 ```
 
+#### 跑法二：真实链路（三端）
+
+按顺序起三个服务，然后浏览器里问问题，答案来自真实检索 + 真实模型：
+
+```bash
+# 1. 数据库
+docker compose up -d db            # 或 docker desktop start 后等 codeatlas-db healthy
+
+# 2. Python Agent（8000）
+cd services/python-agent
+uvicorn app.main:app --port 8000
+
+# 3. Java 网关（8080）—— 必须显式指定端口，环境里的 SERVER_PORT 会覆盖配置
+cd services/java-gateway
+java -jar target/java-gateway-0.1.0.jar --server.port=8080
+
+# 4. 前端（5173），关掉 mock
+cd web && VITE_MOCK=0 npx vite --port 5173
+```
+
+**一条命令验证整条链路**（查健康 + 跑真实问答 + 断言 SSE 契约）：
+
+```bash
+python scripts/e2e_verify.py --strict-cross-domain
+```
+
+它会把事件流打印成时间轴，并检查：`done` 收尾、`seq` 单调、`plan` 先于 `retrieval`、
+`citation` 先于含 `[n]` 的 token、演示主线题必须有跨域边。
+
+**实际效果**（热态约 25 秒）：
+
+![对比表格与跨域图谱](docs/screenshots/answer-table.png)
+
+![标题层级与低分片段标注](docs/screenshots/answer-headings-graph.png)
+
+左边是答案（对比表格里的 `[5] [7]` 角标可点，点开是原文出处），
+右上是思考面板（每个节点逐一点亮，自评覆盖率 0.85，低分片段编号列出来），
+右下是知识图谱（`B+ 树` ←→ `HNSW` 之间的橙色虚线就是跨域边）。
+
+**演示时值得讲的三点**：
+
+1. **跨域边是系统自己连的**。问题里没有「B+ 树」三个字，是检索同时命中了
+   AI 域和后端域，图谱才连出这条边。纯向量检索做不到——「B+ 树」这个词不在问题里。
+2. **自评-改写是真的会触发**。问库里没有的内容（比如 Kubernetes 调度器），
+   覆盖率会掉到 0.2，系统改写两轮后放弃，答案开头直接写「现有资料不足以完整回答」。
+3. **降级是可见的**。模型超时的时候节点会标成黄色（`degraded`）而不是红色报错，
+   流程继续跑完——比如自评超时就用重排分估一个覆盖率。
+
 ---
 
 ## 技术栈
@@ -341,7 +393,8 @@ DeepSeek V4.1-Flash · BGE-M3 · bge-reranker-v2-m3
 - [x] P1-c 重排（Hit@1 从 40% → 75%，MRR 0.609 → 0.822）
 - [x] P1-d 素材补齐：AI 域 6 篇外部 + 4 篇自写，双域打通
 - [x] P2 Agent 状态机（智谱 GLM-4.5-Flash，6 节点全链路）
-- [ ] P3-b 前端视觉打磨
+- [x] P3-b 前端接真实链路（表格渲染 / 标题层级 / 多轮对话）
+- [ ] P3-c 前端视觉打磨（图谱面板尺寸、动效细节）
 - [ ] P4 打磨与冻结
 - [ ] P5 参赛材料
 
