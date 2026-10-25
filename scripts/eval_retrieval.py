@@ -110,6 +110,7 @@ def run_mode(mode: str, cases: list[dict], contents: dict[int, tuple[str, str]],
     misses: list[tuple[str, str]] = []
     # 按题型分开统计：关键词题和语义题考的完全是两种能力，混在一起看会互相掩盖
     by_kind: dict[str, dict] = {}
+    by_domain: dict[str, dict] = {}
 
     for case in cases:
         q = case["question"]
@@ -144,6 +145,14 @@ def run_mode(mode: str, cases: list[dict], contents: dict[int, tuple[str, str]],
 
         kind = "semantic" if case.get("kind") == "semantic" else "keyword"
         st = by_kind.setdefault(kind, {"n": 0, "hit1": 0, "rec5": 0, "rr": 0.0})
+        # 按知识域分组：后端题和 AI 题考的素材完全不同，
+        # 混在一起看会掩盖「某个域的素材太薄」这种问题。
+        dom = case.get("domain", "backend")
+        ds = by_domain.setdefault(dom, {"n": 0, "hit1": 0, "rec5": 0, "rr": 0.0})
+        ds["n"] += 1
+        ds["hit1"] += int(h1)
+        ds["rec5"] += int(r5)
+        ds["rr"] += rr
         st["n"] += 1
         st["hit1"] += int(h1)
         st["rec5"] += int(r5)
@@ -165,6 +174,7 @@ def run_mode(mode: str, cases: list[dict], contents: dict[int, tuple[str, str]],
         "recall5": rec5 / n,
         "mrr": sum(rrs) / n,
         "by_kind": by_kind,
+        "by_domain": by_domain,
     }
 
     print(f"\n  合计   Hit@1 {result['hit1']*100:5.1f}%   Recall@5 {result['recall5']*100:5.1f}%   MRR {result['mrr']:.3f}")
@@ -176,6 +186,15 @@ def run_mode(mode: str, cases: list[dict], contents: dict[int, tuple[str, str]],
             f"  {kind:<7} Hit@1 {st['hit1']/st['n']*100:5.1f}%   "
             f"Recall@5 {st['rec5']/st['n']*100:5.1f}%   MRR {st['rr']/st['n']:.3f}"
             f"   (n={st['n']})"
+        )
+    for dom in ("backend", "ai"):
+        ds = by_domain.get(dom)
+        if not ds or not ds["n"]:
+            continue
+        print(
+            f"  {dom:<7} Hit@1 {ds['hit1']/ds['n']*100:5.1f}%   "
+            f"Recall@5 {ds['rec5']/ds['n']*100:5.1f}%   MRR {ds['rr']/ds['n']:.3f}"
+            f"   (n={ds['n']})"
         )
 
     if misses:
@@ -206,19 +225,19 @@ def main() -> int:
         print(f"{'模式':<10}{'题型':<10}{'Hit@1':>9}{'Recall@5':>11}{'MRR@10':>10}")
         print("-" * 72)
         for r in results:
-            for kind in ("all", "keyword", "semantic"):
+            for kind in ("all", "keyword", "semantic", "backend", "ai"):
                 if kind == "all":
                     print(
                         f"{r['mode']:<10}{'合计':<10}{r['hit1']*100:>8.1f}%"
                         f"{r['recall5']*100:>10.1f}%{r['mrr']:>10.3f}"
                     )
                 else:
-                    st = r["by_kind"].get(kind)
-                    if not st or not st["n"]:
+                    bucket = r["by_kind"].get(kind) or r["by_domain"].get(kind)
+                    if not bucket or not bucket["n"]:
                         continue
                     print(
-                        f"{'':<10}{kind:<10}{st['hit1']/st['n']*100:>8.1f}%"
-                        f"{st['rec5']/st['n']*100:>10.1f}%{st['rr']/st['n']:>10.3f}"
+                        f"{'':<10}{kind:<10}{bucket['hit1']/bucket['n']*100:>8.1f}%"
+                        f"{bucket['rec5']/bucket['n']*100:>10.1f}%{bucket['rr']/bucket['n']:>10.3f}"
                     )
             print()
 

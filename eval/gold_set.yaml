@@ -141,3 +141,95 @@ cases:
     kind: semantic
     question: 同一个请求重复发两次怎么保证只生效一次
     expect_heading: [幂等]
+
+  # ---- AI 域题（2026-10-25 补）----
+  # 之前 20 道题全是后端题，AI 域 228 个 chunk 一条都没覆盖。
+  # 评委问「你怎么证明 AI 域的检索也是准的」时答不上来，所以补齐。
+  # 每道题都先在库里用 SQL 确认过有答案（见提交说明）。
+  - id: a01
+    domain: ai
+    question: HNSW 的分层结构是怎么组织的
+    subject: 向量检索
+    must_have: [HNSW]
+    any_of: [layer, 层级, 层, hierarchy]
+
+  - id: a02
+    domain: ai
+    question: 为什么要用近似最近邻搜索而不是精确搜索
+    subject: 向量检索
+    must_have: [ANN]
+    any_of: [approximate, 近似, recall, 召回]
+
+  - id: a03
+    domain: ai
+    question: IVF 索引是怎么工作的
+    subject: 向量检索
+    must_have: [IVF]
+    any_of: [聚类, 簇, cluster, 倒排]
+
+  - id: a04
+    domain: ai
+    question: RAG 的两种解码方式有什么区别
+    subject: RAG
+    must_have: [RAG]
+    any_of: [RAG-Token, RAG-Sequence, token, sequence]
+
+  - id: a05
+    domain: ai
+    question: 为什么换个更大的 embedding 模型解决不了检索不准
+    subject: RAG
+    must_have: [embedding]
+    any_of: [切片, 素材, 模型, chunk]
+
+  - id: a06
+    domain: ai
+    question: 父子块切片为什么比换模型划算
+    subject: RAG
+    must_have: [parent]
+    any_of: [child, 切片, 父子, chunk]
+
+  - id: a07
+    domain: ai
+    question: Agent 的三大组件是什么
+    subject: Agent
+    must_have: [Agent]
+    any_of: [Planning, Memory, Tool, 规划, 记忆]
+
+  - id: a08
+    domain: ai
+    question: MIPS 最大内积搜索和 Agent 记忆有什么关系
+    subject: Agent
+    must_have: [MIPS]
+    any_of: [内积, inner product, 记忆, memory]
+
+  - id: a09
+    domain: ai
+    question: Self-Attention 里的 Q K V 分别是什么
+    subject: LLM基础
+    must_have: [attention]
+    any_of: [query, key, value, Q, K, V]
+
+  - id: a10
+    domain: ai
+    question: 为什么 Agent 循环必须有硬约束
+    subject: Agent
+    must_have: [死循环]
+    any_of: [步数, 超时, 改写轮数]
+
+  - id: s06
+    domain: ai
+    kind: semantic
+    question: 怎么让模型回答时带上原文出处
+    expect_heading: [引用]
+
+  - id: s07
+    domain: ai
+    kind: semantic
+    question: 检索回来的内容太长塞不进模型怎么办
+    expect_heading: [Context]
+
+  - id: s08
+    domain: ai
+    kind: semantic
+    question: 大模型记不住太多东西怎么办
+    expect_heading: [Memory]
