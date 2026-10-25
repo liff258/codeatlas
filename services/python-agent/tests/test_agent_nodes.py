@@ -51,11 +51,13 @@ class FakeLLM:
             yield piece
 
 
-def ev(i: int, *, subject: str = "JVM", domain: str = "backend", content: str = "") -> Evidence:
+def ev(
+    i: int, *, subject: str = "JVM", domain: str = "backend", content: str = "", doc_id: int = 1
+) -> Evidence:
     return Evidence(
         chunk_id=f"c_{i}",
         raw_id=i,
-        doc_id=1,
+        doc_id=doc_id,
         doc_name=f"doc{i}",
         heading_path=f"h{i}",
         content=content or f"内容 {i}",
@@ -409,11 +411,27 @@ async def test_deterministic_graph_infers_relation_from_text():
 
 
 @pytest.mark.asyncio
-async def test_deterministic_graph_skips_non_cooccurring():
-    """两个实体从没在同一条证据里出现，就不该有边。"""
+async def test_deterministic_graph_falls_back_to_document_level():
+    """不同 chunk 但同一篇文档 → 建弱关联。
+
+    追问场景下实体常分散在不同 chunk（一个讲 HNSW 分层、一个讲 B+ 树全序），
+    同块共现一条边都没有，图上就只剩孤立的点。同文档至少同主题。
+    """
     evidence = [
-        ev(1, subject="JVM", domain="backend", content="只有甲"),
-        ev(2, subject="JVM", domain="backend", content="只有乙"),
+        ev(1, subject="JVM", domain="backend", content="只有甲", doc_id=7),
+        ev(2, subject="JVM", domain="backend", content="只有乙", doc_id=7),
+    ]
+    n, e, _, _, _ = await nodes.extract_graph(FakeLLM(""), "问题", evidence, ["甲", "乙"])
+    assert len(n) == 2
+    assert len(e) == 1, "同一篇文档应该建一条弱关联边"
+
+
+@pytest.mark.asyncio
+async def test_deterministic_graph_skips_across_documents():
+    """连文档都不同，就不该硬连——那种边纯属编造。"""
+    evidence = [
+        ev(1, subject="JVM", domain="backend", content="只有甲", doc_id=7),
+        ev(2, subject="JVM", domain="backend", content="只有乙", doc_id=8),
     ]
     n, e, _, _, _ = await nodes.extract_graph(FakeLLM(""), "问题", evidence, ["甲", "乙"])
     assert len(n) == 2
