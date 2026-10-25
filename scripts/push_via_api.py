@@ -71,10 +71,16 @@ def changed_files(sha: str) -> list[tuple[str, str]]:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument(
+        "--since",
+        help="只重放这个本地 SHA 之后的提交。用于「本地有影子提交、远端已存在同内容」的情况——"
+        "不指定的话会把已经推过的提交再重放一遍。",
+    )
     args = ap.parse_args()
 
     remote_sha = gh_api(f"repos/{REPO}/git/ref/heads/{BRANCH}")["object"]["sha"]
-    local_commits = git("rev-list", "--reverse", f"{remote_sha}..HEAD").split()
+    base = args.since or remote_sha
+    local_commits = git("rev-list", "--reverse", f"{base}..HEAD").split()
 
     if not local_commits:
         print("✓ 远端已是最新，无需推送")

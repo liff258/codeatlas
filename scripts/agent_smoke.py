@@ -125,7 +125,7 @@ async def ping() -> int:
     t0 = time.time()
     try:
         client = LLMClient()
-        result = await client.json_call("只输出 JSON", '输出 {"ok": true}', max_tokens=50)
+        result = await client.json_call("只输出 JSON", '输出 {"ok": true}', max_tokens=100)
         print(f"\n✓ 调用成功，耗时 {(time.time()-t0)*1000:.0f}ms")
         print(f"  返回：{result.text[:80]}")
         print(f"  解析：{result.data}  降级={result.degraded}")
