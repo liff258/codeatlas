@@ -60,3 +60,4 @@ Thumbs.db
 
 # ---- 本地模型缓存（bge-m3 约 2.2GB，绝不进仓库）----
 data/models/
+.playwright-cli/
