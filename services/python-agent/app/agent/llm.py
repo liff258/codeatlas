@@ -27,6 +27,9 @@ from dataclasses import dataclass
 from app.agent.events import Usage
 from app.config import settings
 
+# 流式生成的请求超时。比 json_call 的 30 秒宽得多，理由见 stream_call 里的注释。
+STREAM_TIMEOUT_SECONDS = 120.0
+
 # 模型偶尔会把 JSON 包在 markdown 围栏里，甚至带一句中文前缀
 _FENCE = re.compile(r"^\s*```(?:json)?\s*|\s*```\s*$", re.IGNORECASE)
 # 中文全角引号 → 半角（模型经常在 JSON 里用 “” 包字符串）
@@ -244,6 +247,7 @@ class LLMClient:
         temperature: float,
         max_tokens: int,
         json_mode: bool = False,
+        timeout: float | None = None,
     ):
         """统一处理异常映射。SDK 的异常类型太细，上层只关心三类。"""
         # 只有智谱的接口认 thinking 参数，换别的 OpenAI 兼容服务要跳过，
@@ -265,6 +269,8 @@ class LLMClient:
             )
             if json_mode:
                 kwargs["response_format"] = {"type": "json_object"}
+            if timeout is not None:
+                kwargs["timeout"] = timeout
 
             return await self._client.chat.completions.create(**kwargs)
         except asyncio.TimeoutError as e:
@@ -285,6 +291,7 @@ class LLMClient:
         *,
         temperature: float = 0.1,
         max_tokens: int = 1200,
+        timeout: float | None = None,
     ) -> LLMResult:
         """要一个 JSON 对象。解析失败不抛异常，返回 degraded=True。
 
@@ -301,12 +308,17 @@ class LLMClient:
                 temperature=temperature,
                 max_tokens=max_tokens,
                 json_mode=True,
+                timeout=timeout,
             )
         except LLMError as e:
             # 不支持 json_object 的端点会报 400/参数错误，降级重试
             if e.code == "INTERNAL" and "400" in str(e):
                 resp = await self._post(
-                    messages, stream=False, temperature=temperature, max_tokens=max_tokens
+                    messages,
+                    stream=False,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    timeout=timeout,
                 )
             else:
                 raise
@@ -340,11 +352,15 @@ class LLMClient:
         用量在流结束后一次性累加——GLM 的流式响应默认不带 usage，
         只能按字符数粗估（中文约 1 字 1 token），够用。
         """
+        # 流式生成必须给足时间：600 token 的答案在 30 tok/s 下要 20 秒，
+        # 加上首字节延迟和网络抖动，30 秒的默认超时会误杀。
+        # 实测 46 秒时被掐断，退化成抽取式兜底——用户看到的是"生成失败"。
         stream = await self._post(
             [{"role": "system", "content": system}, {"role": "user", "content": user}],
             stream=True,
             temperature=temperature,
             max_tokens=max_tokens,
+            timeout=STREAM_TIMEOUT_SECONDS,
         )
 
         produced = 0

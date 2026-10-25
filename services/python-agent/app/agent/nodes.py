@@ -21,7 +21,7 @@ from typing import Literal
 
 from app.agent import prompts
 from app.agent.events import GraphEdge, GraphNode, Intent, SubQuery
-from app.agent.llm import LLMClient
+from app.agent.llm import LLMClient, LLMError, LLMResult
 from app.config import settings
 
 GradeDecision = Literal["proceed", "rewrite", "give_up"]
@@ -108,6 +108,36 @@ def _clamp(v: float, lo: float = 0.0, hi: float = 1.0) -> float:
     return max(lo, min(hi, v))
 
 
+# 各节点的单次调用超时。差异化设置的理由：
+#   免费额度下同一个模型的延迟方差很大（实测 grader 4~17 秒），
+#   统一用 30 秒意味着最坏情况要干等 30 秒才降级。
+#   每个节点能容忍的等待时间不同——路由只是分类，等 10 秒不值；
+#   自评要在"再等等"和"赶紧用兜底继续"之间取舍。
+TIMEOUT_ROUTER = 10.0
+TIMEOUT_PLANNER = 15.0
+TIMEOUT_GRADER = 12.0
+TIMEOUT_REWRITER = 12.0
+
+
+async def _tolerant_json_call(llm: LLMClient, system: str, user: str, **kw) -> LLMResult:
+    """调模型要 JSON，超时就降级，不把异常抛给编排层。
+
+    为什么只吞超时：
+        超时是瞬时故障，节点用兜底逻辑照样能往下走（比如 grader 用重排分估覆盖率）。
+        但限流（429）和鉴权失败要如实上报——那不是"这一次慢了"，
+        是"根本调不通"，静默降级会让用户以为系统在工作，实际全是兜底结果。
+
+    这个区分很重要：之前 grader 一次 30 秒超时就把整条流打断了，
+    明明已经召回到 12 条证据，却一条答案都没生成出来。
+    """
+    try:
+        return await llm.json_call(system, user, **kw)
+    except LLMError as e:
+        if e.code == "LLM_TIMEOUT":
+            return LLMResult(text="", data=None, degraded=True, detail=f"模型超时：{e}")
+        raise
+
+
 @lru_cache(maxsize=1)
 def _chunk_subject_index() -> tuple[tuple[str, str], ...]:
     """把 (学科, 归一化正文) 一次性载入内存。
@@ -186,10 +216,12 @@ def _norm(s: str) -> str:
 async def route(llm: LLMClient, question: str, history: list[dict]) -> RouterResult:
     hist_text = "\n".join(f"{h['role']}: {h['content'][:120]}" for h in history[-4:]) or "（无）"
 
-    result = await llm.json_call(
+    result = await _tolerant_json_call(
+        llm,
         prompts.ROUTER_SYSTEM,
         prompts.ROUTER_USER.format(question=question, history=hist_text),
         max_tokens=200,
+        timeout=TIMEOUT_ROUTER,
     )
 
     if result.degraded or not result.data:
@@ -211,12 +243,14 @@ async def route(llm: LLMClient, question: str, history: list[dict]) -> RouterRes
 
 
 async def plan(llm: LLMClient, question: str, intent: str) -> PlannerResult:
-    result = await llm.json_call(
+    result = await _tolerant_json_call(
+        llm,
         prompts.PLANNER_SYSTEM,
         prompts.PLANNER_USER.format(question=question, intent=intent),
         # 700 不够：模型会把子查询写成长句，JSON 被截断在中间，
         # 解析直接失败。实测 1000 才能稳定收尾。
         max_tokens=1000,
+        timeout=TIMEOUT_PLANNER,
     )
 
     fallback = PlannerResult(
@@ -321,7 +355,8 @@ def retrieve(
 
 
 async def grade(llm: LLMClient, question: str, evidence: list[Evidence], threshold: float) -> GradeResult:
-    result = await llm.json_call(
+    result = await _tolerant_json_call(
+        llm,
         prompts.GRADER_SYSTEM,
         # 只喂前 8 条：12 条 × 200 字 = 2400 字，实测 grader 要 15 秒。
         # 前 8 条已经覆盖了重排后最相关的部分，再往后加只会拖慢且边际收益很低。
@@ -329,6 +364,7 @@ async def grade(llm: LLMClient, question: str, evidence: list[Evidence], thresho
             question=question, n=min(8, len(evidence)), evidence=format_evidence(evidence[:8])
         ),
         max_tokens=400,
+        timeout=TIMEOUT_GRADER,
     )
 
     if result.degraded or not result.data:
@@ -372,7 +408,8 @@ async def rewrite(
     next_id: int,
 ) -> tuple[list[SubQuery], bool, str]:
     """返回 (新子查询, 是否降级, 降级原因)。"""
-    result = await llm.json_call(
+    result = await _tolerant_json_call(
+        llm,
         prompts.REWRITER_SYSTEM,
         prompts.REWRITER_USER.format(
             question=question,
@@ -381,6 +418,7 @@ async def rewrite(
             next_id=next_id,
         ),
         max_tokens=500,
+        timeout=TIMEOUT_REWRITER,
     )
 
     if result.degraded or not result.data:
