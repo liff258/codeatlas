@@ -226,10 +226,12 @@ cases:
     domain: ai
     kind: semantic
     question: 检索回来的内容太长塞不进模型怎么办
-    expect_heading: [Context]
+    # 原来只认英文 Context——外部素材的章节标题是英文，中文提问映射不过去。
+    # 补了中文同义标题后，两边都认。
+    expect_heading: [Context, 上下文]
 
   - id: s08
     domain: ai
     kind: semantic
     question: 大模型记不住太多东西怎么办
-    expect_heading: [Memory]
+    expect_heading: [Memory, 记忆]

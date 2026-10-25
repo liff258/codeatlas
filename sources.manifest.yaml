@@ -293,6 +293,29 @@ sources:
     fetch_mode: fulltext
     attribution: 本人原创
     expected_chunks: 50
+
+  # ---- 2026-10-25 补：AI 域语义题全空（s07/s08）暴露的素材缺口 ----
+  # 外部素材的章节标题是英文（Optimize Context / Component Two: Memory），
+  # 中文口语化提问映射不过去。这两篇用中文写同样的主题，补上这层映射。
+  - id: own-context-window
+    domain: ai
+    subject: RAG
+    title: 【自写】上下文窗口不够用怎么办
+    url: local://notes/context-window.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 45
+
+  - id: own-agent-memory
+    domain: ai
+    subject: Agent
+    title: 【自写】Agent 的记忆怎么设计
+    url: local://notes/agent-memory.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 45
     covers: [状态机 vs 黑盒 AgentExecutor, 预算设计, 查询哈希去重, 降级策略]
 
   - id: own-g1-satb
