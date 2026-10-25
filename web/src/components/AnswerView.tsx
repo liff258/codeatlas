@@ -76,6 +76,74 @@ function renderInline(
   });
 }
 
+/* ────────────────────────── 表格 ────────────────────────── */
+
+/** 把 `| a | b |` 拆成 ['a', 'b']。首尾的竖线去掉，单元格去空白。 */
+function splitRow(line: string): string[] {
+  return line
+    .trim()
+    .replace(/^\|/, '')
+    .replace(/\|$/, '')
+    .split('|')
+    .map((c) => c.trim());
+}
+
+/**
+ * 是不是一张 Markdown 表格。
+ *
+ * 判据：第一行以 | 开头，第二行是分隔行（只含 - : | 和空白）。
+ * 只认这两条是因为流式输出时表格可能只到了表头，那时候先按段落渲染，
+ * 等分隔行到了再切成表格——不需要额外的"可能变表格"状态。
+ */
+function isTableBlock(lines: string[]): boolean {
+  if (lines.length < 2) return false;
+  if (!/^\s*\|/.test(lines[0])) return false;
+  return /^\s*\|[\s:|-]+\|\s*$/.test(lines[1]) && lines[1].includes('-');
+}
+
+function renderTable(
+  lines: string[],
+  key: number,
+  citations: Record<number, CitationEvent>,
+  onCite: (c: CitationEvent) => void,
+): ReactNode {
+  const header = splitRow(lines[0]);
+  const rows = lines.slice(2).filter((l) => l.trim() !== '').map(splitRow);
+
+  return (
+    <div key={key} className="my-3 overflow-x-auto">
+      <table className="w-full border-collapse text-[13.5px]">
+        <thead>
+          <tr>
+            {header.map((cell, i) => (
+              <th
+                key={i}
+                className="border-b border-line bg-paper-100/70 px-2.5 py-1.5 text-left font-semibold text-ink-900"
+              >
+                {renderInline(cell, citations, onCite)}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, ri) => (
+            <tr key={ri}>
+              {row.map((cell, ci) => (
+                <td
+                  key={ci}
+                  className="border-b border-line/60 px-2.5 py-1.5 align-top leading-[1.7] text-ink-700"
+                >
+                  {renderInline(cell, citations, onCite)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 /* ────────────────────────── 块级 ────────────────────────── */
 
 function renderBlocks(
@@ -89,14 +157,27 @@ function renderBlocks(
   return blocks.map((block, bi) => {
     const lines = block.split('\n');
 
-    // 小标题
+    // 小标题。
+    // 注意不能要求「整块只有一行」：模型经常写 `## 标题` 后紧跟列表、中间不留空行，
+    // 那样整块是多行的，会掉到段落分支渲染成字面的 `## 标题`。
+    // 正确处理是：首行当标题，剩下的递归当新块渲染。
     const h = /^(#{1,4})\s+(.*)$/.exec(lines[0]);
-    if (h && lines.length === 1) {
+    if (h) {
+      const rest = lines.slice(1).join('\n').trim();
       return (
-        <h3 key={bi} className="mt-4 mb-1.5 font-serif text-[15px] font-semibold text-ink-900">
-          {renderInline(h[2], citations, onCite)}
-        </h3>
+        <Fragment key={bi}>
+          <h3 className="mt-4 mb-1.5 font-serif text-[15px] font-semibold text-ink-900">
+            {renderInline(h[2], citations, onCite)}
+          </h3>
+          {rest !== '' && renderBlocks(rest, citations, onCite)}
+        </Fragment>
       );
+    }
+
+    // 表格要放在列表判断之前：表格行的开头是 |，不会被列表正则命中，
+    // 但如果不先拦下来，会掉进最后的段落分支渲染成一堆竖线文本。
+    if (isTableBlock(lines)) {
+      return renderTable(lines, bi, citations, onCite);
     }
 
     // 列表
