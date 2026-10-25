@@ -184,8 +184,10 @@ export default function GraphPanel({ graph }: { graph: GraphState | undefined })
                 ctx.stroke();
               }
 
-              // 标签：缩得太小时只画路径节点，避免糊成一团
-              if (scale > 0.9 || onPath || node.weight >= 4) {
+              // 标签：缩得太小时只画路径节点，避免糊成一团。
+              // 但节点总数很少（≤8）时不该藏——那个规模根本挤不着，
+              // 藏起来反而让面板看起来像一堆没名字的彩色圆点。
+              if (scale > 0.9 || onPath || node.weight >= 4 || data.nodes.length <= 8) {
                 const fs = 10.5 / scale;
                 ctx.font = `500 ${fs}px "PingFang SC", "Microsoft YaHei", sans-serif`;
                 ctx.textAlign = 'center';

@@ -601,6 +601,21 @@ def _fallback_graph(
                 for b in names[i + 1 :]:
                     _link(a, b, "使用")
 
+    # 第三层：同一个学科内 → "属于"关系。
+    # 触发场景：实体是从小标题抽的抽象概念名（"记忆与检索技术"），
+    # 正文里可能写的是"记忆"和"检索"，字面对不上，前两层都连不上。
+    # 但同属一个学科这件事本身是有意义的——图上至少能看出概念聚成几簇，
+    # 而不是一堆没有任何连线的孤立点。
+    if not edges:
+        by_subject: dict[str, list[str]] = {}
+        for n in nodes:
+            if n.subject and n.subject != "common":
+                by_subject.setdefault(n.subject, []).append(n.id)
+        for names in by_subject.values():
+            for i, a in enumerate(names):
+                for b in names[i + 1 :]:
+                    _link(a, b, "属于")
+
     degree: dict[str, int] = {}
     for e in edges:
         degree[e.source] = degree.get(e.source, 0) + 1
