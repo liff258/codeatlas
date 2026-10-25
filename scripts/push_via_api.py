@@ -115,6 +115,15 @@ def main() -> int:
                 continue
 
             data = fpath.read_bytes()
+
+            # ⚠️ 必须把 CRLF 规范成 LF，否则推上去的 blob 和本地 git 的 blob 哈希不同。
+            # git 提交时由 core.autocrlf 做这个转换，但 API 通道直接读磁盘字节，绕过了它。
+            # 后果很隐蔽：远端内容"看起来一样"，但下一次 rebase/pull 会整个文件冲突，
+            # 因为每一行都被认为改过。这个坑真踩过，排查了很久才定位到行尾。
+            # 判断依据：前 8000 字节没有 NUL 就当文本处理（二进制文件不能动）。
+            if b"\x00" not in data[:8000]:
+                data = data.replace(b"\r\n", b"\n")
+
             blob = gh_api(
                 f"repos/{REPO}/git/blobs",
                 method="POST",
