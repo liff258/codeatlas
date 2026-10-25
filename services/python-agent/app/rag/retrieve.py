@@ -218,6 +218,28 @@ class HybridRetriever:
 
 
 def build_retriever() -> HybridRetriever:
+    """每次调用都重新建 BM25 索引。
+
+    只适合脚本和测试。服务里请用 get_retriever()——5456 条文档建索引要 2 秒，
+    每个请求重建一次纯属浪费。
+    """
     from app.rag.bm25_index import build_from_db
 
     return HybridRetriever(build_from_db())
+
+
+_retriever: HybridRetriever | None = None
+
+
+def get_retriever() -> HybridRetriever:
+    """进程内单例。索引是只读的，可以安全共享。"""
+    global _retriever
+    if _retriever is None:
+        _retriever = build_retriever()
+    return _retriever
+
+
+def reset_retriever() -> None:
+    """重新入库后调用，让索引反映最新数据。"""
+    global _retriever
+    _retriever = None

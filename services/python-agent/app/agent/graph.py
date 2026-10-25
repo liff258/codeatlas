@@ -129,10 +129,11 @@ async def agent_stream(
             yield es.step("planner", "degraded", "规划降级为单查询", detail=planner.detail)
 
         # ---------- 3. 检索 ----------
-        from app.rag.retrieve import build_retriever
+        from app.rag.retrieve import get_retriever
 
         yield es.step("retriever", "running", f"混合检索 {len(planner.sub_queries)} 个子查询")
-        retriever = await asyncio.to_thread(build_retriever)
+        # 用单例而不是每次重建：BM25 索引建一次要 2 秒，索引本身是只读的
+        retriever = await asyncio.to_thread(get_retriever)
         evidence = await asyncio.to_thread(
             nodes.retrieve, retriever, planner.sub_queries, query_for_rerank=question
         )

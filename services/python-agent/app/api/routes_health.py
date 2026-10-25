@@ -35,5 +35,5 @@ async def health() -> dict[str, str]:
         "db": db_status,
         "llm": "ok" if settings.has_llm_key else "missing_key",
         "mode": "mock" if settings.mock_agent else "live",
-        "model": settings.llm_model,
+        "model": settings.agent_model,
     }

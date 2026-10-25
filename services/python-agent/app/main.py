@@ -39,6 +39,8 @@ async def _log_mode() -> None:
     logging.getLogger(__name__).info(
         "startup | mode=%s | model=%s | llm_key=%s",
         "mock" if settings.mock_agent else "live",
-        settings.llm_model,
+        # 打 agent_model 而不是 llm_model：后者是硅基流动的 DeepSeek 模型名，
+        # 和 Agent 实际调用的模型无关，打成那个会让人误以为配错了模型。
+        settings.agent_model,
         "set" if settings.has_llm_key else "MISSING",
     )
