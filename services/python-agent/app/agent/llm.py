@@ -274,14 +274,18 @@ class LLMClient:
 
             return await self._client.chat.completions.create(**kwargs)
         except asyncio.TimeoutError as e:
-            raise LLMError("LLM_TIMEOUT", f"模型响应超时（{self._timeout}s）") from e
+            # 报实际生效的超时值，不是客户端默认值——
+            # 各节点传了不同的 timeout，报 30 秒会让人以为配置没生效。
+            eff = timeout if timeout is not None else self._timeout
+            raise LLMError("LLM_TIMEOUT", f"模型响应超时（{eff:.0f}s）") from e
         except Exception as e:  # noqa: BLE001
             name = type(e).__name__
             status = getattr(e, "status_code", None)
             if status == 429 or "RateLimit" in name:
                 raise LLMError("LLM_RATE_LIMIT", "模型限流，请稍后再试") from e
             if "Timeout" in name:
-                raise LLMError("LLM_TIMEOUT", f"模型响应超时（{self._timeout}s）") from e
+                eff = timeout if timeout is not None else self._timeout
+                raise LLMError("LLM_TIMEOUT", f"模型响应超时（{eff:.0f}s）") from e
             raise LLMError("INTERNAL", f"模型调用失败：{name}") from e
 
     async def json_call(

@@ -369,10 +369,14 @@ async def grade(llm: LLMClient, question: str, evidence: list[Evidence], thresho
 
     if result.degraded or not result.data:
         # 启发式兜底：用重排分估覆盖率。
-        # 这不是随便凑数——重排分本身就是"这条证据和问题的相关度"，
-        # 取前三条的均值能反映整体证据质量，比固定给 0.5 有意义。
+        # 重排分本身就是"这条证据和问题的相关度"，取前三条均值比固定给 0.5 有意义。
+        #
+        # 但必须封顶 0.85：重排分回答的是"这条相关吗"，覆盖率问的是"够不够回答问题"，
+        # 两者不是一回事。实测 bge-reranker 对相关文档普遍给 0.9+，
+        # 直接当覆盖率会得到 0.97 这种比 LLM 判断（0.75）还高的数，
+        # 让系统在证据不足时也显得过度自信。降级路径不该声称"证据充分"。
         top = sorted((e.score for e in evidence), reverse=True)[:3]
-        cov = _clamp(sum(top) / len(top) if top else 0.0)
+        cov = min(0.85, sum(top) / len(top) if top else 0.0)
         return GradeResult(
             coverage=cov,
             decision="proceed" if cov >= threshold else "rewrite",
@@ -484,6 +488,35 @@ GRAPH_SYSTEM = """你是知识图谱抽取器。从证据里抽出核心概念�
 # 图谱 LLM 调用的硬超时。实测这个节点要 9~13 秒（模型输出虽短但启动慢），
 # 不设上限时它会把整条链路的延迟拖到不可接受。超时就用确定性兜底。
 GRAPH_TIMEOUT_SECONDS = 10.0
+
+
+def entities_from_evidence(evidence: list[Evidence], limit: int = 6) -> list[str]:
+    """规划节点降级时的实体兜底：从证据的小标题里取概念名。
+
+    为什么需要：planner 超时会退化成单查询、实体列表为空，图谱就被整个跳过——
+    而跨域边是这个产品最核心的视觉证据，不能因为一次 LLM 超时就不画了。
+
+    取 heading_path 的最后一段（小标题通常就是概念名，如「G1 收集器」「HNSW」），
+    去掉编号和标点。不追求精确，够画出一张有信息量的图即可。
+    """
+    out: list[str] = []
+    seen: set[str] = set()
+
+    for e in evidence:
+        if len(out) >= limit:
+            break
+        raw = (e.heading_path or "").split(">")[-1].strip()
+        # 去掉 "3.2 " 这类编号前缀和常见标点
+        name = re.sub(r"^[\d.\s、]+", "", raw)
+        name = re.sub(r"[：:，,。.（）()\[\]「」\"'`*#]", "", name).strip()
+        if not name or len(name) > 24 or len(name) < 2:
+            continue
+        if name in seen:
+            continue
+        seen.add(name)
+        out.append(name)
+
+    return out
 
 
 def _infer_rel(text: str) -> str:

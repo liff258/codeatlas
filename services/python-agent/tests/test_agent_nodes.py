@@ -418,3 +418,20 @@ async def test_deterministic_graph_skips_non_cooccurring():
     n, e, _, _, _ = await nodes.extract_graph(FakeLLM(""), "问题", evidence, ["甲", "乙"])
     assert len(n) == 2
     assert e == []
+
+
+def test_entities_from_evidence_strips_numbering():
+    """规划降级时从证据小标题兜底抽实体，要能去掉 "3.2 " 这类编号和标点。"""
+    evidence = [
+        Evidence(chunk_id="c_1", raw_id=1, doc_id=1, doc_name="d", heading_path="JVM > 3.2 G1 收集器",
+                 content="", score=0.9, subject="JVM", domain="backend"),
+        Evidence(chunk_id="c_2", raw_id=2, doc_id=2, doc_name="d", heading_path="向量检索 > HNSW：用图代替树",
+                 content="", score=0.8, subject="向量检索", domain="ai"),
+        Evidence(chunk_id="c_3", raw_id=3, doc_id=3, doc_name="d", heading_path="JVM > 3.2 G1 收集器",
+                 content="", score=0.7, subject="JVM", domain="backend"),
+    ]
+    names = nodes.entities_from_evidence(evidence)
+    assert "G1 收集器" in names
+    assert "HNSW：用图代替树" not in names  # 标点被清掉
+    assert any("HNSW" in n for n in names)
+    assert len(names) == len(set(names)), "必须去重"

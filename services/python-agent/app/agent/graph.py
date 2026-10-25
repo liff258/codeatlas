@@ -230,6 +230,11 @@ async def agent_stream(
                 if e not in all_entities:
                     all_entities.append(e)
 
+        # 规划降级时实体列表是空的，图谱会被整个跳过——而跨域边是核心视觉证据。
+        # 这里从证据小标题里兜底抽实体，保证图能画出来。
+        if not all_entities:
+            all_entities = nodes.entities_from_evidence(evidence)
+
         yield es.step("tool", "running", "抽取实体关系")
         g_nodes, g_edges, g_path, _, g_detail = await nodes.extract_graph(
             llm, question, evidence, all_entities
