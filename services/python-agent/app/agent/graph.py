@@ -123,7 +123,7 @@ async def agent_stream(
 
         # ---------- 2. 规划 ----------
         yield es.step("planner", "running", "拆解子查询")
-        planner = await nodes.plan(llm, question, router.intent)
+        planner = await nodes.plan(llm, question, router.intent, history)
         yield es.plan(router.intent, planner.hops, planner.sub_queries)
         if planner.degraded:
             yield es.step("planner", "degraded", "规划降级为单查询", detail=planner.detail)

@@ -242,11 +242,21 @@ async def route(llm: LLMClient, question: str, history: list[dict]) -> RouterRes
 # ---------------------------------------------------------------- 2. 规划
 
 
-async def plan(llm: LLMClient, question: str, intent: str) -> PlannerResult:
+async def plan(
+    llm: LLMClient,
+    question: str,
+    intent: str,
+    history: list[dict] | None = None,
+) -> PlannerResult:
+    # 只带最近两轮：足够消解指代，又不会让 prompt 膨胀。
+    # 每条截断到 150 字——追问只需要知道"在聊什么"，不需要完整答案。
+    hist_text = (
+        "\n".join(f"{h['role']}: {h['content'][:150]}" for h in (history or [])[-4:]) or "（无）"
+    )
     result = await _tolerant_json_call(
         llm,
-        prompts.PLANNER_SYSTEM,
-        prompts.PLANNER_USER.format(question=question, intent=intent),
+        prompts.PLANNER_SYSTEM + prompts.PLANNER_REFERENCE_HINT,
+        prompts.PLANNER_USER.format(question=question, intent=intent, history=hist_text),
         # 700 不够：模型会把子查询写成长句，JSON 被截断在中间，
         # 解析直接失败。实测 1000 才能稳定收尾。
         max_tokens=1000,
@@ -557,20 +567,39 @@ def _fallback_graph(
     edges: list[GraphEdge] = []
     seen: set[tuple[str, str]] = set()
 
+    def _link(a: str, b: str, rel: str) -> None:
+        key = (a, b) if a < b else (b, a)
+        if key in seen:
+            return
+        seen.add(key)
+        both_known = domain_of[a] != "common" and domain_of[b] != "common"
+        edges.append(
+            GraphEdge(source=a, target=b, rel=rel, weight=1.0,
+                      cross_domain=both_known and domain_of[a] != domain_of[b])
+        )
+
+    # 第一层：同一条证据里共现 —— 强关联，关系类型从正文推断
     for e in evidence:
         hit = [n for n in entities[:8] if _norm(n) in _norm(e.content)]
         rel = _infer_rel(e.content)
         for i, a in enumerate(hit):
             for b in hit[i + 1 :]:
-                key = (a, b) if a < b else (b, a)
-                if key in seen:
-                    continue
-                seen.add(key)
-                both_known = domain_of[a] != "common" and domain_of[b] != "common"
-                edges.append(
-                    GraphEdge(source=a, target=b, rel=rel, weight=1.0,
-                              cross_domain=both_known and domain_of[a] != domain_of[b])
-                )
+                _link(a, b, rel)
+
+    # 第二层：同一篇文档里出现 —— 弱关联。
+    # 为什么要这层：追问场景下实体常常分散在不同 chunk 里（一个讲 HNSW 的分层结构、
+    # 一个讲 B+ 树的全序），同块共现一条边都出不来，图上就只剩一堆孤立的点。
+    # 同一篇文档至少说明它们在同一主题下被讨论，比完全没有连线有信息量。
+    if not edges:
+        by_doc: dict[int, list[str]] = {}
+        for e in evidence:
+            for n in entities[:8]:
+                if _norm(n) in _norm(e.content) and n not in by_doc.setdefault(e.doc_id, []):
+                    by_doc[e.doc_id].append(n)
+        for names in by_doc.values():
+            for i, a in enumerate(names):
+                for b in names[i + 1 :]:
+                    _link(a, b, "使用")
 
     degree: dict[str, int] = {}
     for e in edges:

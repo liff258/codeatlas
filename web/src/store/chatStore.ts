@@ -160,6 +160,15 @@ export const useChatStore = create<ChatStore>((set, get) => {
       const q = question.trim();
       if (!q || get().streaming) return;
 
+      // 取本会话里已完成的历史消息作为上下文。
+      // 为什么要截断：历史全量塞进去会挤占检索和生成的 token 预算，
+      // 而且更早的内容对当前追问的边际价值很低。6 条（约 3 轮）够用。
+      // 只取 phase==='done' 的：正在流式或出错的那条内容不完整，带上反而误导。
+      const history = get()
+        .messages.filter((m) => m.phase === 'done' && m.content.trim() !== '')
+        .slice(-6)
+        .map((m) => ({ role: m.role, content: m.content.slice(0, 400) }));
+
       const asstId = `a_${Date.now().toString(36)}`;
       const userMsg: ChatMessage = {
         id: `u_${Date.now().toString(36)}`,
@@ -187,7 +196,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
 
       try {
         for await (const evt of postAgentStream(
-          { question: q },
+          { question: q, history },
           {
             signal: abort.signal,
             onOpen: () => set({ traceId: null }),
