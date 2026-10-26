@@ -25,6 +25,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(Result.fail(400, ex.getMessage()));
     }
 
+    /**
+     * 业务错误按自带的状态码返回。
+     *
+     * 4xx 不打 error 日志：用户敲错 id 不是系统故障，打 error 会把真正的故障淹掉。
+     */
+    @ExceptionHandler(BizException.class)
+    public ResponseEntity<Result<Void>> handleBiz(BizException ex) {
+        HttpStatus status = HttpStatus.resolve(ex.getCode());
+        if (status == null) {
+            status = HttpStatus.BAD_REQUEST;
+        }
+        if (status.is5xxServerError()) {
+            log.error("biz error {}", ex.getCode(), ex);
+        }
+        return ResponseEntity.status(status).body(Result.fail(ex.getCode(), ex.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Result<Void>> handleOther(Exception ex) {
         log.error("unhandled exception", ex);

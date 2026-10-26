@@ -190,6 +190,11 @@ public class ChatService {
             Message saved = sessionService.saveAssistantMessage(ctx.sessionId, answer, ctx.traceId);
             ObjectNode node = (ObjectNode) objectMapper.readTree(data);
             node.put("message_id", saved.getId());
+            // 同时告诉前端这次落在哪个会话。
+            // 前端要靠它把 session_id 存下来，刷新后恢复对话；
+            // 否则每次提问都新建会话，历史永远接不上（这个坑之前踩过：
+            // session_id 字段没绑定，消息全落到新会话里）。
+            node.put("session_id", ctx.sessionId);
             return objectMapper.writeValueAsString(node);
         } catch (Exception e) {
             log.error("persist assistant message failed | trace={}", ctx.traceId, e);
