@@ -1,0 +1,51 @@
+{
+ "concepts": [
+  {
+   "name": "JVM",
+   "type": "概念"
+  },
+  {
+   "name": "内存区域",
+   "type": "概念"
+  },
+  {
+   "name": "类加载",
+   "type": "概念"
+  },
+  {
+   "name": "垃圾回收",
+   "type": "概念"
+  },
+  {
+   "name": "OOM",
+   "type": "问题"
+  },
+  {
+   "name": "Full GC",
+   "type": "问题"
+  },
+  {
+   "name": "CPU 飙高",
+   "type": "问题"
+  }
+ ],
+ "edges": [
+  {
+   "source": "垃圾回收",
+   "target": "OOM",
+   "rel": "导致"
+  },
+  {
+   "source": "垃圾回收",
+   "target": "Full GC",
+   "rel": "导致"
+  },
+  {
+   "source": "垃圾回收",
+   "target": "CPU 飙高",
+   "rel": "导致"
+  }
+ ],
+ "doc_id": 52,
+ "subject": "JVM"
+}

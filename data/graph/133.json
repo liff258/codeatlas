@@ -1,0 +1,46 @@
+{
+ "concepts": [
+  {
+   "name": "LinkedHashMap",
+   "type": "组件"
+  },
+  {
+   "name": "HashMap",
+   "type": "组件"
+  },
+  {
+   "name": "双向链表",
+   "type": "组件"
+  },
+  {
+   "name": "插入顺序",
+   "type": "概念"
+  },
+  {
+   "name": "访问顺序",
+   "type": "概念"
+  },
+  {
+   "name": "LRU 缓存",
+   "type": "概念"
+  },
+  {
+   "name": "Node",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "LinkedHashMap",
+   "target": "双向链表",
+   "rel": "使用"
+  },
+  {
+   "source": "LinkedHashMap",
+   "target": "Node",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 133,
+ "subject": "Java基础"
+}

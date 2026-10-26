@@ -1,0 +1,33 @@
+{
+ "concepts": [
+  {
+   "name": "TCP 连接",
+   "type": "概念"
+  },
+  {
+   "name": "四元组",
+   "type": "概念"
+  },
+  {
+   "name": "端口号",
+   "type": "参数"
+  },
+  {
+   "name": "TIME_WAIT",
+   "type": "概念"
+  },
+  {
+   "name": "NAT 网关",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "TCP 连接",
+   "target": "四元组",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 89,
+ "subject": "网络"
+}

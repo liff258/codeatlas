@@ -1,0 +1,41 @@
+{
+ "concepts": [
+  {
+   "name": "API 网关",
+   "type": "概念"
+  },
+  {
+   "name": "流量入口",
+   "type": "概念"
+  },
+  {
+   "name": "请求转发",
+   "type": "概念"
+  },
+  {
+   "name": "请求过滤",
+   "type": "概念"
+  },
+  {
+   "name": "Netflix Zuul",
+   "type": "组件"
+  },
+  {
+   "name": "OpenResty",
+   "type": "组件"
+  },
+  {
+   "name": "Kong",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "API 网关",
+   "target": "流量入口",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 21,
+ "subject": "分布式"
+}

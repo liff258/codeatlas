@@ -1,0 +1,48 @@
+{
+ "concepts": [
+  {
+   "name": "内存碎片",
+   "type": "问题"
+  },
+  {
+   "name": "Redis",
+   "type": "组件"
+  },
+  {
+   "name": "zmalloc",
+   "type": "算法"
+  },
+  {
+   "name": "PREFIX_SIZE",
+   "type": "参数"
+  },
+  {
+   "name": "maxmemory",
+   "type": "参数"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Redis",
+   "target": "内存碎片",
+   "rel": "导致"
+  },
+  {
+   "source": "zmalloc",
+   "target": "内存碎片",
+   "rel": "导致"
+  },
+  {
+   "source": "PREFIX_SIZE",
+   "target": "zmalloc",
+   "rel": "使用"
+  },
+  {
+   "source": "maxmemory",
+   "target": "Redis",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 108,
+ "subject": "Redis"
+}

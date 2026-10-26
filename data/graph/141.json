@@ -1,0 +1,57 @@
+{
+ "concepts": [
+  {
+   "name": "G1",
+   "type": "组件"
+  },
+  {
+   "name": "SATB",
+   "type": "算法"
+  },
+  {
+   "name": "写屏障",
+   "type": "算法"
+  },
+  {
+   "name": "三色标记",
+   "type": "算法"
+  },
+  {
+   "name": "漏标",
+   "type": "问题"
+  },
+  {
+   "name": "并发标记",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "G1",
+   "target": "SATB",
+   "rel": "使用"
+  },
+  {
+   "source": "SATB",
+   "target": "写屏障",
+   "rel": "依赖"
+  },
+  {
+   "source": "SATB",
+   "target": "漏标",
+   "rel": "解决"
+  },
+  {
+   "source": "三色标记",
+   "target": "漏标",
+   "rel": "导致"
+  },
+  {
+   "source": "并发标记",
+   "target": "漏标",
+   "rel": "导致"
+  }
+ ],
+ "doc_id": 141,
+ "subject": "JVM"
+}

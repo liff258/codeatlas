@@ -1,0 +1,39 @@
+{
+ "concepts": [
+  {
+   "name": "jps",
+   "type": "概念"
+  },
+  {
+   "name": "jstat",
+   "type": "概念"
+  },
+  {
+   "name": "jinfo",
+   "type": "概念"
+  },
+  {
+   "name": "jmap",
+   "type": "概念"
+  },
+  {
+   "name": "jhat",
+   "type": "概念"
+  },
+  {
+   "name": "jstack",
+   "type": "概念"
+  },
+  {
+   "name": "JConsole",
+   "type": "概念"
+  },
+  {
+   "name": "Visual VM",
+   "type": "概念"
+  }
+ ],
+ "edges": [],
+ "doc_id": 49,
+ "subject": "JVM"
+}

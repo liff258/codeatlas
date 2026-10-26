@@ -1,0 +1,85 @@
+{
+ "concepts": [
+  {
+   "name": "事务隔离级别",
+   "type": "概念"
+  },
+  {
+   "name": "READ-UNCOMMITTED",
+   "type": "参数"
+  },
+  {
+   "name": "READ-COMMITTED",
+   "type": "参数"
+  },
+  {
+   "name": "REPEATABLE-READ",
+   "type": "参数"
+  },
+  {
+   "name": "SERIALIZABLE",
+   "type": "参数"
+  },
+  {
+   "name": "脏读",
+   "type": "问题"
+  },
+  {
+   "name": "不可重复读",
+   "type": "问题"
+  },
+  {
+   "name": "幻读",
+   "type": "问题"
+  }
+ ],
+ "edges": [
+  {
+   "source": "READ-UNCOMMITTED",
+   "target": "脏读",
+   "rel": "导致"
+  },
+  {
+   "source": "READ-UNCOMMITTED",
+   "target": "不可重复读",
+   "rel": "导致"
+  },
+  {
+   "source": "READ-UNCOMMITTED",
+   "target": "幻读",
+   "rel": "导致"
+  },
+  {
+   "source": "READ-COMMITTED",
+   "target": "脏读",
+   "rel": "解决"
+  },
+  {
+   "source": "REPEATABLE-READ",
+   "target": "脏读",
+   "rel": "解决"
+  },
+  {
+   "source": "REPEATABLE-READ",
+   "target": "不可重复读",
+   "rel": "解决"
+  },
+  {
+   "source": "SERIALIZABLE",
+   "target": "脏读",
+   "rel": "解决"
+  },
+  {
+   "source": "SERIALIZABLE",
+   "target": "不可重复读",
+   "rel": "解决"
+  },
+  {
+   "source": "SERIALIZABLE",
+   "target": "幻读",
+   "rel": "解决"
+  }
+ ],
+ "doc_id": 77,
+ "subject": "MySQL"
+}

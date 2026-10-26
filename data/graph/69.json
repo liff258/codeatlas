@@ -1,0 +1,66 @@
+{
+ "concepts": [
+  {
+   "name": "索引",
+   "type": "概念"
+  },
+  {
+   "name": "全表扫描",
+   "type": "问题"
+  },
+  {
+   "name": "回表",
+   "type": "问题"
+  },
+  {
+   "name": "最左前缀原则",
+   "type": "概念"
+  },
+  {
+   "name": "隐式类型转换",
+   "type": "问题"
+  },
+  {
+   "name": "覆盖索引",
+   "type": "概念"
+  },
+  {
+   "name": "EXPLAIN",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "索引",
+   "target": "全表扫描",
+   "rel": "导致"
+  },
+  {
+   "source": "回表",
+   "target": "全表扫描",
+   "rel": "导致"
+  },
+  {
+   "source": "最左前缀原则",
+   "target": "索引",
+   "rel": "属于"
+  },
+  {
+   "source": "隐式类型转换",
+   "target": "索引",
+   "rel": "导致"
+  },
+  {
+   "source": "覆盖索引",
+   "target": "回表",
+   "rel": "解决"
+  },
+  {
+   "source": "EXPLAIN",
+   "target": "全表扫描",
+   "rel": "解决"
+  }
+ ],
+ "doc_id": 69,
+ "subject": "MySQL"
+}

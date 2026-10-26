@@ -1,0 +1,48 @@
+{
+ "concepts": [
+  {
+   "name": "agents",
+   "type": "概念"
+  },
+  {
+   "name": "LLM",
+   "type": "组件"
+  },
+  {
+   "name": "Prompt chaining",
+   "type": "算法"
+  },
+  {
+   "name": "Routing",
+   "type": "算法"
+  },
+  {
+   "name": "Parallelization",
+   "type": "算法"
+  }
+ ],
+ "edges": [
+  {
+   "source": "agents",
+   "target": "LLM",
+   "rel": "使用"
+  },
+  {
+   "source": "agents",
+   "target": "Prompt chaining",
+   "rel": "使用"
+  },
+  {
+   "source": "agents",
+   "target": "Routing",
+   "rel": "使用"
+  },
+  {
+   "source": "agents",
+   "target": "Parallelization",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 148,
+ "subject": "Agent"
+}

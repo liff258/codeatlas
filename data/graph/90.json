@@ -1,0 +1,47 @@
+{
+ "concepts": [
+  {
+   "name": "NAT 协议",
+   "type": "概念"
+  },
+  {
+   "name": "私有 IP 地址",
+   "type": "参数"
+  },
+  {
+   "name": "网络地址转换",
+   "type": "算法"
+  },
+  {
+   "name": "局域网",
+   "type": "组件"
+  },
+  {
+   "name": "广域网",
+   "type": "组件"
+  },
+  {
+   "name": "SOHO",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "NAT 协议",
+   "target": "网络地址转换",
+   "rel": "属于"
+  },
+  {
+   "source": "局域网",
+   "target": "广域网",
+   "rel": "对比"
+  },
+  {
+   "source": "SOHO",
+   "target": "局域网",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 90,
+ "subject": "网络"
+}

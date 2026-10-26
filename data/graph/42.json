@@ -1,0 +1,66 @@
+{
+ "concepts": [
+  {
+   "name": "SPI",
+   "type": "概念"
+  },
+  {
+   "name": "API",
+   "type": "概念"
+  },
+  {
+   "name": "ServiceLoader",
+   "type": "组件"
+  },
+  {
+   "name": "双亲委派模型",
+   "type": "概念"
+  },
+  {
+   "name": "JDBC",
+   "type": "概念"
+  },
+  {
+   "name": "依赖倒置原则",
+   "type": "概念"
+  },
+  {
+   "name": "开闭原则",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "SPI",
+   "target": "API",
+   "rel": "对比"
+  },
+  {
+   "source": "SPI",
+   "target": "双亲委派模型",
+   "rel": "解决"
+  },
+  {
+   "source": "SPI",
+   "target": "依赖倒置原则",
+   "rel": "属于"
+  },
+  {
+   "source": "SPI",
+   "target": "开闭原则",
+   "rel": "属于"
+  },
+  {
+   "source": "ServiceLoader",
+   "target": "SPI",
+   "rel": "使用"
+  },
+  {
+   "source": "JDBC",
+   "target": "SPI",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 42,
+ "subject": "Java基础"
+}

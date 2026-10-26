@@ -1,0 +1,29 @@
+{
+ "concepts": [
+  {
+   "name": "ConcurrentHashMap",
+   "type": "组件"
+  },
+  {
+   "name": "BlockingQueue",
+   "type": "概念"
+  },
+  {
+   "name": "HashMap",
+   "type": "组件"
+  },
+  {
+   "name": "Vector",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "ConcurrentHashMap",
+   "target": "HashMap",
+   "rel": "解决"
+  }
+ ],
+ "doc_id": 9,
+ "subject": "并发"
+}

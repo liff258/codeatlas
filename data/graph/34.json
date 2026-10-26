@@ -1,0 +1,51 @@
+{
+ "concepts": [
+  {
+   "name": "Java",
+   "type": "概念"
+  },
+  {
+   "name": "JVM",
+   "type": "组件"
+  },
+  {
+   "name": "JDK",
+   "type": "组件"
+  },
+  {
+   "name": "JRE",
+   "type": "组件"
+  },
+  {
+   "name": "字节码",
+   "type": "概念"
+  },
+  {
+   "name": "AOT",
+   "type": "概念"
+  },
+  {
+   "name": "C++",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Java",
+   "target": "JVM",
+   "rel": "使用"
+  },
+  {
+   "source": "Java",
+   "target": "AOT",
+   "rel": "对比"
+  },
+  {
+   "source": "Java",
+   "target": "C++",
+   "rel": "对比"
+  }
+ ],
+ "doc_id": 34,
+ "subject": "Java基础"
+}

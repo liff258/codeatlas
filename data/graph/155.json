@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "B+ 树",
+   "type": "算法"
+  },
+  {
+   "name": "向量检索",
+   "type": "概念"
+  },
+  {
+   "name": "高维空间",
+   "type": "概念"
+  },
+  {
+   "name": "HNSW",
+   "type": "算法"
+  },
+  {
+   "name": "IVF",
+   "type": "算法"
+  },
+  {
+   "name": "PQ",
+   "type": "算法"
+  },
+  {
+   "name": "RAG",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "向量检索",
+   "target": "B+ 树",
+   "rel": "对比"
+  },
+  {
+   "source": "高维空间",
+   "target": "B+ 树",
+   "rel": "导致"
+  },
+  {
+   "source": "RAG",
+   "target": "HNSW",
+   "rel": "使用"
+  },
+  {
+   "source": "RAG",
+   "target": "IVF",
+   "rel": "使用"
+  },
+  {
+   "source": "RAG",
+   "target": "PQ",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 155,
+ "subject": "向量检索"
+}

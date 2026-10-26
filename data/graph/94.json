@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "TCP",
+   "type": "概念"
+  },
+  {
+   "name": "UDP",
+   "type": "概念"
+  },
+  {
+   "name": "三次握手",
+   "type": "算法"
+  },
+  {
+   "name": "四次挥手",
+   "type": "算法"
+  },
+  {
+   "name": "可靠传输",
+   "type": "问题"
+  },
+  {
+   "name": "面向连接",
+   "type": "概念"
+  },
+  {
+   "name": "无连接",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "TCP",
+   "target": "三次握手",
+   "rel": "使用"
+  },
+  {
+   "source": "TCP",
+   "target": "四次挥手",
+   "rel": "使用"
+  },
+  {
+   "source": "TCP",
+   "target": "可靠传输",
+   "rel": "解决"
+  },
+  {
+   "source": "TCP",
+   "target": "面向连接",
+   "rel": "属于"
+  },
+  {
+   "source": "UDP",
+   "target": "无连接",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 94,
+ "subject": "网络"
+}

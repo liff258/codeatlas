@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "MVCC",
+   "type": "概念"
+  },
+  {
+   "name": "InnoDB",
+   "type": "组件"
+  },
+  {
+   "name": "ReadView",
+   "type": "组件"
+  },
+  {
+   "name": "undo-log",
+   "type": "组件"
+  },
+  {
+   "name": "隐藏字段",
+   "type": "组件"
+  },
+  {
+   "name": "数据可见性算法",
+   "type": "算法"
+  },
+  {
+   "name": "不可重复读",
+   "type": "问题"
+  }
+ ],
+ "edges": [
+  {
+   "source": "ReadView",
+   "target": "MVCC",
+   "rel": "使用"
+  },
+  {
+   "source": "undo-log",
+   "target": "MVCC",
+   "rel": "使用"
+  },
+  {
+   "source": "隐藏字段",
+   "target": "MVCC",
+   "rel": "使用"
+  },
+  {
+   "source": "数据可见性算法",
+   "target": "MVCC",
+   "rel": "使用"
+  },
+  {
+   "source": "MVCC",
+   "target": "不可重复读",
+   "rel": "解决"
+  }
+ ],
+ "doc_id": 65,
+ "subject": "MySQL"
+}

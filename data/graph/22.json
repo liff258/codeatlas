@@ -1,0 +1,66 @@
+{
+ "concepts": [
+  {
+   "name": "配置中心",
+   "type": "概念"
+  },
+  {
+   "name": "微服务架构",
+   "type": "概念"
+  },
+  {
+   "name": "Apollo",
+   "type": "组件"
+  },
+  {
+   "name": "Nacos",
+   "type": "组件"
+  },
+  {
+   "name": "K8s ConfigMap",
+   "type": "组件"
+  },
+  {
+   "name": "注册中心",
+   "type": "组件"
+  },
+  {
+   "name": "配置推送机制",
+   "type": "算法"
+  }
+ ],
+ "edges": [
+  {
+   "source": "微服务架构",
+   "target": "配置中心",
+   "rel": "导致"
+  },
+  {
+   "source": "配置中心",
+   "target": "Apollo",
+   "rel": "属于"
+  },
+  {
+   "source": "配置中心",
+   "target": "Nacos",
+   "rel": "属于"
+  },
+  {
+   "source": "配置中心",
+   "target": "K8s ConfigMap",
+   "rel": "对比"
+  },
+  {
+   "source": "配置中心",
+   "target": "注册中心",
+   "rel": "对比"
+  },
+  {
+   "source": "配置中心",
+   "target": "配置推送机制",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 22,
+ "subject": "分布式"
+}

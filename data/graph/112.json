@@ -1,0 +1,48 @@
+{
+ "concepts": [
+  {
+   "name": "跳表",
+   "type": "概念"
+  },
+  {
+   "name": "有序集合",
+   "type": "概念"
+  },
+  {
+   "name": "平衡树",
+   "type": "概念"
+  },
+  {
+   "name": "红黑树",
+   "type": "概念"
+  },
+  {
+   "name": "B+树",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "有序集合",
+   "target": "跳表",
+   "rel": "使用"
+  },
+  {
+   "source": "跳表",
+   "target": "平衡树",
+   "rel": "对比"
+  },
+  {
+   "source": "跳表",
+   "target": "红黑树",
+   "rel": "对比"
+  },
+  {
+   "source": "跳表",
+   "target": "B+树",
+   "rel": "对比"
+  }
+ ],
+ "doc_id": 112,
+ "subject": "Redis"
+}

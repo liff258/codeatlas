@@ -1,0 +1,47 @@
+{
+ "concepts": [
+  {
+   "name": "线程池",
+   "type": "组件"
+  },
+  {
+   "name": "corePoolSize",
+   "type": "参数"
+  },
+  {
+   "name": "maximumPoolSize",
+   "type": "参数"
+  },
+  {
+   "name": "queueCapacity",
+   "type": "参数"
+  },
+  {
+   "name": "SynchronousQueue",
+   "type": "组件"
+  },
+  {
+   "name": "Executors",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "线程池",
+   "target": "corePoolSize",
+   "rel": "使用"
+  },
+  {
+   "source": "线程池",
+   "target": "maximumPoolSize",
+   "rel": "使用"
+  },
+  {
+   "source": "线程池",
+   "target": "queueCapacity",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 14,
+ "subject": "并发"
+}

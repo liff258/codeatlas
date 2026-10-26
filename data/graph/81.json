@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "TCP",
+   "type": "概念"
+  },
+  {
+   "name": "UDP",
+   "type": "概念"
+  },
+  {
+   "name": "端口号",
+   "type": "参数"
+  },
+  {
+   "name": "socket",
+   "type": "组件"
+  },
+  {
+   "name": "协议栈",
+   "type": "组件"
+  },
+  {
+   "name": "DNS",
+   "type": "概念"
+  },
+  {
+   "name": "HTTPS",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "TCP",
+   "target": "端口号",
+   "rel": "使用"
+  },
+  {
+   "source": "UDP",
+   "target": "端口号",
+   "rel": "使用"
+  },
+  {
+   "source": "DNS",
+   "target": "TCP",
+   "rel": "使用"
+  },
+  {
+   "source": "DNS",
+   "target": "UDP",
+   "rel": "使用"
+  },
+  {
+   "source": "HTTPS",
+   "target": "TCP",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 81,
+ "subject": "网络"
+}

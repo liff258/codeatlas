@@ -1,0 +1,42 @@
+{
+ "concepts": [
+  {
+   "name": "自增主键",
+   "type": "概念"
+  },
+  {
+   "name": "AUTO_INCREMENT",
+   "type": "参数"
+  },
+  {
+   "name": "MyISAM",
+   "type": "组件"
+  },
+  {
+   "name": "InnoDB",
+   "type": "组件"
+  },
+  {
+   "name": "聚集索引",
+   "type": "概念"
+  },
+  {
+   "name": "自增值",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "自增主键",
+   "target": "聚集索引",
+   "rel": "属于"
+  },
+  {
+   "source": "自增主键",
+   "target": "AUTO_INCREMENT",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 66,
+ "subject": "MySQL"
+}

@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "CAP",
+   "type": "概念"
+  },
+  {
+   "name": "Raft",
+   "type": "算法"
+  },
+  {
+   "name": "RPC",
+   "type": "组件"
+  },
+  {
+   "name": "分布式锁",
+   "type": "组件"
+  },
+  {
+   "name": "事务",
+   "type": "概念"
+  },
+  {
+   "name": "分布式ID",
+   "type": "概念"
+  },
+  {
+   "name": "ZooKeeper",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "分布式锁",
+   "target": "分布式ID",
+   "rel": "解决"
+  },
+  {
+   "source": "事务",
+   "target": "分布式锁",
+   "rel": "使用"
+  },
+  {
+   "source": "RPC",
+   "target": "CAP",
+   "rel": "使用"
+  },
+  {
+   "source": "Raft",
+   "target": "CAP",
+   "rel": "解决"
+  },
+  {
+   "source": "ZooKeeper",
+   "target": "分布式锁",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 27,
+ "subject": "分布式"
+}

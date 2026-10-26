@@ -1,0 +1,39 @@
+{
+ "concepts": [
+  {
+   "name": "Exception",
+   "type": "概念"
+  },
+  {
+   "name": "Error",
+   "type": "概念"
+  },
+  {
+   "name": "Throwable",
+   "type": "概念"
+  },
+  {
+   "name": "Checked Exception",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Exception",
+   "target": "Throwable",
+   "rel": "属于"
+  },
+  {
+   "source": "Error",
+   "target": "Throwable",
+   "rel": "属于"
+  },
+  {
+   "source": "Checked Exception",
+   "target": "Exception",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 36,
+ "subject": "Java基础"
+}

@@ -1,0 +1,57 @@
+{
+ "concepts": [
+  {
+   "name": "代理模式",
+   "type": "概念"
+  },
+  {
+   "name": "静态代理",
+   "type": "组件"
+  },
+  {
+   "name": "动态代理",
+   "type": "组件"
+  },
+  {
+   "name": "JDK 动态代理",
+   "type": "组件"
+  },
+  {
+   "name": "CGLIB 动态代理",
+   "type": "组件"
+  },
+  {
+   "name": "真实对象",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "代理模式",
+   "target": "静态代理",
+   "rel": "属于"
+  },
+  {
+   "source": "代理模式",
+   "target": "动态代理",
+   "rel": "属于"
+  },
+  {
+   "source": "动态代理",
+   "target": "JDK 动态代理",
+   "rel": "属于"
+  },
+  {
+   "source": "动态代理",
+   "target": "CGLIB 动态代理",
+   "rel": "属于"
+  },
+  {
+   "source": "代理模式",
+   "target": "真实对象",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 39,
+ "subject": "Java基础"
+}

@@ -1,0 +1,31 @@
+{
+ "concepts": [
+  {
+   "name": "Zuul",
+   "type": "组件"
+  },
+  {
+   "name": "路由",
+   "type": "概念"
+  },
+  {
+   "name": "Predicate",
+   "type": "概念"
+  },
+  {
+   "name": "Filter",
+   "type": "概念"
+  },
+  {
+   "name": "限流",
+   "type": "概念"
+  },
+  {
+   "name": "Spring WebFlux",
+   "type": "组件"
+  }
+ ],
+ "edges": [],
+ "doc_id": 31,
+ "subject": "分布式"
+}

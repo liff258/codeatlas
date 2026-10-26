@@ -1,0 +1,51 @@
+{
+ "concepts": [
+  {
+   "name": "JMM",
+   "type": "概念"
+  },
+  {
+   "name": "Java 内存模型",
+   "type": "概念"
+  },
+  {
+   "name": "CPU 缓存模型",
+   "type": "概念"
+  },
+  {
+   "name": "指令重排序",
+   "type": "概念"
+  },
+  {
+   "name": "可见性",
+   "type": "概念"
+  },
+  {
+   "name": "原子性",
+   "type": "概念"
+  },
+  {
+   "name": "有序性",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "JMM",
+   "target": "Java 内存模型",
+   "rel": "属于"
+  },
+  {
+   "source": "JMM",
+   "target": "CPU 缓存模型",
+   "rel": "依赖"
+  },
+  {
+   "source": "JMM",
+   "target": "指令重排序",
+   "rel": "依赖"
+  }
+ ],
+ "doc_id": 16,
+ "subject": "并发"
+}

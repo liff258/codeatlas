@@ -1,0 +1,51 @@
+{
+ "concepts": [
+  {
+   "name": "Spring Boot",
+   "type": "组件"
+  },
+  {
+   "name": "可执行 JAR",
+   "type": "概念"
+  },
+  {
+   "name": "Boot Loader",
+   "type": "组件"
+  },
+  {
+   "name": "内嵌 Tomcat",
+   "type": "组件"
+  },
+  {
+   "name": "Main-Class",
+   "type": "参数"
+  },
+  {
+   "name": "Start-Class",
+   "type": "参数"
+  },
+  {
+   "name": "依赖",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Spring Boot",
+   "target": "可执行 JAR",
+   "rel": "属于"
+  },
+  {
+   "source": "Boot Loader",
+   "target": "内嵌 Tomcat",
+   "rel": "使用"
+  },
+  {
+   "source": "Boot Loader",
+   "target": "依赖",
+   "rel": "解决"
+  }
+ ],
+ "doc_id": 117,
+ "subject": "Spring"
+}

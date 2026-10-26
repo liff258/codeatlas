@@ -1,0 +1,46 @@
+{
+ "concepts": [
+  {
+   "name": "Redis",
+   "type": "组件"
+  },
+  {
+   "name": "延时任务",
+   "type": "概念"
+  },
+  {
+   "name": "过期事件监听",
+   "type": "算法"
+  },
+  {
+   "name": "Redisson",
+   "type": "组件"
+  },
+  {
+   "name": "DelayedQueue",
+   "type": "组件"
+  },
+  {
+   "name": "发布订阅",
+   "type": "概念"
+  },
+  {
+   "name": "channel",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Redisson",
+   "target": "DelayedQueue",
+   "rel": "属于"
+  },
+  {
+   "source": "发布订阅",
+   "target": "channel",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 107,
+ "subject": "Redis"
+}

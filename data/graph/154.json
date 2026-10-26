@@ -1,0 +1,56 @@
+{
+ "concepts": [
+  {
+   "name": "RAG",
+   "type": "概念"
+  },
+  {
+   "name": "embedding 模型",
+   "type": "组件"
+  },
+  {
+   "name": "切片",
+   "type": "概念"
+  },
+  {
+   "name": "检索单位",
+   "type": "概念"
+  },
+  {
+   "name": "生成单位",
+   "type": "概念"
+  },
+  {
+   "name": "向量检索",
+   "type": "算法"
+  },
+  {
+   "name": "关键词检索",
+   "type": "算法"
+  }
+ ],
+ "edges": [
+  {
+   "source": "RAG",
+   "target": "embedding 模型",
+   "rel": "使用"
+  },
+  {
+   "source": "切片",
+   "target": "检索单位",
+   "rel": "属于"
+  },
+  {
+   "source": "检索单位",
+   "target": "生成单位",
+   "rel": "对比"
+  },
+  {
+   "source": "向量检索",
+   "target": "关键词检索",
+   "rel": "对比"
+  }
+ ],
+ "doc_id": 154,
+ "subject": "RAG"
+}

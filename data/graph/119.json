@@ -1,0 +1,60 @@
+{
+ "concepts": [
+  {
+   "name": "IoC",
+   "type": "概念"
+  },
+  {
+   "name": "DI",
+   "type": "概念"
+  },
+  {
+   "name": "工厂设计模式",
+   "type": "概念"
+  },
+  {
+   "name": "单例设计模式",
+   "type": "概念"
+  },
+  {
+   "name": "代理设计模式",
+   "type": "概念"
+  },
+  {
+   "name": "AOP",
+   "type": "概念"
+  },
+  {
+   "name": "模板方法",
+   "type": "概念"
+  },
+  {
+   "name": "观察者模式",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "IoC",
+   "target": "DI",
+   "rel": "属于"
+  },
+  {
+   "source": "IoC",
+   "target": "工厂设计模式",
+   "rel": "使用"
+  },
+  {
+   "source": "IoC",
+   "target": "单例设计模式",
+   "rel": "使用"
+  },
+  {
+   "source": "AOP",
+   "target": "代理设计模式",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 119,
+ "subject": "Spring"
+}

@@ -1,0 +1,34 @@
+{
+ "concepts": [
+  {
+   "name": "ThreadLocal",
+   "type": "概念"
+  },
+  {
+   "name": "线程池",
+   "type": "组件"
+  },
+  {
+   "name": "内存泄露",
+   "type": "问题"
+  },
+  {
+   "name": "弱引用",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "ThreadLocal",
+   "target": "内存泄露",
+   "rel": "导致"
+  },
+  {
+   "source": "线程池",
+   "target": "ThreadLocal",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 12,
+ "subject": "并发"
+}

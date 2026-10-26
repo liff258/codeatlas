@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "CAS",
+   "type": "算法"
+  },
+  {
+   "name": "Unsafe",
+   "type": "组件"
+  },
+  {
+   "name": "乐观锁",
+   "type": "概念"
+  },
+  {
+   "name": "悲观锁",
+   "type": "概念"
+  },
+  {
+   "name": "ABA 问题",
+   "type": "问题"
+  },
+  {
+   "name": "循环时间长开销大",
+   "type": "问题"
+  },
+  {
+   "name": "共享变量",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "CAS",
+   "target": "Unsafe",
+   "rel": "使用"
+  },
+  {
+   "source": "CAS",
+   "target": "乐观锁",
+   "rel": "属于"
+  },
+  {
+   "source": "ABA 问题",
+   "target": "CAS",
+   "rel": "导致"
+  },
+  {
+   "source": "循环时间长开销大",
+   "target": "CAS",
+   "rel": "导致"
+  },
+  {
+   "source": "CAS",
+   "target": "共享变量",
+   "rel": "解决"
+  }
+ ],
+ "doc_id": 7,
+ "subject": "并发"
+}

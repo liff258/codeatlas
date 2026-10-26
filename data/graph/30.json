@@ -1,0 +1,75 @@
+{
+ "concepts": [
+  {
+   "name": "微服务",
+   "type": "概念"
+  },
+  {
+   "name": "服务拆分",
+   "type": "概念"
+  },
+  {
+   "name": "服务通信",
+   "type": "概念"
+  },
+  {
+   "name": "数据一致性",
+   "type": "概念"
+  },
+  {
+   "name": "可观测性",
+   "type": "概念"
+  },
+  {
+   "name": "REST",
+   "type": "组件"
+  },
+  {
+   "name": "RPC",
+   "type": "组件"
+  },
+  {
+   "name": "消息队列",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "微服务",
+   "target": "服务拆分",
+   "rel": "属于"
+  },
+  {
+   "source": "微服务",
+   "target": "服务通信",
+   "rel": "属于"
+  },
+  {
+   "source": "微服务",
+   "target": "数据一致性",
+   "rel": "属于"
+  },
+  {
+   "source": "微服务",
+   "target": "可观测性",
+   "rel": "属于"
+  },
+  {
+   "source": "服务通信",
+   "target": "REST",
+   "rel": "使用"
+  },
+  {
+   "source": "服务通信",
+   "target": "RPC",
+   "rel": "使用"
+  },
+  {
+   "source": "服务通信",
+   "target": "消息队列",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 30,
+ "subject": "分布式"
+}

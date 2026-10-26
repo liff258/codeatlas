@@ -1,0 +1,60 @@
+{
+ "concepts": [
+  {
+   "name": "TCP",
+   "type": "概念"
+  },
+  {
+   "name": "UDP",
+   "type": "概念"
+  },
+  {
+   "name": "字节流",
+   "type": "概念"
+  },
+  {
+   "name": "报文",
+   "type": "概念"
+  },
+  {
+   "name": "粘包",
+   "type": "问题"
+  },
+  {
+   "name": "拆包",
+   "type": "问题"
+  },
+  {
+   "name": "Nagle 算法",
+   "type": "算法"
+  },
+  {
+   "name": "Delayed ACK",
+   "type": "算法"
+  }
+ ],
+ "edges": [
+  {
+   "source": "TCP",
+   "target": "字节流",
+   "rel": "属于"
+  },
+  {
+   "source": "UDP",
+   "target": "报文",
+   "rel": "属于"
+  },
+  {
+   "source": "TCP",
+   "target": "粘包",
+   "rel": "导致"
+  },
+  {
+   "source": "TCP",
+   "target": "拆包",
+   "rel": "导致"
+  }
+ ],
+ "doc_id": 95,
+ "subject": "网络"
+}

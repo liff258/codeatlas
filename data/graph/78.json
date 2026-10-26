@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "HTTP",
+   "type": "概念"
+  },
+  {
+   "name": "WebSocket",
+   "type": "概念"
+  },
+  {
+   "name": "SMTP",
+   "type": "概念"
+  },
+  {
+   "name": "FTP",
+   "type": "概念"
+  },
+  {
+   "name": "SSH",
+   "type": "概念"
+  },
+  {
+   "name": "DNS",
+   "type": "概念"
+  },
+  {
+   "name": "TCP",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "HTTP",
+   "target": "TCP",
+   "rel": "依赖"
+  },
+  {
+   "source": "WebSocket",
+   "target": "TCP",
+   "rel": "依赖"
+  },
+  {
+   "source": "SMTP",
+   "target": "TCP",
+   "rel": "依赖"
+  },
+  {
+   "source": "FTP",
+   "target": "TCP",
+   "rel": "依赖"
+  },
+  {
+   "source": "SSH",
+   "target": "TCP",
+   "rel": "依赖"
+  }
+ ],
+ "doc_id": 78,
+ "subject": "网络"
+}

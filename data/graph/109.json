@@ -1,0 +1,42 @@
+{
+ "concepts": [
+  {
+   "name": "RDB",
+   "type": "算法"
+  },
+  {
+   "name": "AOF",
+   "type": "算法"
+  },
+  {
+   "name": "混合持久化",
+   "type": "算法"
+  },
+  {
+   "name": "fork",
+   "type": "组件"
+  },
+  {
+   "name": "Copy-on-Write",
+   "type": "概念"
+  },
+  {
+   "name": "THP",
+   "type": "问题"
+  }
+ ],
+ "edges": [
+  {
+   "source": "RDB",
+   "target": "fork",
+   "rel": "使用"
+  },
+  {
+   "source": "fork",
+   "target": "Copy-on-Write",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 109,
+ "subject": "Redis"
+}

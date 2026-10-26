@@ -1,0 +1,57 @@
+{
+ "concepts": [
+  {
+   "name": "线程池",
+   "type": "概念"
+  },
+  {
+   "name": "Executor",
+   "type": "组件"
+  },
+  {
+   "name": "ThreadPoolExecutor",
+   "type": "概念"
+  },
+  {
+   "name": "Worker",
+   "type": "组件"
+  },
+  {
+   "name": "阻塞队列",
+   "type": "组件"
+  },
+  {
+   "name": "拒绝策略",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "线程池",
+   "target": "Executor",
+   "rel": "属于"
+  },
+  {
+   "source": "ThreadPoolExecutor",
+   "target": "线程池",
+   "rel": "属于"
+  },
+  {
+   "source": "Worker",
+   "target": "线程池",
+   "rel": "属于"
+  },
+  {
+   "source": "线程池",
+   "target": "阻塞队列",
+   "rel": "使用"
+  },
+  {
+   "source": "线程池",
+   "target": "拒绝策略",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 15,
+ "subject": "并发"
+}

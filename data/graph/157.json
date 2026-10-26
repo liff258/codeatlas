@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "上下文窗口",
+   "type": "概念"
+  },
+  {
+   "name": "token 预算",
+   "type": "参数"
+  },
+  {
+   "name": "截断",
+   "type": "问题"
+  },
+  {
+   "name": "RAG",
+   "type": "组件"
+  },
+  {
+   "name": "检索",
+   "type": "算法"
+  },
+  {
+   "name": "摘要",
+   "type": "算法"
+  },
+  {
+   "name": "结构化抽取",
+   "type": "算法"
+  }
+ ],
+ "edges": [
+  {
+   "source": "上下文窗口",
+   "target": "token 预算",
+   "rel": "属于"
+  },
+  {
+   "source": "截断",
+   "target": "上下文窗口",
+   "rel": "解决"
+  },
+  {
+   "source": "RAG",
+   "target": "检索",
+   "rel": "使用"
+  },
+  {
+   "source": "RAG",
+   "target": "摘要",
+   "rel": "使用"
+  },
+  {
+   "source": "RAG",
+   "target": "结构化抽取",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 157,
+ "subject": "RAG"
+}

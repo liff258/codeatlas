@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "Collection",
+   "type": "概念"
+  },
+  {
+   "name": "Map",
+   "type": "概念"
+  },
+  {
+   "name": "List",
+   "type": "概念"
+  },
+  {
+   "name": "Set",
+   "type": "概念"
+  },
+  {
+   "name": "Queue",
+   "type": "概念"
+  },
+  {
+   "name": "ArrayList",
+   "type": "组件"
+  },
+  {
+   "name": "HashMap",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Collection",
+   "target": "List",
+   "rel": "属于"
+  },
+  {
+   "source": "Collection",
+   "target": "Set",
+   "rel": "属于"
+  },
+  {
+   "source": "Collection",
+   "target": "Queue",
+   "rel": "属于"
+  },
+  {
+   "source": "Map",
+   "target": "HashMap",
+   "rel": "属于"
+  },
+  {
+   "source": "List",
+   "target": "ArrayList",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 131,
+ "subject": "Java基础"
+}

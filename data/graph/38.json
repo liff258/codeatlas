@@ -1,0 +1,57 @@
+{
+ "concepts": [
+  {
+   "name": "Long",
+   "type": "概念"
+  },
+  {
+   "name": "BigDecimal",
+   "type": "概念"
+  },
+  {
+   "name": "double",
+   "type": "概念"
+  },
+  {
+   "name": "BIGINT",
+   "type": "参数"
+  },
+  {
+   "name": "DECIMAL",
+   "type": "参数"
+  },
+  {
+   "name": "金额",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Long",
+   "target": "金额",
+   "rel": "属于"
+  },
+  {
+   "source": "BigDecimal",
+   "target": "金额",
+   "rel": "属于"
+  },
+  {
+   "source": "double",
+   "target": "金额",
+   "rel": "导致"
+  },
+  {
+   "source": "BigDecimal",
+   "target": "DECIMAL",
+   "rel": "使用"
+  },
+  {
+   "source": "Long",
+   "target": "BIGINT",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 38,
+ "subject": "Java基础"
+}

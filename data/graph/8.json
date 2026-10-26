@@ -1,0 +1,52 @@
+{
+ "concepts": [
+  {
+   "name": "CompletableFuture",
+   "type": "组件"
+  },
+  {
+   "name": "Future",
+   "type": "组件"
+  },
+  {
+   "name": "多线程",
+   "type": "概念"
+  },
+  {
+   "name": "异步任务",
+   "type": "概念"
+  },
+  {
+   "name": "任务编排",
+   "type": "概念"
+  },
+  {
+   "name": "并行执行",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "CompletableFuture",
+   "target": "Future",
+   "rel": "属于"
+  },
+  {
+   "source": "CompletableFuture",
+   "target": "多线程",
+   "rel": "使用"
+  },
+  {
+   "source": "CompletableFuture",
+   "target": "异步任务",
+   "rel": "使用"
+  },
+  {
+   "source": "CompletableFuture",
+   "target": "任务编排",
+   "rel": "解决"
+  }
+ ],
+ "doc_id": 8,
+ "subject": "并发"
+}

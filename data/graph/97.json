@@ -1,0 +1,57 @@
+{
+ "concepts": [
+  {
+   "name": "TCP Keepalive",
+   "type": "算法"
+  },
+  {
+   "name": "HTTP Keep-Alive",
+   "type": "算法"
+  },
+  {
+   "name": "TCP 连接",
+   "type": "组件"
+  },
+  {
+   "name": "HTTP 请求",
+   "type": "组件"
+  },
+  {
+   "name": "应用层",
+   "type": "概念"
+  },
+  {
+   "name": "传输层",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "HTTP Keep-Alive",
+   "target": "TCP 连接",
+   "rel": "使用"
+  },
+  {
+   "source": "HTTP Keep-Alive",
+   "target": "HTTP 请求",
+   "rel": "解决"
+  },
+  {
+   "source": "TCP Keepalive",
+   "target": "TCP 连接",
+   "rel": "解决"
+  },
+  {
+   "source": "HTTP Keep-Alive",
+   "target": "应用层",
+   "rel": "属于"
+  },
+  {
+   "source": "TCP Keepalive",
+   "target": "传输层",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 97,
+ "subject": "网络"
+}

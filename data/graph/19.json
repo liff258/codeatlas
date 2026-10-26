@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "ThreadLocal",
+   "type": "概念"
+  },
+  {
+   "name": "ThreadLocalMap",
+   "type": "组件"
+  },
+  {
+   "name": "弱引用",
+   "type": "概念"
+  },
+  {
+   "name": "GC",
+   "type": "概念"
+  },
+  {
+   "name": "Hash 算法",
+   "type": "算法"
+  },
+  {
+   "name": "Hash 冲突",
+   "type": "问题"
+  },
+  {
+   "name": "扩容机制",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "ThreadLocal",
+   "target": "ThreadLocalMap",
+   "rel": "使用"
+  },
+  {
+   "source": "ThreadLocal",
+   "target": "弱引用",
+   "rel": "属于"
+  },
+  {
+   "source": "ThreadLocalMap",
+   "target": "Hash 算法",
+   "rel": "使用"
+  },
+  {
+   "source": "ThreadLocalMap",
+   "target": "Hash 冲突",
+   "rel": "导致"
+  },
+  {
+   "source": "ThreadLocalMap",
+   "target": "扩容机制",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 19,
+ "subject": "并发"
+}

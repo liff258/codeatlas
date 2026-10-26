@@ -1,0 +1,33 @@
+{
+ "concepts": [
+  {
+   "name": "Spring Boot",
+   "type": "概念"
+  },
+  {
+   "name": "Java 面试指北",
+   "type": "组件"
+  },
+  {
+   "name": "新特性",
+   "type": "概念"
+  },
+  {
+   "name": "知识星球",
+   "type": "组件"
+  },
+  {
+   "name": "面试题",
+   "type": "问题"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Spring Boot",
+   "target": "Java 面试指北",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 122,
+ "subject": "Spring"
+}

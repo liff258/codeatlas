@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "分布式事务",
+   "type": "概念"
+  },
+  {
+   "name": "XA",
+   "type": "算法"
+  },
+  {
+   "name": "AT",
+   "type": "算法"
+  },
+  {
+   "name": "TCC",
+   "type": "算法"
+  },
+  {
+   "name": "Saga",
+   "type": "算法"
+  },
+  {
+   "name": "CAP 理论",
+   "type": "概念"
+  },
+  {
+   "name": "BASE 理论",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "分布式事务",
+   "target": "XA",
+   "rel": "使用"
+  },
+  {
+   "source": "分布式事务",
+   "target": "AT",
+   "rel": "使用"
+  },
+  {
+   "source": "分布式事务",
+   "target": "TCC",
+   "rel": "使用"
+  },
+  {
+   "source": "分布式事务",
+   "target": "Saga",
+   "rel": "使用"
+  },
+  {
+   "source": "CAP 理论",
+   "target": "BASE 理论",
+   "rel": "对比"
+  }
+ ],
+ "doc_id": 29,
+ "subject": "分布式"
+}

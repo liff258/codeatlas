@@ -1,0 +1,52 @@
+{
+ "concepts": [
+  {
+   "name": "Redis 事务",
+   "type": "概念"
+  },
+  {
+   "name": "MULTI",
+   "type": "概念"
+  },
+  {
+   "name": "EXEC",
+   "type": "概念"
+  },
+  {
+   "name": "pipeline",
+   "type": "组件"
+  },
+  {
+   "name": "Lua 脚本",
+   "type": "组件"
+  },
+  {
+   "name": "bigkey",
+   "type": "问题"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Redis 事务",
+   "target": "MULTI",
+   "rel": "使用"
+  },
+  {
+   "source": "Redis 事务",
+   "target": "EXEC",
+   "rel": "使用"
+  },
+  {
+   "source": "pipeline",
+   "target": "Redis 事务",
+   "rel": "对比"
+  },
+  {
+   "source": "Lua 脚本",
+   "target": "Redis 事务",
+   "rel": "对比"
+  }
+ ],
+ "doc_id": 111,
+ "subject": "Redis"
+}

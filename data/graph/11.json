@@ -1,0 +1,56 @@
+{
+ "concepts": [
+  {
+   "name": "JMM",
+   "type": "概念"
+  },
+  {
+   "name": "volatile 关键字",
+   "type": "组件"
+  },
+  {
+   "name": "内存屏障",
+   "type": "概念"
+  },
+  {
+   "name": "可见性",
+   "type": "问题"
+  },
+  {
+   "name": "指令重排序",
+   "type": "问题"
+  },
+  {
+   "name": "乐观锁",
+   "type": "算法"
+  },
+  {
+   "name": "悲观锁",
+   "type": "算法"
+  }
+ ],
+ "edges": [
+  {
+   "source": "volatile 关键字",
+   "target": "可见性",
+   "rel": "解决"
+  },
+  {
+   "source": "volatile 关键字",
+   "target": "指令重排序",
+   "rel": "解决"
+  },
+  {
+   "source": "volatile 关键字",
+   "target": "内存屏障",
+   "rel": "使用"
+  },
+  {
+   "source": "JMM",
+   "target": "volatile 关键字",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 11,
+ "subject": "并发"
+}

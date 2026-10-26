@@ -1,0 +1,52 @@
+{
+ "concepts": [
+  {
+   "name": "HTTP",
+   "type": "概念"
+  },
+  {
+   "name": "HTTPS",
+   "type": "概念"
+  },
+  {
+   "name": "SSL/TLS",
+   "type": "概念"
+  },
+  {
+   "name": "非对称加密",
+   "type": "算法"
+  },
+  {
+   "name": "对称加密",
+   "type": "算法"
+  },
+  {
+   "name": "QUIC",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "HTTPS",
+   "target": "HTTP",
+   "rel": "使用"
+  },
+  {
+   "source": "HTTPS",
+   "target": "SSL/TLS",
+   "rel": "使用"
+  },
+  {
+   "source": "SSL/TLS",
+   "target": "非对称加密",
+   "rel": "使用"
+  },
+  {
+   "source": "SSL/TLS",
+   "target": "对称加密",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 85,
+ "subject": "网络"
+}

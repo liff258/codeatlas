@@ -1,0 +1,48 @@
+{
+ "concepts": [
+  {
+   "name": "Spring Boot",
+   "type": "概念"
+  },
+  {
+   "name": "源码解读",
+   "type": "概念"
+  },
+  {
+   "name": "Java",
+   "type": "概念"
+  },
+  {
+   "name": "知识星球",
+   "type": "组件"
+  },
+  {
+   "name": "Java 必读源码系列",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Spring Boot",
+   "target": "源码解读",
+   "rel": "属于"
+  },
+  {
+   "source": "Java",
+   "target": "源码解读",
+   "rel": "属于"
+  },
+  {
+   "source": "知识星球",
+   "target": "源码解读",
+   "rel": "属于"
+  },
+  {
+   "source": "Java 必读源码系列",
+   "target": "源码解读",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 123,
+ "subject": "Spring"
+}

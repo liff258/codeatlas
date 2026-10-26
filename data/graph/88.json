@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "HTTPS",
+   "type": "概念"
+  },
+  {
+   "name": "RSA",
+   "type": "算法"
+  },
+  {
+   "name": "ECDHE",
+   "type": "算法"
+  },
+  {
+   "name": "TLS",
+   "type": "概念"
+  },
+  {
+   "name": "前向安全",
+   "type": "概念"
+  },
+  {
+   "name": "密钥材料",
+   "type": "概念"
+  },
+  {
+   "name": "密码套件",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "HTTPS",
+   "target": "TLS",
+   "rel": "使用"
+  },
+  {
+   "source": "RSA",
+   "target": "密钥材料",
+   "rel": "导致"
+  },
+  {
+   "source": "ECDHE",
+   "target": "密钥材料",
+   "rel": "导致"
+  },
+  {
+   "source": "ECDHE",
+   "target": "前向安全",
+   "rel": "解决"
+  },
+  {
+   "source": "TLS",
+   "target": "密码套件",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 88,
+ "subject": "网络"
+}

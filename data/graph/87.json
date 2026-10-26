@@ -1,0 +1,35 @@
+{
+ "concepts": [
+  {
+   "name": "HTTP/1.0",
+   "type": "概念"
+  },
+  {
+   "name": "HTTP/1.1",
+   "type": "概念"
+  },
+  {
+   "name": "长连接",
+   "type": "概念"
+  },
+  {
+   "name": "缓存",
+   "type": "概念"
+  },
+  {
+   "name": "Host 头",
+   "type": "组件"
+  },
+  {
+   "name": "状态码",
+   "type": "组件"
+  },
+  {
+   "name": "带宽优化",
+   "type": "概念"
+  }
+ ],
+ "edges": [],
+ "doc_id": 87,
+ "subject": "网络"
+}

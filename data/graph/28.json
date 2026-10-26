@@ -1,0 +1,66 @@
+{
+ "concepts": [
+  {
+   "name": "分布式系统",
+   "type": "概念"
+  },
+  {
+   "name": "CAP",
+   "type": "算法"
+  },
+  {
+   "name": "BASE",
+   "type": "算法"
+  },
+  {
+   "name": "Paxos",
+   "type": "算法"
+  },
+  {
+   "name": "Raft",
+   "type": "算法"
+  },
+  {
+   "name": "分布式锁",
+   "type": "组件"
+  },
+  {
+   "name": "分布式事务",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "分布式系统",
+   "target": "CAP",
+   "rel": "使用"
+  },
+  {
+   "source": "分布式系统",
+   "target": "BASE",
+   "rel": "使用"
+  },
+  {
+   "source": "分布式系统",
+   "target": "Paxos",
+   "rel": "使用"
+  },
+  {
+   "source": "分布式系统",
+   "target": "Raft",
+   "rel": "使用"
+  },
+  {
+   "source": "分布式系统",
+   "target": "分布式锁",
+   "rel": "使用"
+  },
+  {
+   "source": "分布式系统",
+   "target": "分布式事务",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 28,
+ "subject": "分布式"
+}

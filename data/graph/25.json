@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "分布式锁",
+   "type": "概念"
+  },
+  {
+   "name": "Redis",
+   "type": "组件"
+  },
+  {
+   "name": "SETNX",
+   "type": "参数"
+  },
+  {
+   "name": "ZooKeeper",
+   "type": "组件"
+  },
+  {
+   "name": "Redlock",
+   "type": "算法"
+  },
+  {
+   "name": "Redisson",
+   "type": "组件"
+  },
+  {
+   "name": "Fencing Token",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "分布式锁",
+   "target": "Redis",
+   "rel": "使用"
+  },
+  {
+   "source": "分布式锁",
+   "target": "ZooKeeper",
+   "rel": "使用"
+  },
+  {
+   "source": "Redis",
+   "target": "SETNX",
+   "rel": "使用"
+  },
+  {
+   "source": "Redisson",
+   "target": "分布式锁",
+   "rel": "属于"
+  },
+  {
+   "source": "Redlock",
+   "target": "分布式锁",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 25,
+ "subject": "分布式"
+}

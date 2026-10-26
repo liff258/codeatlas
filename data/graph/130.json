@@ -1,0 +1,44 @@
+{
+ "concepts": [
+  {
+   "name": "Java集合",
+   "type": "概念"
+  },
+  {
+   "name": "isEmpty()",
+   "type": "概念"
+  },
+  {
+   "name": "size()",
+   "type": "概念"
+  },
+  {
+   "name": "O(1)",
+   "type": "参数"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Java集合",
+   "target": "isEmpty()",
+   "rel": "使用"
+  },
+  {
+   "source": "Java集合",
+   "target": "size()",
+   "rel": "使用"
+  },
+  {
+   "source": "isEmpty()",
+   "target": "O(1)",
+   "rel": "属于"
+  },
+  {
+   "source": "size()",
+   "target": "O(1)",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 130,
+ "subject": "Java基础"
+}

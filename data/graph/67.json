@@ -1,0 +1,55 @@
+{
+ "concepts": [
+  {
+   "name": "mysqldump",
+   "type": "概念"
+  },
+  {
+   "name": "XtraBackup",
+   "type": "概念"
+  },
+  {
+   "name": "binlog",
+   "type": "组件"
+  },
+  {
+   "name": "PITR",
+   "type": "算法"
+  },
+  {
+   "name": "逻辑备份",
+   "type": "概念"
+  },
+  {
+   "name": "物理备份",
+   "type": "概念"
+  },
+  {
+   "name": "RTO",
+   "type": "参数"
+  },
+  {
+   "name": "RPO",
+   "type": "参数"
+  }
+ ],
+ "edges": [
+  {
+   "source": "mysqldump",
+   "target": "逻辑备份",
+   "rel": "属于"
+  },
+  {
+   "source": "XtraBackup",
+   "target": "物理备份",
+   "rel": "属于"
+  },
+  {
+   "source": "binlog",
+   "target": "PITR",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 67,
+ "subject": "MySQL"
+}

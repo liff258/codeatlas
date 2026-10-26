@@ -1,0 +1,52 @@
+{
+ "concepts": [
+  {
+   "name": "DelayQueue",
+   "type": "组件"
+  },
+  {
+   "name": "Delayed",
+   "type": "概念"
+  },
+  {
+   "name": "BlockingQueue",
+   "type": "概念"
+  },
+  {
+   "name": "PriorityQueue",
+   "type": "组件"
+  },
+  {
+   "name": "getDelay",
+   "type": "概念"
+  },
+  {
+   "name": "线程安全",
+   "type": "问题"
+  }
+ ],
+ "edges": [
+  {
+   "source": "DelayQueue",
+   "target": "BlockingQueue",
+   "rel": "属于"
+  },
+  {
+   "source": "DelayQueue",
+   "target": "PriorityQueue",
+   "rel": "使用"
+  },
+  {
+   "source": "DelayQueue",
+   "target": "Delayed",
+   "rel": "依赖"
+  },
+  {
+   "source": "DelayQueue",
+   "target": "线程安全",
+   "rel": "解决"
+  }
+ ],
+ "doc_id": 128,
+ "subject": "Java基础"
+}

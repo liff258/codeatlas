@@ -1,0 +1,57 @@
+{
+ "concepts": [
+  {
+   "name": "Spring 事务",
+   "type": "概念"
+  },
+  {
+   "name": "事务",
+   "type": "概念"
+  },
+  {
+   "name": "ACID",
+   "type": "参数"
+  },
+  {
+   "name": "TransactionStatus",
+   "type": "组件"
+  },
+  {
+   "name": "编程式事务管理",
+   "type": "概念"
+  },
+  {
+   "name": "声明式事务管理",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Spring 事务",
+   "target": "事务",
+   "rel": "属于"
+  },
+  {
+   "source": "事务",
+   "target": "ACID",
+   "rel": "属于"
+  },
+  {
+   "source": "Spring 事务",
+   "target": "TransactionStatus",
+   "rel": "使用"
+  },
+  {
+   "source": "Spring 事务",
+   "target": "编程式事务管理",
+   "rel": "属于"
+  },
+  {
+   "source": "Spring 事务",
+   "target": "声明式事务管理",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 121,
+ "subject": "Spring"
+}

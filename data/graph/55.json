@@ -1,0 +1,31 @@
+{
+ "concepts": [
+  {
+   "name": "程序计数器",
+   "type": "组件"
+  },
+  {
+   "name": "Java 虚拟机栈",
+   "type": "组件"
+  },
+  {
+   "name": "本地方法栈",
+   "type": "组件"
+  },
+  {
+   "name": "方法区",
+   "type": "组件"
+  },
+  {
+   "name": "直接内存",
+   "type": "组件"
+  },
+  {
+   "name": "HotSpot 虚拟机",
+   "type": "组件"
+  }
+ ],
+ "edges": [],
+ "doc_id": 55,
+ "subject": "JVM"
+}

@@ -1,0 +1,75 @@
+{
+ "concepts": [
+  {
+   "name": "MySQL",
+   "type": "概念"
+  },
+  {
+   "name": "基本操作",
+   "type": "组件"
+  },
+  {
+   "name": "数据库操作",
+   "type": "组件"
+  },
+  {
+   "name": "表的操作",
+   "type": "组件"
+  },
+  {
+   "name": "数据操作",
+   "type": "组件"
+  },
+  {
+   "name": "字符集编码",
+   "type": "参数"
+  },
+  {
+   "name": "数据类型",
+   "type": "参数"
+  },
+  {
+   "name": "列属性",
+   "type": "参数"
+  }
+ ],
+ "edges": [
+  {
+   "source": "基本操作",
+   "target": "MySQL",
+   "rel": "属于"
+  },
+  {
+   "source": "数据库操作",
+   "target": "MySQL",
+   "rel": "属于"
+  },
+  {
+   "source": "表的操作",
+   "target": "MySQL",
+   "rel": "属于"
+  },
+  {
+   "source": "数据操作",
+   "target": "MySQL",
+   "rel": "属于"
+  },
+  {
+   "source": "字符集编码",
+   "target": "数据库操作",
+   "rel": "属于"
+  },
+  {
+   "source": "数据类型",
+   "target": "表的操作",
+   "rel": "属于"
+  },
+  {
+   "source": "列属性",
+   "target": "表的操作",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 62,
+ "subject": "MySQL"
+}

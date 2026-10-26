@@ -1,0 +1,30 @@
+{
+ "concepts": [
+  {
+   "name": "HNSW",
+   "type": "算法"
+  },
+  {
+   "name": "NSW",
+   "type": "算法"
+  },
+  {
+   "name": "向量检索",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "HNSW",
+   "target": "NSW",
+   "rel": "属于"
+  },
+  {
+   "source": "HNSW",
+   "target": "向量检索",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 149,
+ "subject": "向量检索"
+}

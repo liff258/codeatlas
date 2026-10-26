@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "ARP 协议",
+   "type": "概念"
+  },
+  {
+   "name": "MAC 地址",
+   "type": "参数"
+  },
+  {
+   "name": "IP 地址",
+   "type": "参数"
+  },
+  {
+   "name": "网络层",
+   "type": "概念"
+  },
+  {
+   "name": "链路层",
+   "type": "概念"
+  },
+  {
+   "name": "ARP 表",
+   "type": "组件"
+  },
+  {
+   "name": "ARP 欺骗",
+   "type": "问题"
+  }
+ ],
+ "edges": [
+  {
+   "source": "ARP 协议",
+   "target": "MAC 地址",
+   "rel": "解决"
+  },
+  {
+   "source": "ARP 协议",
+   "target": "IP 地址",
+   "rel": "使用"
+  },
+  {
+   "source": "网络层",
+   "target": "ARP 协议",
+   "rel": "属于"
+  },
+  {
+   "source": "链路层",
+   "target": "MAC 地址",
+   "rel": "属于"
+  },
+  {
+   "source": "ARP 协议",
+   "target": "ARP 表",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 79,
+ "subject": "网络"
+}

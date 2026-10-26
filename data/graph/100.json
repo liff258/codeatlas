@@ -1,0 +1,66 @@
+{
+ "concepts": [
+  {
+   "name": "URL",
+   "type": "概念"
+  },
+  {
+   "name": "DNS",
+   "type": "概念"
+  },
+  {
+   "name": "TCP",
+   "type": "概念"
+  },
+  {
+   "name": "HTTPS",
+   "type": "概念"
+  },
+  {
+   "name": "HTTP",
+   "type": "概念"
+  },
+  {
+   "name": "浏览器缓存",
+   "type": "组件"
+  },
+  {
+   "name": "TLS",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "URL",
+   "target": "浏览器缓存",
+   "rel": "属于"
+  },
+  {
+   "source": "URL",
+   "target": "DNS",
+   "rel": "导致"
+  },
+  {
+   "source": "DNS",
+   "target": "TCP",
+   "rel": "导致"
+  },
+  {
+   "source": "TCP",
+   "target": "HTTPS",
+   "rel": "导致"
+  },
+  {
+   "source": "HTTPS",
+   "target": "HTTP",
+   "rel": "使用"
+  },
+  {
+   "source": "TLS",
+   "target": "HTTPS",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 100,
+ "subject": "网络"
+}

@@ -1,0 +1,46 @@
+{
+ "concepts": [
+  {
+   "name": "MySQL",
+   "type": "概念"
+  },
+  {
+   "name": "InnoDB",
+   "type": "组件"
+  },
+  {
+   "name": "UTF8",
+   "type": "参数"
+  },
+  {
+   "name": "字符集",
+   "type": "参数"
+  },
+  {
+   "name": "存储引擎",
+   "type": "组件"
+  },
+  {
+   "name": "事务",
+   "type": "概念"
+  },
+  {
+   "name": "行级锁",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "MySQL",
+   "target": "InnoDB",
+   "rel": "使用"
+  },
+  {
+   "source": "MySQL",
+   "target": "UTF8",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 68,
+ "subject": "MySQL"
+}

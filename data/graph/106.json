@@ -1,0 +1,38 @@
+{
+ "concepts": [
+  {
+   "name": "Bitmap",
+   "type": "概念"
+  },
+  {
+   "name": "String",
+   "type": "概念"
+  },
+  {
+   "name": "HyperLogLog",
+   "type": "概念"
+  },
+  {
+   "name": "GEO",
+   "type": "概念"
+  },
+  {
+   "name": "位向量",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Bitmap",
+   "target": "String",
+   "rel": "属于"
+  },
+  {
+   "source": "Bitmap",
+   "target": "位向量",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 106,
+ "subject": "Redis"
+}

@@ -1,0 +1,51 @@
+{
+ "concepts": [
+  {
+   "name": "Map",
+   "type": "概念"
+  },
+  {
+   "name": "HashMap",
+   "type": "组件"
+  },
+  {
+   "name": "Hashtable",
+   "type": "组件"
+  },
+  {
+   "name": "ConcurrentHashMap",
+   "type": "组件"
+  },
+  {
+   "name": "线程安全",
+   "type": "问题"
+  },
+  {
+   "name": "Null key",
+   "type": "参数"
+  },
+  {
+   "name": "Null value",
+   "type": "参数"
+  }
+ ],
+ "edges": [
+  {
+   "source": "HashMap",
+   "target": "线程安全",
+   "rel": "导致"
+  },
+  {
+   "source": "Hashtable",
+   "target": "线程安全",
+   "rel": "解决"
+  },
+  {
+   "source": "ConcurrentHashMap",
+   "target": "线程安全",
+   "rel": "解决"
+  }
+ ],
+ "doc_id": 132,
+ "subject": "Java基础"
+}

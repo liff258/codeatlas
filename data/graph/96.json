@@ -1,0 +1,66 @@
+{
+ "concepts": [
+  {
+   "name": "TCP 三次握手",
+   "type": "算法"
+  },
+  {
+   "name": "TCP 四次挥手",
+   "type": "算法"
+  },
+  {
+   "name": "半连接队列",
+   "type": "组件"
+  },
+  {
+   "name": "全连接队列",
+   "type": "组件"
+  },
+  {
+   "name": "SYN",
+   "type": "参数"
+  },
+  {
+   "name": "ACK",
+   "type": "参数"
+  },
+  {
+   "name": "FIN",
+   "type": "参数"
+  }
+ ],
+ "edges": [
+  {
+   "source": "TCP 三次握手",
+   "target": "半连接队列",
+   "rel": "使用"
+  },
+  {
+   "source": "TCP 三次握手",
+   "target": "全连接队列",
+   "rel": "使用"
+  },
+  {
+   "source": "TCP 三次握手",
+   "target": "SYN",
+   "rel": "使用"
+  },
+  {
+   "source": "TCP 三次握手",
+   "target": "ACK",
+   "rel": "使用"
+  },
+  {
+   "source": "TCP 四次挥手",
+   "target": "ACK",
+   "rel": "使用"
+  },
+  {
+   "source": "TCP 四次挥手",
+   "target": "FIN",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 96,
+ "subject": "网络"
+}

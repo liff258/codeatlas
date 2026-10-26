@@ -1,0 +1,66 @@
+{
+ "concepts": [
+  {
+   "name": "Atomic",
+   "type": "概念"
+  },
+  {
+   "name": "CAS",
+   "type": "算法"
+  },
+  {
+   "name": "AtomicInteger",
+   "type": "组件"
+  },
+  {
+   "name": "AtomicLong",
+   "type": "组件"
+  },
+  {
+   "name": "AtomicBoolean",
+   "type": "组件"
+  },
+  {
+   "name": "AtomicIntegerArray",
+   "type": "组件"
+  },
+  {
+   "name": "AtomicReference",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Atomic",
+   "target": "CAS",
+   "rel": "依赖"
+  },
+  {
+   "source": "AtomicInteger",
+   "target": "Atomic",
+   "rel": "属于"
+  },
+  {
+   "source": "AtomicLong",
+   "target": "Atomic",
+   "rel": "属于"
+  },
+  {
+   "source": "AtomicBoolean",
+   "target": "Atomic",
+   "rel": "属于"
+  },
+  {
+   "source": "AtomicIntegerArray",
+   "target": "Atomic",
+   "rel": "属于"
+  },
+  {
+   "source": "AtomicReference",
+   "target": "Atomic",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 6,
+ "subject": "并发"
+}

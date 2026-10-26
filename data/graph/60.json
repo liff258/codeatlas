@@ -1,0 +1,46 @@
+{
+ "concepts": [
+  {
+   "name": "RabbitMQ",
+   "type": "组件"
+  },
+  {
+   "name": "AMQP",
+   "type": "概念"
+  },
+  {
+   "name": "Exchange",
+   "type": "组件"
+  },
+  {
+   "name": "Queue",
+   "type": "组件"
+  },
+  {
+   "name": "Producer",
+   "type": "组件"
+  },
+  {
+   "name": "Consumer",
+   "type": "组件"
+  },
+  {
+   "name": "Broker",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Producer",
+   "target": "Exchange",
+   "rel": "使用"
+  },
+  {
+   "source": "RabbitMQ",
+   "target": "Broker",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 60,
+ "subject": "消息队列"
+}

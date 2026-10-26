@@ -1,0 +1,41 @@
+{
+ "concepts": [
+  {
+   "name": "HTTP 状态码",
+   "type": "概念"
+  },
+  {
+   "name": "1xx",
+   "type": "参数"
+  },
+  {
+   "name": "2xx",
+   "type": "参数"
+  },
+  {
+   "name": "3xx",
+   "type": "参数"
+  },
+  {
+   "name": "4xx",
+   "type": "参数"
+  },
+  {
+   "name": "5xx",
+   "type": "参数"
+  },
+  {
+   "name": "应用层",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "HTTP 状态码",
+   "target": "应用层",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 84,
+ "subject": "网络"
+}

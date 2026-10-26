@@ -1,0 +1,66 @@
+{
+ "concepts": [
+  {
+   "name": "分布式 ID",
+   "type": "概念"
+  },
+  {
+   "name": "ID",
+   "type": "概念"
+  },
+  {
+   "name": "数据库主键自增",
+   "type": "组件"
+  },
+  {
+   "name": "Snowflake",
+   "type": "算法"
+  },
+  {
+   "name": "UUID",
+   "type": "算法"
+  },
+  {
+   "name": "Leaf",
+   "type": "组件"
+  },
+  {
+   "name": "Tinyid",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "分布式 ID",
+   "target": "ID",
+   "rel": "属于"
+  },
+  {
+   "source": "分布式 ID",
+   "target": "数据库主键自增",
+   "rel": "对比"
+  },
+  {
+   "source": "分布式 ID",
+   "target": "Snowflake",
+   "rel": "使用"
+  },
+  {
+   "source": "分布式 ID",
+   "target": "UUID",
+   "rel": "使用"
+  },
+  {
+   "source": "分布式 ID",
+   "target": "Leaf",
+   "rel": "使用"
+  },
+  {
+   "source": "分布式 ID",
+   "target": "Tinyid",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 24,
+ "subject": "分布式"
+}

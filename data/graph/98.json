@@ -1,0 +1,41 @@
+{
+ "concepts": [
+  {
+   "name": "TCP",
+   "type": "概念"
+  },
+  {
+   "name": "可靠传输",
+   "type": "概念"
+  },
+  {
+   "name": "重传",
+   "type": "概念"
+  },
+  {
+   "name": "滑动窗口",
+   "type": "概念"
+  },
+  {
+   "name": "拥塞控制",
+   "type": "概念"
+  },
+  {
+   "name": "ARQ",
+   "type": "概念"
+  },
+  {
+   "name": "SACK",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "ARQ",
+   "target": "重传",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 98,
+ "subject": "网络"
+}

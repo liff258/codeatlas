@@ -1,0 +1,37 @@
+{
+ "concepts": [
+  {
+   "name": "JVM参数",
+   "type": "参数"
+  },
+  {
+   "name": "堆内存",
+   "type": "概念"
+  },
+  {
+   "name": "-Xms",
+   "type": "参数"
+  },
+  {
+   "name": "-Xmx",
+   "type": "参数"
+  },
+  {
+   "name": "ZGC",
+   "type": "算法"
+  },
+  {
+   "name": "Java堆",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "JVM参数",
+   "target": "堆内存",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 54,
+ "subject": "JVM"
+}

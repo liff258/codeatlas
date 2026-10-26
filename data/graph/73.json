@@ -1,0 +1,51 @@
+{
+ "concepts": [
+  {
+   "name": "执行计划",
+   "type": "概念"
+  },
+  {
+   "name": "EXPLAIN",
+   "type": "组件"
+  },
+  {
+   "name": "MySQL查询优化器",
+   "type": "组件"
+  },
+  {
+   "name": "type",
+   "type": "参数"
+  },
+  {
+   "name": "key",
+   "type": "参数"
+  },
+  {
+   "name": "Extra",
+   "type": "参数"
+  },
+  {
+   "name": "EXPLAIN ANALYZE",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "执行计划",
+   "target": "EXPLAIN",
+   "rel": "使用"
+  },
+  {
+   "source": "执行计划",
+   "target": "MySQL查询优化器",
+   "rel": "属于"
+  },
+  {
+   "source": "EXPLAIN ANALYZE",
+   "target": "EXPLAIN",
+   "rel": "对比"
+  }
+ ],
+ "doc_id": 73,
+ "subject": "MySQL"
+}

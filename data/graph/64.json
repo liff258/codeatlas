@@ -1,0 +1,47 @@
+{
+ "concepts": [
+  {
+   "name": "MySQL",
+   "type": "概念"
+  },
+  {
+   "name": "索引失效",
+   "type": "问题"
+  },
+  {
+   "name": "隐式转换",
+   "type": "问题"
+  },
+  {
+   "name": "数据类型",
+   "type": "概念"
+  },
+  {
+   "name": "主键",
+   "type": "组件"
+  },
+  {
+   "name": "取模",
+   "type": "算法"
+  }
+ ],
+ "edges": [
+  {
+   "source": "隐式转换",
+   "target": "索引失效",
+   "rel": "导致"
+  },
+  {
+   "source": "数据类型",
+   "target": "隐式转换",
+   "rel": "导致"
+  },
+  {
+   "source": "主键",
+   "target": "取模",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 64,
+ "subject": "MySQL"
+}

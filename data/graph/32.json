@@ -1,0 +1,57 @@
+{
+ "concepts": [
+  {
+   "name": "BigDecimal",
+   "type": "概念"
+  },
+  {
+   "name": "浮点数",
+   "type": "概念"
+  },
+  {
+   "name": "精度丢失",
+   "type": "问题"
+  },
+  {
+   "name": "加减乘除",
+   "type": "概念"
+  },
+  {
+   "name": "大小比较",
+   "type": "概念"
+  },
+  {
+   "name": "等值比较",
+   "type": "问题"
+  }
+ ],
+ "edges": [
+  {
+   "source": "BigDecimal",
+   "target": "精度丢失",
+   "rel": "解决"
+  },
+  {
+   "source": "BigDecimal",
+   "target": "加减乘除",
+   "rel": "属于"
+  },
+  {
+   "source": "BigDecimal",
+   "target": "大小比较",
+   "rel": "属于"
+  },
+  {
+   "source": "浮点数",
+   "target": "精度丢失",
+   "rel": "导致"
+  },
+  {
+   "source": "等值比较",
+   "target": "精度丢失",
+   "rel": "导致"
+  }
+ ],
+ "doc_id": 32,
+ "subject": "Java基础"
+}

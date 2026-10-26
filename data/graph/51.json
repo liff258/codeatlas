@@ -1,0 +1,41 @@
+{
+ "concepts": [
+  {
+   "name": "CPU",
+   "type": "参数"
+  },
+  {
+   "name": "内存",
+   "type": "参数"
+  },
+  {
+   "name": "GC",
+   "type": "算法"
+  },
+  {
+   "name": "线程池",
+   "type": "组件"
+  },
+  {
+   "name": "数据库",
+   "type": "组件"
+  },
+  {
+   "name": "Redis",
+   "type": "组件"
+  },
+  {
+   "name": "OOM",
+   "type": "问题"
+  }
+ ],
+ "edges": [
+  {
+   "source": "内存",
+   "target": "OOM",
+   "rel": "导致"
+  }
+ ],
+ "doc_id": 51,
+ "subject": "JVM"
+}

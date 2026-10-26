@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "Disruptor",
+   "type": "组件"
+  },
+  {
+   "name": "Kafka",
+   "type": "组件"
+  },
+  {
+   "name": "LMAX",
+   "type": "组件"
+  },
+  {
+   "name": "内存队列",
+   "type": "概念"
+  },
+  {
+   "name": "等待策略",
+   "type": "概念"
+  },
+  {
+   "name": "性能",
+   "type": "概念"
+  },
+  {
+   "name": "内存安全",
+   "type": "问题"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Disruptor",
+   "target": "内存队列",
+   "rel": "属于"
+  },
+  {
+   "source": "Disruptor",
+   "target": "性能",
+   "rel": "解决"
+  },
+  {
+   "source": "Disruptor",
+   "target": "内存安全",
+   "rel": "解决"
+  },
+  {
+   "source": "Kafka",
+   "target": "Disruptor",
+   "rel": "对比"
+  },
+  {
+   "source": "LMAX",
+   "target": "Disruptor",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 56,
+ "subject": "消息队列"
+}

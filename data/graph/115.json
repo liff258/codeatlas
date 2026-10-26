@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "IoC",
+   "type": "概念"
+  },
+  {
+   "name": "控制反转",
+   "type": "概念"
+  },
+  {
+   "name": "DI",
+   "type": "概念"
+  },
+  {
+   "name": "AOP",
+   "type": "概念"
+  },
+  {
+   "name": "面向切面编程",
+   "type": "概念"
+  },
+  {
+   "name": "Spring",
+   "type": "组件"
+  },
+  {
+   "name": "IoC 容器",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "IoC",
+   "target": "控制反转",
+   "rel": "属于"
+  },
+  {
+   "source": "IoC",
+   "target": "DI",
+   "rel": "对比"
+  },
+  {
+   "source": "AOP",
+   "target": "面向切面编程",
+   "rel": "属于"
+  },
+  {
+   "source": "Spring",
+   "target": "IoC",
+   "rel": "使用"
+  },
+  {
+   "source": "Spring",
+   "target": "AOP",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 115,
+ "subject": "Spring"
+}

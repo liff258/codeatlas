@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "注意力机制",
+   "type": "概念"
+  },
+  {
+   "name": "QKV",
+   "type": "参数"
+  },
+  {
+   "name": "多头注意力",
+   "type": "算法"
+  },
+  {
+   "name": "位置编码",
+   "type": "组件"
+  },
+  {
+   "name": "缩放点积",
+   "type": "算法"
+  },
+  {
+   "name": "残差连接",
+   "type": "组件"
+  },
+  {
+   "name": "LayerNorm",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "注意力机制",
+   "target": "QKV",
+   "rel": "使用"
+  },
+  {
+   "source": "多头注意力",
+   "target": "注意力机制",
+   "rel": "属于"
+  },
+  {
+   "source": "缩放点积",
+   "target": "注意力机制",
+   "rel": "属于"
+  },
+  {
+   "source": "位置编码",
+   "target": "注意力机制",
+   "rel": "解决"
+  },
+  {
+   "source": "残差连接",
+   "target": "LayerNorm",
+   "rel": "对比"
+  }
+ ],
+ "doc_id": 158,
+ "subject": "LLM基础"
+}

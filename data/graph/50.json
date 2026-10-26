@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "JVM",
+   "type": "概念"
+  },
+  {
+   "name": "堆空间",
+   "type": "组件"
+  },
+  {
+   "name": "垃圾回收",
+   "type": "算法"
+  },
+  {
+   "name": "GC 堆",
+   "type": "组件"
+  },
+  {
+   "name": "分代垃圾收集算法",
+   "type": "算法"
+  },
+  {
+   "name": "HotSpot",
+   "type": "组件"
+  },
+  {
+   "name": "永久代",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "JVM",
+   "target": "堆空间",
+   "rel": "属于"
+  },
+  {
+   "source": "堆空间",
+   "target": "垃圾回收",
+   "rel": "使用"
+  },
+  {
+   "source": "堆空间",
+   "target": "GC 堆",
+   "rel": "属于"
+  },
+  {
+   "source": "垃圾回收",
+   "target": "分代垃圾收集算法",
+   "rel": "使用"
+  },
+  {
+   "source": "HotSpot",
+   "target": "永久代",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 50,
+ "subject": "JVM"
+}

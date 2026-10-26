@@ -1,0 +1,29 @@
+{
+ "concepts": [
+  {
+   "name": "Vector",
+   "type": "组件"
+  },
+  {
+   "name": "JUC",
+   "type": "组件"
+  },
+  {
+   "name": "线程安全",
+   "type": "概念"
+  },
+  {
+   "name": "并发",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Vector",
+   "target": "线程安全",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 127,
+ "subject": "Java基础"
+}

@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "系统提示词",
+   "type": "概念"
+  },
+  {
+   "name": "Few-shot",
+   "type": "参数"
+  },
+  {
+   "name": "结构化输出",
+   "type": "概念"
+  },
+  {
+   "name": "提示词注入",
+   "type": "问题"
+  },
+  {
+   "name": "提示词评估",
+   "type": "概念"
+  },
+  {
+   "name": "角色与边界",
+   "type": "组件"
+  },
+  {
+   "name": "硬约束",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "系统提示词",
+   "target": "角色与边界",
+   "rel": "属于"
+  },
+  {
+   "source": "系统提示词",
+   "target": "硬约束",
+   "rel": "属于"
+  },
+  {
+   "source": "系统提示词",
+   "target": "Few-shot",
+   "rel": "属于"
+  },
+  {
+   "source": "硬约束",
+   "target": "结构化输出",
+   "rel": "解决"
+  },
+  {
+   "source": "提示词评估",
+   "target": "提示词注入",
+   "rel": "解决"
+  }
+ ],
+ "doc_id": 159,
+ "subject": "Prompt工程"
+}

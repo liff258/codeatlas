@@ -1,0 +1,75 @@
+{
+ "concepts": [
+  {
+   "name": "Kafka",
+   "type": "组件"
+  },
+  {
+   "name": "消息队列",
+   "type": "概念"
+  },
+  {
+   "name": "Producer",
+   "type": "组件"
+  },
+  {
+   "name": "Consumer",
+   "type": "组件"
+  },
+  {
+   "name": "Broker",
+   "type": "组件"
+  },
+  {
+   "name": "Topic",
+   "type": "组件"
+  },
+  {
+   "name": "Partition",
+   "type": "组件"
+  },
+  {
+   "name": "ZooKeeper",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Kafka",
+   "target": "消息队列",
+   "rel": "属于"
+  },
+  {
+   "source": "Producer",
+   "target": "Kafka",
+   "rel": "属于"
+  },
+  {
+   "source": "Consumer",
+   "target": "Kafka",
+   "rel": "属于"
+  },
+  {
+   "source": "Broker",
+   "target": "Kafka",
+   "rel": "属于"
+  },
+  {
+   "source": "Topic",
+   "target": "Kafka",
+   "rel": "属于"
+  },
+  {
+   "source": "Partition",
+   "target": "Kafka",
+   "rel": "属于"
+  },
+  {
+   "source": "ZooKeeper",
+   "target": "Kafka",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 57,
+ "subject": "消息队列"
+}

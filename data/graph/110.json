@@ -1,0 +1,56 @@
+{
+ "concepts": [
+  {
+   "name": "Redis",
+   "type": "概念"
+  },
+  {
+   "name": "NoSQL 数据库",
+   "type": "概念"
+  },
+  {
+   "name": "KV 键值对",
+   "type": "概念"
+  },
+  {
+   "name": "内存数据库",
+   "type": "概念"
+  },
+  {
+   "name": "持久化",
+   "type": "概念"
+  },
+  {
+   "name": "分布式缓存",
+   "type": "概念"
+  },
+  {
+   "name": "Redis Cluster",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Redis",
+   "target": "NoSQL 数据库",
+   "rel": "属于"
+  },
+  {
+   "source": "Redis",
+   "target": "内存数据库",
+   "rel": "属于"
+  },
+  {
+   "source": "内存数据库",
+   "target": "分布式缓存",
+   "rel": "导致"
+  },
+  {
+   "source": "Redis",
+   "target": "Redis Cluster",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 110,
+ "subject": "Redis"
+}

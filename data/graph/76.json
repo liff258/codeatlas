@@ -1,0 +1,57 @@
+{
+ "concepts": [
+  {
+   "name": "MySQL",
+   "type": "组件"
+  },
+  {
+   "name": "日期类型",
+   "type": "概念"
+  },
+  {
+   "name": "字符串",
+   "type": "概念"
+  },
+  {
+   "name": "DATETIME",
+   "type": "概念"
+  },
+  {
+   "name": "TIMESTAMP",
+   "type": "概念"
+  },
+  {
+   "name": "数值时间戳",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "MySQL",
+   "target": "日期类型",
+   "rel": "属于"
+  },
+  {
+   "source": "字符串",
+   "target": "日期类型",
+   "rel": "对比"
+  },
+  {
+   "source": "DATETIME",
+   "target": "日期类型",
+   "rel": "属于"
+  },
+  {
+   "source": "TIMESTAMP",
+   "target": "日期类型",
+   "rel": "属于"
+  },
+  {
+   "source": "数值时间戳",
+   "target": "日期类型",
+   "rel": "对比"
+  }
+ ],
+ "doc_id": 76,
+ "subject": "MySQL"
+}

@@ -1,0 +1,47 @@
+{
+ "concepts": [
+  {
+   "name": "HTTP",
+   "type": "概念"
+  },
+  {
+   "name": "RPC",
+   "type": "概念"
+  },
+  {
+   "name": "TCP",
+   "type": "概念"
+  },
+  {
+   "name": "gRPC",
+   "type": "概念"
+  },
+  {
+   "name": "REST",
+   "type": "概念"
+  },
+  {
+   "name": "HTTP/2",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "RPC",
+   "target": "TCP",
+   "rel": "使用"
+  },
+  {
+   "source": "gRPC",
+   "target": "HTTP/2",
+   "rel": "使用"
+  },
+  {
+   "source": "HTTP",
+   "target": "REST",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 86,
+ "subject": "网络"
+}

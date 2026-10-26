@@ -1,0 +1,38 @@
+{
+ "concepts": [
+  {
+   "name": "LinkedList",
+   "type": "组件"
+  },
+  {
+   "name": "双向链表",
+   "type": "概念"
+  },
+  {
+   "name": "ArrayList",
+   "type": "组件"
+  },
+  {
+   "name": "RandomAccess",
+   "type": "概念"
+  },
+  {
+   "name": "时间复杂度",
+   "type": "参数"
+  }
+ ],
+ "edges": [
+  {
+   "source": "LinkedList",
+   "target": "双向链表",
+   "rel": "属于"
+  },
+  {
+   "source": "LinkedList",
+   "target": "ArrayList",
+   "rel": "对比"
+  }
+ ],
+ "doc_id": 134,
+ "subject": "Java基础"
+}

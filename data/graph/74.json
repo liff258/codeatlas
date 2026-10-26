@@ -1,0 +1,96 @@
+{
+ "concepts": [
+  {
+   "name": "关系型数据库",
+   "type": "概念"
+  },
+  {
+   "name": "SQL",
+   "type": "概念"
+  },
+  {
+   "name": "MySQL",
+   "type": "组件"
+  },
+  {
+   "name": "ACID",
+   "type": "概念"
+  },
+  {
+   "name": "事务",
+   "type": "概念"
+  },
+  {
+   "name": "字段类型",
+   "type": "概念"
+  },
+  {
+   "name": "CHAR",
+   "type": "参数"
+  },
+  {
+   "name": "VARCHAR",
+   "type": "参数"
+  },
+  {
+   "name": "DECIMAL",
+   "type": "参数"
+  },
+  {
+   "name": "FLOAT",
+   "type": "参数"
+  },
+  {
+   "name": "DOUBLE",
+   "type": "参数"
+  },
+  {
+   "name": "TEXT",
+   "type": "参数"
+  },
+  {
+   "name": "BLOB",
+   "type": "参数"
+  },
+  {
+   "name": "DATETIME",
+   "type": "参数"
+  },
+  {
+   "name": "TIMESTAMP",
+   "type": "参数"
+  },
+  {
+   "name": "NULL",
+   "type": "参数"
+  },
+  {
+   "name": "Boolean",
+   "type": "参数"
+  }
+ ],
+ "edges": [
+  {
+   "source": "关系型数据库",
+   "target": "SQL",
+   "rel": "使用"
+  },
+  {
+   "source": "关系型数据库",
+   "target": "事务",
+   "rel": "属于"
+  },
+  {
+   "source": "事务",
+   "target": "ACID",
+   "rel": "属于"
+  },
+  {
+   "source": "MySQL",
+   "target": "关系型数据库",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 74,
+ "subject": "MySQL"
+}

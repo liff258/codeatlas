@@ -1,0 +1,57 @@
+{
+ "concepts": [
+  {
+   "name": "反射",
+   "type": "概念"
+  },
+  {
+   "name": "框架",
+   "type": "概念"
+  },
+  {
+   "name": "Spring",
+   "type": "组件"
+  },
+  {
+   "name": "MyBatis",
+   "type": "组件"
+  },
+  {
+   "name": "动态代理",
+   "type": "概念"
+  },
+  {
+   "name": "Method",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "框架",
+   "target": "反射",
+   "rel": "使用"
+  },
+  {
+   "source": "Spring",
+   "target": "反射",
+   "rel": "使用"
+  },
+  {
+   "source": "MyBatis",
+   "target": "反射",
+   "rel": "使用"
+  },
+  {
+   "source": "动态代理",
+   "target": "反射",
+   "rel": "依赖"
+  },
+  {
+   "source": "Method",
+   "target": "反射",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 40,
+ "subject": "Java基础"
+}

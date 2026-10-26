@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "Agent 循环",
+   "type": "概念"
+  },
+  {
+   "name": "一次检索",
+   "type": "算法"
+  },
+  {
+   "name": "自评",
+   "type": "组件"
+  },
+  {
+   "name": "改写",
+   "type": "组件"
+  },
+  {
+   "name": "覆盖度",
+   "type": "参数"
+  },
+  {
+   "name": "幻觉倾向",
+   "type": "问题"
+  },
+  {
+   "name": "RAG",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Agent 循环",
+   "target": "一次检索",
+   "rel": "对比"
+  },
+  {
+   "source": "Agent 循环",
+   "target": "自评",
+   "rel": "使用"
+  },
+  {
+   "source": "Agent 循环",
+   "target": "改写",
+   "rel": "使用"
+  },
+  {
+   "source": "覆盖度",
+   "target": "自评",
+   "rel": "使用"
+  },
+  {
+   "source": "幻觉倾向",
+   "target": "一次检索",
+   "rel": "导致"
+  }
+ ],
+ "doc_id": 140,
+ "subject": "Agent"
+}

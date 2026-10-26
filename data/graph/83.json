@@ -1,0 +1,70 @@
+{
+ "concepts": [
+  {
+   "name": "DNS",
+   "type": "概念"
+  },
+  {
+   "name": "域名系统",
+   "type": "概念"
+  },
+  {
+   "name": "UDP",
+   "type": "概念"
+  },
+  {
+   "name": "TCP",
+   "type": "概念"
+  },
+  {
+   "name": "hosts",
+   "type": "组件"
+  },
+  {
+   "name": "DNS 服务器",
+   "type": "组件"
+  },
+  {
+   "name": "递归查询",
+   "type": "算法"
+  },
+  {
+   "name": "迭代查询",
+   "type": "算法"
+  }
+ ],
+ "edges": [
+  {
+   "source": "DNS",
+   "target": "域名系统",
+   "rel": "属于"
+  },
+  {
+   "source": "DNS",
+   "target": "UDP",
+   "rel": "使用"
+  },
+  {
+   "source": "DNS",
+   "target": "TCP",
+   "rel": "使用"
+  },
+  {
+   "source": "DNS",
+   "target": "hosts",
+   "rel": "对比"
+  },
+  {
+   "source": "DNS 服务器",
+   "target": "递归查询",
+   "rel": "使用"
+  },
+  {
+   "source": "DNS 服务器",
+   "target": "迭代查询",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 83,
+ "subject": "网络"
+}

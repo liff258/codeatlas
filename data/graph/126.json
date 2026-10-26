@@ -1,0 +1,57 @@
+{
+ "concepts": [
+  {
+   "name": "ConcurrentHashMap",
+   "type": "组件"
+  },
+  {
+   "name": "Segment",
+   "type": "组件"
+  },
+  {
+   "name": "HashMap",
+   "type": "组件"
+  },
+  {
+   "name": "rehash",
+   "type": "算法"
+  },
+  {
+   "name": "baseCount",
+   "type": "参数"
+  },
+  {
+   "name": "counterCells",
+   "type": "参数"
+  }
+ ],
+ "edges": [
+  {
+   "source": "ConcurrentHashMap",
+   "target": "Segment",
+   "rel": "属于"
+  },
+  {
+   "source": "Segment",
+   "target": "HashMap",
+   "rel": "属于"
+  },
+  {
+   "source": "ConcurrentHashMap",
+   "target": "rehash",
+   "rel": "使用"
+  },
+  {
+   "source": "ConcurrentHashMap",
+   "target": "baseCount",
+   "rel": "使用"
+  },
+  {
+   "source": "ConcurrentHashMap",
+   "target": "counterCells",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 126,
+ "subject": "Java基础"
+}

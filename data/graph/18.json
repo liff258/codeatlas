@@ -1,0 +1,52 @@
+{
+ "concepts": [
+  {
+   "name": "ReentrantLock",
+   "type": "组件"
+  },
+  {
+   "name": "AQS",
+   "type": "组件"
+  },
+  {
+   "name": "同步状态 State",
+   "type": "参数"
+  },
+  {
+   "name": "等待队列",
+   "type": "组件"
+  },
+  {
+   "name": "独占锁",
+   "type": "概念"
+  },
+  {
+   "name": "线程",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "ReentrantLock",
+   "target": "AQS",
+   "rel": "属于"
+  },
+  {
+   "source": "AQS",
+   "target": "同步状态 State",
+   "rel": "使用"
+  },
+  {
+   "source": "AQS",
+   "target": "等待队列",
+   "rel": "使用"
+  },
+  {
+   "source": "ReentrantLock",
+   "target": "独占锁",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 18,
+ "subject": "并发"
+}

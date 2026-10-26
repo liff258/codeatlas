@@ -1,0 +1,56 @@
+{
+ "concepts": [
+  {
+   "name": "互斥锁",
+   "type": "概念"
+  },
+  {
+   "name": "读写锁",
+   "type": "概念"
+  },
+  {
+   "name": "自旋锁",
+   "type": "概念"
+  },
+  {
+   "name": "synchronized",
+   "type": "组件"
+  },
+  {
+   "name": "ReentrantLock",
+   "type": "组件"
+  },
+  {
+   "name": "AQS",
+   "type": "算法"
+  },
+  {
+   "name": "CAS",
+   "type": "算法"
+  }
+ ],
+ "edges": [
+  {
+   "source": "互斥锁",
+   "target": "synchronized",
+   "rel": "属于"
+  },
+  {
+   "source": "读写锁",
+   "target": "ReentrantLock",
+   "rel": "属于"
+  },
+  {
+   "source": "自旋锁",
+   "target": "CAS",
+   "rel": "使用"
+  },
+  {
+   "source": "AQS",
+   "target": "ReentrantLock",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 13,
+ "subject": "并发"
+}

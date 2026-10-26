@@ -1,0 +1,51 @@
+{
+ "concepts": [
+  {
+   "name": "@Async",
+   "type": "概念"
+  },
+  {
+   "name": "异步线程",
+   "type": "概念"
+  },
+  {
+   "name": "@EnableAsync",
+   "type": "概念"
+  },
+  {
+   "name": "线程池",
+   "type": "组件"
+  },
+  {
+   "name": "CompletableFuture",
+   "type": "组件"
+  },
+  {
+   "name": "后置处理器",
+   "type": "组件"
+  },
+  {
+   "name": "Advisor",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "@Async",
+   "target": "异步线程",
+   "rel": "导致"
+  },
+  {
+   "source": "@Async",
+   "target": "线程池",
+   "rel": "使用"
+  },
+  {
+   "source": "CompletableFuture",
+   "target": "异步线程",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 114,
+ "subject": "Spring"
+}

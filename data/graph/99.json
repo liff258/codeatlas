@@ -1,0 +1,66 @@
+{
+ "concepts": [
+  {
+   "name": "TCP TIME_WAIT",
+   "type": "概念"
+  },
+  {
+   "name": "TCP 四次挥手",
+   "type": "算法"
+  },
+  {
+   "name": "ACK",
+   "type": "参数"
+  },
+  {
+   "name": "CLOSE_WAIT",
+   "type": "概念"
+  },
+  {
+   "name": "tcp_tw_reuse",
+   "type": "参数"
+  },
+  {
+   "name": "MSL",
+   "type": "参数"
+  },
+  {
+   "name": "TCB",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "TCP 四次挥手",
+   "target": "TCP TIME_WAIT",
+   "rel": "导致"
+  },
+  {
+   "source": "TCP TIME_WAIT",
+   "target": "ACK",
+   "rel": "使用"
+  },
+  {
+   "source": "TCP TIME_WAIT",
+   "target": "MSL",
+   "rel": "属于"
+  },
+  {
+   "source": "TCP TIME_WAIT",
+   "target": "TCB",
+   "rel": "属于"
+  },
+  {
+   "source": "CLOSE_WAIT",
+   "target": "TCP TIME_WAIT",
+   "rel": "对比"
+  },
+  {
+   "source": "tcp_tw_reuse",
+   "target": "TCP TIME_WAIT",
+   "rel": "解决"
+  }
+ ],
+ "doc_id": 99,
+ "subject": "网络"
+}

@@ -1,0 +1,66 @@
+{
+ "concepts": [
+  {
+   "name": "LLM",
+   "type": "组件"
+  },
+  {
+   "name": "Planning",
+   "type": "组件"
+  },
+  {
+   "name": "Memory",
+   "type": "组件"
+  },
+  {
+   "name": "Tool Use",
+   "type": "组件"
+  },
+  {
+   "name": "Task Decomposition",
+   "type": "算法"
+  },
+  {
+   "name": "Self-Reflection",
+   "type": "算法"
+  },
+  {
+   "name": "MIPS",
+   "type": "算法"
+  }
+ ],
+ "edges": [
+  {
+   "source": "LLM",
+   "target": "Planning",
+   "rel": "属于"
+  },
+  {
+   "source": "LLM",
+   "target": "Memory",
+   "rel": "属于"
+  },
+  {
+   "source": "LLM",
+   "target": "Tool Use",
+   "rel": "属于"
+  },
+  {
+   "source": "Planning",
+   "target": "Task Decomposition",
+   "rel": "使用"
+  },
+  {
+   "source": "Planning",
+   "target": "Self-Reflection",
+   "rel": "使用"
+  },
+  {
+   "source": "Memory",
+   "target": "MIPS",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 151,
+ "subject": "Agent"
+}

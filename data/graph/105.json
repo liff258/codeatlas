@@ -1,0 +1,55 @@
+{
+ "concepts": [
+  {
+   "name": "String",
+   "type": "概念"
+  },
+  {
+   "name": "List",
+   "type": "概念"
+  },
+  {
+   "name": "Hash",
+   "type": "概念"
+  },
+  {
+   "name": "Set",
+   "type": "概念"
+  },
+  {
+   "name": "Zset",
+   "type": "概念"
+  },
+  {
+   "name": "SDS",
+   "type": "概念"
+  },
+  {
+   "name": "QuickList",
+   "type": "概念"
+  },
+  {
+   "name": "Dict",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "String",
+   "target": "SDS",
+   "rel": "使用"
+  },
+  {
+   "source": "List",
+   "target": "QuickList",
+   "rel": "使用"
+  },
+  {
+   "source": "Hash",
+   "target": "Dict",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 105,
+ "subject": "Redis"
+}

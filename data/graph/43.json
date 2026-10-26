@@ -1,0 +1,48 @@
+{
+ "concepts": [
+  {
+   "name": "语法糖",
+   "type": "概念"
+  },
+  {
+   "name": "Java",
+   "type": "组件"
+  },
+  {
+   "name": "编译",
+   "type": "概念"
+  },
+  {
+   "name": "解语法糖",
+   "type": "概念"
+  },
+  {
+   "name": "Project Coin",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "语法糖",
+   "target": "Java",
+   "rel": "属于"
+  },
+  {
+   "source": "语法糖",
+   "target": "编译",
+   "rel": "依赖"
+  },
+  {
+   "source": "编译",
+   "target": "解语法糖",
+   "rel": "导致"
+  },
+  {
+   "source": "Project Coin",
+   "target": "语法糖",
+   "rel": "解决"
+  }
+ ],
+ "doc_id": 43,
+ "subject": "Java基础"
+}

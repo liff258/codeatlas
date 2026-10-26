@@ -1,0 +1,48 @@
+{
+ "concepts": [
+  {
+   "name": "JVM",
+   "type": "概念"
+  },
+  {
+   "name": "类加载器",
+   "type": "组件"
+  },
+  {
+   "name": "方法区",
+   "type": "组件"
+  },
+  {
+   "name": "程序计数器",
+   "type": "组件"
+  },
+  {
+   "name": "编译",
+   "type": "算法"
+  }
+ ],
+ "edges": [
+  {
+   "source": "JVM",
+   "target": "类加载器",
+   "rel": "使用"
+  },
+  {
+   "source": "类加载器",
+   "target": "方法区",
+   "rel": "属于"
+  },
+  {
+   "source": "类加载器",
+   "target": "程序计数器",
+   "rel": "属于"
+  },
+  {
+   "source": "编译",
+   "target": "JVM",
+   "rel": "导致"
+  }
+ ],
+ "doc_id": 53,
+ "subject": "JVM"
+}

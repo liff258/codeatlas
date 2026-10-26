@@ -1,0 +1,39 @@
+{
+ "concepts": [
+  {
+   "name": "虚拟线程",
+   "type": "概念"
+  },
+  {
+   "name": "平台线程",
+   "type": "概念"
+  },
+  {
+   "name": "Project Loom",
+   "type": "概念"
+  },
+  {
+   "name": "Thread.ofVirtual()",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "虚拟线程",
+   "target": "平台线程",
+   "rel": "属于"
+  },
+  {
+   "source": "Project Loom",
+   "target": "虚拟线程",
+   "rel": "导致"
+  },
+  {
+   "source": "Thread.ofVirtual()",
+   "target": "虚拟线程",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 20,
+ "subject": "并发"
+}

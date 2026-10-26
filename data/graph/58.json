@@ -1,0 +1,84 @@
+{
+ "concepts": [
+  {
+   "name": "消息队列",
+   "type": "概念"
+  },
+  {
+   "name": "可靠性",
+   "type": "问题"
+  },
+  {
+   "name": "幂等",
+   "type": "问题"
+  },
+  {
+   "name": "顺序",
+   "type": "问题"
+  },
+  {
+   "name": "积压",
+   "type": "问题"
+  },
+  {
+   "name": "选型",
+   "type": "问题"
+  },
+  {
+   "name": "Kafka",
+   "type": "组件"
+  },
+  {
+   "name": "RocketMQ",
+   "type": "组件"
+  },
+  {
+   "name": "RabbitMQ",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "消息队列",
+   "target": "可靠性",
+   "rel": "解决"
+  },
+  {
+   "source": "消息队列",
+   "target": "幂等",
+   "rel": "解决"
+  },
+  {
+   "source": "消息队列",
+   "target": "顺序",
+   "rel": "解决"
+  },
+  {
+   "source": "消息队列",
+   "target": "积压",
+   "rel": "解决"
+  },
+  {
+   "source": "消息队列",
+   "target": "选型",
+   "rel": "属于"
+  },
+  {
+   "source": "Kafka",
+   "target": "消息队列",
+   "rel": "属于"
+  },
+  {
+   "source": "RocketMQ",
+   "target": "消息队列",
+   "rel": "属于"
+  },
+  {
+   "source": "RabbitMQ",
+   "target": "消息队列",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 58,
+ "subject": "消息队列"
+}

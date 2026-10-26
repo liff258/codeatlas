@@ -1,0 +1,52 @@
+{
+ "concepts": [
+  {
+   "name": "乐观锁",
+   "type": "概念"
+  },
+  {
+   "name": "悲观锁",
+   "type": "概念"
+  },
+  {
+   "name": "版本号机制",
+   "type": "算法"
+  },
+  {
+   "name": "CAS 算法",
+   "type": "算法"
+  },
+  {
+   "name": "synchronized",
+   "type": "组件"
+  },
+  {
+   "name": "ReentrantLock",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "悲观锁",
+   "target": "synchronized",
+   "rel": "使用"
+  },
+  {
+   "source": "悲观锁",
+   "target": "ReentrantLock",
+   "rel": "使用"
+  },
+  {
+   "source": "乐观锁",
+   "target": "版本号机制",
+   "rel": "使用"
+  },
+  {
+   "source": "乐观锁",
+   "target": "CAS 算法",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 17,
+ "subject": "并发"
+}

@@ -1,0 +1,66 @@
+{
+ "concepts": [
+  {
+   "name": "Unsafe",
+   "type": "组件"
+  },
+  {
+   "name": "内存操作",
+   "type": "概念"
+  },
+  {
+   "name": "CAS 操作",
+   "type": "概念"
+  },
+  {
+   "name": "线程调度",
+   "type": "概念"
+  },
+  {
+   "name": "本地方法",
+   "type": "概念"
+  },
+  {
+   "name": "内存屏障",
+   "type": "概念"
+  },
+  {
+   "name": "对象操作",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Unsafe",
+   "target": "内存操作",
+   "rel": "属于"
+  },
+  {
+   "source": "Unsafe",
+   "target": "CAS 操作",
+   "rel": "属于"
+  },
+  {
+   "source": "Unsafe",
+   "target": "线程调度",
+   "rel": "属于"
+  },
+  {
+   "source": "Unsafe",
+   "target": "内存屏障",
+   "rel": "属于"
+  },
+  {
+   "source": "Unsafe",
+   "target": "对象操作",
+   "rel": "属于"
+  },
+  {
+   "source": "Unsafe",
+   "target": "本地方法",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 44,
+ "subject": "Java基础"
+}

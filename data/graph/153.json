@@ -1,0 +1,15 @@
+{
+ "concepts": [
+  {
+   "name": "RAG",
+   "type": "概念"
+  },
+  {
+   "name": "factual knowledge",
+   "type": "概念"
+  }
+ ],
+ "edges": [],
+ "doc_id": 153,
+ "subject": "RAG"
+}

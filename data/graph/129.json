@@ -1,0 +1,71 @@
+{
+ "concepts": [
+  {
+   "name": "HashMap",
+   "type": "组件"
+  },
+  {
+   "name": "数组",
+   "type": "组件"
+  },
+  {
+   "name": "链表",
+   "type": "组件"
+  },
+  {
+   "name": "红黑树",
+   "type": "组件"
+  },
+  {
+   "name": "哈希冲突",
+   "type": "问题"
+  },
+  {
+   "name": "put 方法",
+   "type": "概念"
+  },
+  {
+   "name": "get 方法",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "HashMap",
+   "target": "数组",
+   "rel": "属于"
+  },
+  {
+   "source": "HashMap",
+   "target": "链表",
+   "rel": "属于"
+  },
+  {
+   "source": "HashMap",
+   "target": "红黑树",
+   "rel": "属于"
+  },
+  {
+   "source": "哈希冲突",
+   "target": "链表",
+   "rel": "解决"
+  },
+  {
+   "source": "哈希冲突",
+   "target": "红黑树",
+   "rel": "解决"
+  },
+  {
+   "source": "put 方法",
+   "target": "HashMap",
+   "rel": "属于"
+  },
+  {
+   "source": "get 方法",
+   "target": "HashMap",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 129,
+ "subject": "Java基础"
+}

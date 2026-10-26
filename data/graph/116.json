@@ -1,0 +1,23 @@
+{
+ "concepts": [
+  {
+   "name": "SpringBoot",
+   "type": "概念"
+  },
+  {
+   "name": "自动装配",
+   "type": "概念"
+  },
+  {
+   "name": "Starter",
+   "type": "概念"
+  },
+  {
+   "name": "XML 配置",
+   "type": "概念"
+  }
+ ],
+ "edges": [],
+ "doc_id": 116,
+ "subject": "Spring"
+}

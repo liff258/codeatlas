@@ -1,0 +1,38 @@
+{
+ "concepts": [
+  {
+   "name": "redo log",
+   "type": "概念"
+  },
+  {
+   "name": "binlog",
+   "type": "概念"
+  },
+  {
+   "name": "undo log",
+   "type": "概念"
+  },
+  {
+   "name": "两阶段提交",
+   "type": "算法"
+  },
+  {
+   "name": "Buffer Pool",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "redo log",
+   "target": "Buffer Pool",
+   "rel": "使用"
+  },
+  {
+   "source": "binlog",
+   "target": "两阶段提交",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 71,
+ "subject": "MySQL"
+}

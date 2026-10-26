@@ -1,0 +1,48 @@
+{
+ "concepts": [
+  {
+   "name": "RAG",
+   "type": "概念"
+  },
+  {
+   "name": "切片策略",
+   "type": "算法"
+  },
+  {
+   "name": "混合检索",
+   "type": "算法"
+  },
+  {
+   "name": "重排",
+   "type": "算法"
+  },
+  {
+   "name": "检索",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "RAG",
+   "target": "切片策略",
+   "rel": "使用"
+  },
+  {
+   "source": "RAG",
+   "target": "混合检索",
+   "rel": "使用"
+  },
+  {
+   "source": "RAG",
+   "target": "重排",
+   "rel": "使用"
+  },
+  {
+   "source": "检索",
+   "target": "切片策略",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 152,
+ "subject": "RAG"
+}

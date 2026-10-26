@@ -1,0 +1,75 @@
+{
+ "concepts": [
+  {
+   "name": "字节码",
+   "type": "概念"
+  },
+  {
+   "name": "Class 文件",
+   "type": "组件"
+  },
+  {
+   "name": "ClassFile",
+   "type": "组件"
+  },
+  {
+   "name": "魔数",
+   "type": "参数"
+  },
+  {
+   "name": "常量池",
+   "type": "组件"
+  },
+  {
+   "name": "访问标志",
+   "type": "参数"
+  },
+  {
+   "name": "字段表",
+   "type": "组件"
+  },
+  {
+   "name": "方法表",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Class 文件",
+   "target": "字节码",
+   "rel": "属于"
+  },
+  {
+   "source": "ClassFile",
+   "target": "Class 文件",
+   "rel": "属于"
+  },
+  {
+   "source": "魔数",
+   "target": "ClassFile",
+   "rel": "属于"
+  },
+  {
+   "source": "常量池",
+   "target": "ClassFile",
+   "rel": "属于"
+  },
+  {
+   "source": "访问标志",
+   "target": "ClassFile",
+   "rel": "属于"
+  },
+  {
+   "source": "字段表",
+   "target": "ClassFile",
+   "rel": "属于"
+  },
+  {
+   "source": "方法表",
+   "target": "ClassFile",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 46,
+ "subject": "JVM"
+}

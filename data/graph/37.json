@@ -1,0 +1,37 @@
+{
+ "concepts": [
+  {
+   "name": "final 关键字",
+   "type": "概念"
+  },
+  {
+   "name": "static 关键字",
+   "type": "概念"
+  },
+  {
+   "name": "this 关键字",
+   "type": "概念"
+  },
+  {
+   "name": "super 关键字",
+   "type": "概念"
+  },
+  {
+   "name": "静态方法",
+   "type": "概念"
+  },
+  {
+   "name": "非静态方法",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "static 关键字",
+   "target": "非静态方法",
+   "rel": "对比"
+  }
+ ],
+ "doc_id": 37,
+ "subject": "Java基础"
+}

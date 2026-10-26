@@ -1,0 +1,57 @@
+{
+ "concepts": [
+  {
+   "name": "ArrayList",
+   "type": "组件"
+  },
+  {
+   "name": "Vector",
+   "type": "组件"
+  },
+  {
+   "name": "LinkedList",
+   "type": "组件"
+  },
+  {
+   "name": "扩容机制",
+   "type": "算法"
+  },
+  {
+   "name": "System.arraycopy",
+   "type": "概念"
+  },
+  {
+   "name": "Arrays.copyOf",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "ArrayList",
+   "target": "Vector",
+   "rel": "对比"
+  },
+  {
+   "source": "ArrayList",
+   "target": "LinkedList",
+   "rel": "对比"
+  },
+  {
+   "source": "ArrayList",
+   "target": "扩容机制",
+   "rel": "使用"
+  },
+  {
+   "source": "扩容机制",
+   "target": "System.arraycopy",
+   "rel": "使用"
+  },
+  {
+   "source": "扩容机制",
+   "target": "Arrays.copyOf",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 125,
+ "subject": "Java基础"
+}

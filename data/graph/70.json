@@ -1,0 +1,75 @@
+{
+ "concepts": [
+  {
+   "name": "索引",
+   "type": "概念"
+  },
+  {
+   "name": "B 树",
+   "type": "概念"
+  },
+  {
+   "name": "B+ 树",
+   "type": "概念"
+  },
+  {
+   "name": "Hash",
+   "type": "概念"
+  },
+  {
+   "name": "红黑树",
+   "type": "概念"
+  },
+  {
+   "name": "主键索引",
+   "type": "概念"
+  },
+  {
+   "name": "二级索引",
+   "type": "概念"
+  },
+  {
+   "name": "聚簇索引",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "索引",
+   "target": "B+ 树",
+   "rel": "使用"
+  },
+  {
+   "source": "索引",
+   "target": "B 树",
+   "rel": "使用"
+  },
+  {
+   "source": "索引",
+   "target": "Hash",
+   "rel": "使用"
+  },
+  {
+   "source": "索引",
+   "target": "红黑树",
+   "rel": "使用"
+  },
+  {
+   "source": "主键索引",
+   "target": "索引",
+   "rel": "属于"
+  },
+  {
+   "source": "二级索引",
+   "target": "索引",
+   "rel": "属于"
+  },
+  {
+   "source": "聚簇索引",
+   "target": "索引",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 70,
+ "subject": "MySQL"
+}

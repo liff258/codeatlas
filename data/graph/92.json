@@ -1,0 +1,42 @@
+{
+ "concepts": [
+  {
+   "name": "OSI 七层模型",
+   "type": "概念"
+  },
+  {
+   "name": "TCP/IP 四层模型",
+   "type": "概念"
+  },
+  {
+   "name": "应用层",
+   "type": "组件"
+  },
+  {
+   "name": "传输层",
+   "type": "组件"
+  },
+  {
+   "name": "网络层",
+   "type": "组件"
+  },
+  {
+   "name": "网络接口层",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "OSI 七层模型",
+   "target": "TCP/IP 四层模型",
+   "rel": "对比"
+  },
+  {
+   "source": "传输层",
+   "target": "网络层",
+   "rel": "依赖"
+  }
+ ],
+ "doc_id": 92,
+ "subject": "网络"
+}

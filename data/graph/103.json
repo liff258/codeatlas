@@ -1,0 +1,29 @@
+{
+ "concepts": [
+  {
+   "name": "Redis集群",
+   "type": "组件"
+  },
+  {
+   "name": "面试题",
+   "type": "问题"
+  },
+  {
+   "name": "知识星球",
+   "type": "概念"
+  },
+  {
+   "name": "Java面试指北",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Redis集群",
+   "target": "面试题",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 103,
+ "subject": "Redis"
+}

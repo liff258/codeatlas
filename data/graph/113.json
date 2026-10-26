@@ -1,0 +1,46 @@
+{
+ "concepts": [
+  {
+   "name": "Redis",
+   "type": "组件"
+  },
+  {
+   "name": "消息队列",
+   "type": "概念"
+  },
+  {
+   "name": "List",
+   "type": "概念"
+  },
+  {
+   "name": "Pub/Sub",
+   "type": "概念"
+  },
+  {
+   "name": "Stream",
+   "type": "概念"
+  },
+  {
+   "name": "Kafka",
+   "type": "组件"
+  },
+  {
+   "name": "RabbitMQ",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Kafka",
+   "target": "消息队列",
+   "rel": "对比"
+  },
+  {
+   "source": "RabbitMQ",
+   "target": "消息队列",
+   "rel": "对比"
+  }
+ ],
+ "doc_id": 113,
+ "subject": "Redis"
+}

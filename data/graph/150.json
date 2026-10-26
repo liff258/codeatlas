@@ -1,0 +1,43 @@
+{
+ "concepts": [
+  {
+   "name": "Transformer",
+   "type": "概念"
+  },
+  {
+   "name": "Self-Attention",
+   "type": "算法"
+  },
+  {
+   "name": "Matrix Calculation",
+   "type": "算法"
+  },
+  {
+   "name": "Decoder",
+   "type": "组件"
+  },
+  {
+   "name": "Softmax",
+   "type": "算法"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Transformer",
+   "target": "Self-Attention",
+   "rel": "使用"
+  },
+  {
+   "source": "Self-Attention",
+   "target": "Matrix Calculation",
+   "rel": "属于"
+  },
+  {
+   "source": "Decoder",
+   "target": "Softmax",
+   "rel": "使用"
+  }
+ ],
+ "doc_id": 150,
+ "subject": "LLM基础"
+}

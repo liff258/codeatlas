@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "Spring",
+   "type": "概念"
+  },
+  {
+   "name": "SpringMVC",
+   "type": "概念"
+  },
+  {
+   "name": "SpringBoot",
+   "type": "概念"
+  },
+  {
+   "name": "注解",
+   "type": "组件"
+  },
+  {
+   "name": "依赖注入",
+   "type": "概念"
+  },
+  {
+   "name": "Bean",
+   "type": "概念"
+  },
+  {
+   "name": "MVC",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Spring",
+   "target": "注解",
+   "rel": "使用"
+  },
+  {
+   "source": "SpringMVC",
+   "target": "注解",
+   "rel": "使用"
+  },
+  {
+   "source": "SpringBoot",
+   "target": "注解",
+   "rel": "使用"
+  },
+  {
+   "source": "依赖注入",
+   "target": "Bean",
+   "rel": "属于"
+  },
+  {
+   "source": "MVC",
+   "target": "SpringMVC",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 118,
+ "subject": "Spring"
+}

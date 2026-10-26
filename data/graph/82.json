@@ -1,0 +1,31 @@
+{
+ "concepts": [
+  {
+   "name": "结点",
+   "type": "概念"
+  },
+  {
+   "name": "链路",
+   "type": "概念"
+  },
+  {
+   "name": "主机",
+   "type": "概念"
+  },
+  {
+   "name": "ISP",
+   "type": "概念"
+  },
+  {
+   "name": "IXP",
+   "type": "概念"
+  },
+  {
+   "name": "RFC",
+   "type": "概念"
+  }
+ ],
+ "edges": [],
+ "doc_id": 82,
+ "subject": "网络"
+}

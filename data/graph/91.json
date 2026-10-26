@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "IP 欺骗",
+   "type": "问题"
+  },
+  {
+   "name": "IP 地址",
+   "type": "概念"
+  },
+  {
+   "name": "SYN Flood",
+   "type": "问题"
+  },
+  {
+   "name": "TCP SYN Flood",
+   "type": "算法"
+  },
+  {
+   "name": "扩展积压工作队列",
+   "type": "组件"
+  },
+  {
+   "name": "回收最先创建的 TCP 半开连接",
+   "type": "算法"
+  },
+  {
+   "name": "SYN Cookie",
+   "type": "算法"
+  }
+ ],
+ "edges": [
+  {
+   "source": "IP 欺骗",
+   "target": "IP 地址",
+   "rel": "使用"
+  },
+  {
+   "source": "SYN Flood",
+   "target": "TCP SYN Flood",
+   "rel": "属于"
+  },
+  {
+   "source": "扩展积压工作队列",
+   "target": "SYN Flood",
+   "rel": "解决"
+  },
+  {
+   "source": "回收最先创建的 TCP 半开连接",
+   "target": "SYN Flood",
+   "rel": "解决"
+  },
+  {
+   "source": "SYN Cookie",
+   "target": "SYN Flood",
+   "rel": "解决"
+  }
+ ],
+ "doc_id": 91,
+ "subject": "网络"
+}

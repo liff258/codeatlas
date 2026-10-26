@@ -1,0 +1,66 @@
+{
+ "concepts": [
+  {
+   "name": "Java",
+   "type": "概念"
+  },
+  {
+   "name": "值传递",
+   "type": "概念"
+  },
+  {
+   "name": "引用传递",
+   "type": "概念"
+  },
+  {
+   "name": "形参",
+   "type": "概念"
+  },
+  {
+   "name": "实参",
+   "type": "概念"
+  },
+  {
+   "name": "基本类型参数",
+   "type": "概念"
+  },
+  {
+   "name": "引用类型参数",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Java",
+   "target": "值传递",
+   "rel": "属于"
+  },
+  {
+   "source": "Java",
+   "target": "引用传递",
+   "rel": "对比"
+  },
+  {
+   "source": "形参",
+   "target": "实参",
+   "rel": "对比"
+  },
+  {
+   "source": "值传递",
+   "target": "引用传递",
+   "rel": "对比"
+  },
+  {
+   "source": "基本类型参数",
+   "target": "值传递",
+   "rel": "属于"
+  },
+  {
+   "source": "引用类型参数",
+   "target": "值传递",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 45,
+ "subject": "Java基础"
+}

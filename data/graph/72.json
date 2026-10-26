@@ -1,0 +1,38 @@
+{
+ "concepts": [
+  {
+   "name": "MySQL查询缓存",
+   "type": "组件"
+  },
+  {
+   "name": "Hash值",
+   "type": "参数"
+  },
+  {
+   "name": "查询结果集",
+   "type": "参数"
+  },
+  {
+   "name": "性能优化",
+   "type": "概念"
+  },
+  {
+   "name": "缓存机制",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "MySQL查询缓存",
+   "target": "Hash值",
+   "rel": "使用"
+  },
+  {
+   "source": "缓存机制",
+   "target": "性能优化",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 72,
+ "subject": "MySQL"
+}

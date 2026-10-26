@@ -1,0 +1,79 @@
+{
+ "concepts": [
+  {
+   "name": "消息队列",
+   "type": "概念"
+  },
+  {
+   "name": "异步",
+   "type": "概念"
+  },
+  {
+   "name": "解耦",
+   "type": "概念"
+  },
+  {
+   "name": "削峰",
+   "type": "概念"
+  },
+  {
+   "name": "RocketMQ",
+   "type": "组件"
+  },
+  {
+   "name": "NameServer",
+   "type": "组件"
+  },
+  {
+   "name": "Broker",
+   "type": "组件"
+  },
+  {
+   "name": "CommitLog",
+   "type": "组件"
+  },
+  {
+   "name": "ConsumeQueue",
+   "type": "组件"
+  }
+ ],
+ "edges": [
+  {
+   "source": "消息队列",
+   "target": "异步",
+   "rel": "解决"
+  },
+  {
+   "source": "消息队列",
+   "target": "解耦",
+   "rel": "解决"
+  },
+  {
+   "source": "消息队列",
+   "target": "削峰",
+   "rel": "解决"
+  },
+  {
+   "source": "RocketMQ",
+   "target": "NameServer",
+   "rel": "属于"
+  },
+  {
+   "source": "RocketMQ",
+   "target": "Broker",
+   "rel": "属于"
+  },
+  {
+   "source": "Broker",
+   "target": "CommitLog",
+   "rel": "属于"
+  },
+  {
+   "source": "Broker",
+   "target": "ConsumeQueue",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 61,
+ "subject": "消息队列"
+}

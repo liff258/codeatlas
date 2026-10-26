@@ -1,0 +1,61 @@
+{
+ "concepts": [
+  {
+   "name": "Agent Memory",
+   "type": "概念"
+  },
+  {
+   "name": "工作记忆",
+   "type": "组件"
+  },
+  {
+   "name": "情景记忆",
+   "type": "组件"
+  },
+  {
+   "name": "语义记忆",
+   "type": "组件"
+  },
+  {
+   "name": "遗忘机制",
+   "type": "算法"
+  },
+  {
+   "name": "上下文窗口",
+   "type": "参数"
+  },
+  {
+   "name": "TTL",
+   "type": "参数"
+  }
+ ],
+ "edges": [
+  {
+   "source": "Agent Memory",
+   "target": "工作记忆",
+   "rel": "属于"
+  },
+  {
+   "source": "Agent Memory",
+   "target": "情景记忆",
+   "rel": "属于"
+  },
+  {
+   "source": "Agent Memory",
+   "target": "语义记忆",
+   "rel": "属于"
+  },
+  {
+   "source": "遗忘机制",
+   "target": "TTL",
+   "rel": "使用"
+  },
+  {
+   "source": "上下文窗口",
+   "target": "Agent Memory",
+   "rel": "导致"
+  }
+ ],
+ "doc_id": 156,
+ "subject": "Agent"
+}

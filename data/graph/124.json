@@ -1,0 +1,43 @@
+{
+ "concepts": [
+  {
+   "name": "ArrayBlockingQueue",
+   "type": "组件"
+  },
+  {
+   "name": "阻塞队列",
+   "type": "概念"
+  },
+  {
+   "name": "生产者-消费者模式",
+   "type": "概念"
+  },
+  {
+   "name": "有界队列",
+   "type": "概念"
+  },
+  {
+   "name": "JUC包",
+   "type": "概念"
+  }
+ ],
+ "edges": [
+  {
+   "source": "ArrayBlockingQueue",
+   "target": "阻塞队列",
+   "rel": "属于"
+  },
+  {
+   "source": "阻塞队列",
+   "target": "生产者-消费者模式",
+   "rel": "使用"
+  },
+  {
+   "source": "ArrayBlockingQueue",
+   "target": "有界队列",
+   "rel": "属于"
+  }
+ ],
+ "doc_id": 124,
+ "subject": "Java基础"
+}
