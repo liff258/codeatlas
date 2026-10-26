@@ -108,19 +108,50 @@ export default function GraphPanel({ graph }: { graph: GraphState | undefined })
   /**
    * 视野适配。
    *
-   * 这里踩过一个坑：只在 onEngineStop 里调一次 zoomToFit 是不够的。
-   * 力导向布局在收敛过程中包围盒一直在变，早适配一次 = 缩放比例定死在错误的值上，
-   * 结果要么缩成中间一小团，要么放大到节点跑出画布。
+   * 为什么不用 zoomToFit：
+   *   实测它在两种情况下都会给出错误的变换——一是引擎在数据到达前就"停止"过一次
+   *   （此时包围盒为空，缩放被钳到 9 倍），二是它内部的包围盒和我们看到的画布
+   *   对不上（zoom 算出 1.7、看着却挤在右下角）。这个 API 的黑盒性让排查全靠猜。
    *
-   * 做法：在最初几秒里连续适配几次，最后一次一定落在布局稳定之后。
+   * 改成自己算：节点坐标是 d3 直接写在我们的对象上的，画布尺寸我们也有，
+   * 包围盒 → 缩放 + 中心完全可以显式算出来，行为可预测。
    */
+  const fitView = useCallback(
+    (duration = 320) => {
+      const fg = fgRef.current;
+      if (!fg || size.w === 0 || size.h === 0) return;
+
+      const pts = data.nodes.filter(
+        (n) => typeof n.x === 'number' && typeof n.y === 'number',
+      );
+      if (pts.length === 0) return;
+
+      const xs = pts.map((n) => n.x as number);
+      const ys = pts.map((n) => n.y as number);
+      const minX = Math.min(...xs);
+      const maxX = Math.max(...xs);
+      const minY = Math.min(...ys);
+      const maxY = Math.max(...ys);
+
+      // 留白要够：节点半径、右侧标签都会超出坐标点本身
+      const pad = 52;
+      const bw = Math.max(1, maxX - minX);
+      const bh = Math.max(1, maxY - minY);
+      const k = Math.min((size.w - pad * 2) / bw, (size.h - pad * 2) / bh, 2.6);
+
+      fg.centerAt((minX + maxX) / 2, (minY + maxY) / 2, duration);
+      fg.zoom(Math.max(0.4, k), duration);
+    },
+    [data.nodes, size.w, size.h],
+  );
+
   useEffect(() => {
-    if (data.nodes.length < 2) return;
-    const timers = [400, 1000, 1800, 2600].map((ms) =>
-      setTimeout(() => fgRef.current?.zoomToFit(360, 56), ms),
-    );
+    if (data.nodes.length < 2 || size.w === 0) return;
+    // 布局收敛时间不确定，几个时间点各适配一次，最后一次一定落在稳定之后。
+    // onEngineStop 也会调一次，两者互为兜底。
+    const timers = [260, 900, 1800, 3000].map((ms) => setTimeout(() => fitView(), ms));
     return () => timers.forEach(clearTimeout);
-  }, [data.nodes.length, data.links.length]);
+  }, [data.nodes.length, data.links.length, size.w, size.h, fitView]);
 
   const nodeColor = useCallback(
     (n: FGNode) => DOMAIN_COLOR[n.domain] ?? DOMAIN_COLOR.common,
@@ -153,7 +184,15 @@ export default function GraphPanel({ graph }: { graph: GraphState | undefined })
             graphData={data}
             backgroundColor="rgba(0,0,0,0)"
             cooldownTicks={120}
-            warmupTicks={0}
+            // 力导向收敛时再适配一次视野。定时器版本（下面那个 effect）在
+            // 布局收敛时间不确定时会失手——节点还在漂移时适配，最后落点就偏出画布。
+            // onEngineStop 是"布局真的停了"的准确信号，两个一起用才稳。
+            // 力导向收敛时再适配一次。定时器版本在布局收敛慢的时候会失手，
+            // 这个是"布局真的停了"的准确信号，两个一起用才稳。
+            onEngineStop={() => {
+              if (data.nodes.length === 0) return;
+              fitView();
+            }}
             nodeRelSize={1}
             nodeVal={(n: FGNode) => n.val}
             nodeColor={nodeColor as any}

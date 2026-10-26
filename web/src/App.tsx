@@ -246,11 +246,15 @@ export default function App() {
               </span>
             </div>
 
-            <div className="min-h-0 flex-1">
+            {/* 高度用 flex-grow 比例（3:2）分配，不用百分比。
+                百分比高度和百分比 flex-basis 都试过，在这个 flex 列里都解析不出来，
+                最终只落到 min-height——图谱被压成一条 145px 高的窄带，节点挤在角落。
+                flex-grow 按剩余空间比例分配，不依赖父容器高度是否为"确定值"，最稳。 */}
+            <div className="min-h-0 flex-[3]">
               <ThinkingPanel message={lastAssistant} />
             </div>
 
-            <div className="h-[38%] min-h-[190px] shrink-0 border-t border-line/70">
+            <div className="flex-[2] min-h-[240px] overflow-hidden border-t border-line/70">
               <div className="flex h-8 items-center justify-between px-4">
                 <span className="text-[11px] font-medium tracking-wide text-ink-500">知识图谱</span>
                 <div className="flex items-center gap-1.5">
