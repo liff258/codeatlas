@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 import time
 from pathlib import Path
@@ -175,6 +176,9 @@ def run_mode(mode: str, cases: list[dict], contents: dict[int, tuple[str, str]],
         "mrr": sum(rrs) / n,
         "by_kind": by_kind,
         "by_domain": by_domain,
+        # 落库要用的两个元信息：跑了多少题、候选池多大
+        "n": n,
+        "corpus": len(contents),
     }
 
     print(f"\n  合计   Hit@1 {result['hit1']*100:5.1f}%   Recall@5 {result['recall5']*100:5.1f}%   MRR {result['mrr']:.3f}")
@@ -203,6 +207,60 @@ def run_mode(mode: str, cases: list[dict], contents: dict[int, tuple[str, str]],
             print(f"    {cid}  {info}")
 
     return result
+
+
+def _persist_runs(results: list[dict]) -> None:
+    """把每个模式的汇总写进 eval_run，让 /api/eval/runs 有真实数据。
+
+    为什么每个模式一行而不是整体一行：
+        四种模式的对比才是这张表的价值所在。合成一行就只能看最终数字，
+        看不到"混合比纯 BM25 强多少"——而那恰恰是设计决策的依据。
+
+    写库失败不影响评测结果输出：跑一次要 8 分钟，不能因为落库挂了白跑。
+    """
+    try:
+        import sys
+        from pathlib import Path
+
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "services" / "python-agent"))
+        from sqlalchemy import text
+
+        from app.infra.db import SessionLocal
+    except Exception as e:  # noqa: BLE001
+        print(f"（跳过落库：{e}）")
+        return
+
+    try:
+        with SessionLocal() as db:
+            for r in results:
+                db.execute(
+                    text(
+                        """
+                        INSERT INTO eval_run (name, recall_at_5, case_count, config)
+                        VALUES (:name, :recall5, :n, CAST(:cfg AS jsonb))
+                        """
+                    ),
+                    {
+                        "name": f"检索评测 · {r['mode']}",
+                        "recall5": round(float(r["recall5"]), 4),
+                        "n": int(r.get("n") or 0),
+                        "cfg": json.dumps(
+                            {
+                                "mode": r["mode"],
+                                "hit1": round(float(r["hit1"]), 4),
+                                "mrr": round(float(r["mrr"]), 4),
+                                "by_kind": r.get("by_kind", {}),
+                                "by_domain": r.get("by_domain", {}),
+                                "corpus_chunks": r.get("corpus"),
+                            },
+                            ensure_ascii=False,
+                        ),
+                    },
+                )
+            db.commit()
+        print(f"\n已写入 eval_run：{len(results)} 条")
+    except Exception as e:  # noqa: BLE001
+        print(f"（落库失败，评测结果不受影响：{e}）")
 
 
 def main() -> int:
@@ -240,6 +298,8 @@ def main() -> int:
                         f"{bucket['rec5']/bucket['n']*100:>10.1f}%{bucket['rr']/bucket['n']:>10.3f}"
                     )
             print()
+
+        _persist_runs(results)
 
     return 0
 

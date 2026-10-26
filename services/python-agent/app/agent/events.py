@@ -174,6 +174,11 @@ class EventStream:
     def __init__(self, trace_id: str) -> None:
         self.trace_id = trace_id
         self._seq = 0
+        # 落库用的 step 记录。
+        # 为什么不放在编排层手工收集：step 在 graph.py 里出现了二十多次，
+        # 逐个手抄一定会漏，而漏掉的 trace 回放起来就是断的。
+        # 在造事件的地方顺手记一份，是唯一不会漏的做法。
+        self.steps: list[dict] = []
 
     def _env(self) -> dict[str, Any]:
         self._seq += 1
@@ -184,7 +189,20 @@ class EventStream:
         return self._seq
 
     def step(self, node: Node, status: StepStatus, label: str, detail: str | None = None) -> str:
-        return format_sse("step", StepEvent(node=node, status=status, label=label, detail=detail, **self._env()))
+        env = self._env()
+        self.steps.append(
+            {
+                "seq": env["seq"],
+                "ts": env["ts"],
+                "node": node,
+                "status": status,
+                "label": label,
+                "detail": detail,
+            }
+        )
+        return format_sse(
+            "step", StepEvent(node=node, status=status, label=label, detail=detail, **env)
+        )
 
     def plan(self, intent: Intent, hops: int, sub_queries: list[SubQuery]) -> str:
         return format_sse("plan", PlanEvent(intent=intent, hops=hops, sub_queries=sub_queries, **self._env()))

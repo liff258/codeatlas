@@ -92,6 +92,39 @@ async def agent_stream(
     rewrite_count = 0
     coverage = 0.0
     stop_reason = "normal"
+    intent = "concept"
+    answer_parts: list[str] = []
+
+    def tok(text: str) -> str:
+        """发一个 token，同时累计答案。
+
+        落库要用完整答案，但 token 是一个个吐出去的——只能在发的时候顺手攒。
+        """
+        answer_parts.append(text)
+        return es.token(text)
+
+    async def persist_trace(stop: str) -> None:
+        """把这次执行写进 agent_trace / agent_step。
+
+        放线程里跑：写库是同步阻塞的，直接在事件循环里做会卡住最后一个 token 的发送。
+        失败只记日志——用户已经拿到答案了，不能因为"事后可查"这件事让请求失败。
+        """
+        from app.agent import trace as trace_store
+
+        await asyncio.to_thread(
+            trace_store.save,
+            trace_id=es.trace_id,
+            session_id=session_id,
+            question=question,
+            answer="".join(answer_parts),
+            intent=intent,
+            rewrite_count=rewrite_count,
+            coverage=coverage,
+            stop_reason=stop,
+            latency_ms=elapsed_ms(),
+            usage=llm.usage if llm else None,
+            steps=es.steps,
+        )
 
     try:
         # 没有 key 时构造会抛 LLMError，被下面的 except 捕获成 error 事件。
@@ -101,6 +134,7 @@ async def agent_stream(
         # ---------- 1. 路由 ----------
         yield es.step("router", "running", "判断问题意图")
         router = await nodes.route(llm, question, history)
+        intent = router.intent
         yield es.step(
             "router",
             "degraded" if router.degraded else "ok",
@@ -116,8 +150,9 @@ async def agent_stream(
                 question,
                 max_tokens=200,
             ):
-                yield es.token(piece)
+                yield tok(piece)
             yield es.step("generator", "ok", "回应完成")
+            await persist_trace("normal")
             yield es.done(stop_reason="normal", latency_ms=elapsed_ms(), usage=llm.usage)
             return
 
@@ -139,6 +174,7 @@ async def agent_stream(
         )
 
         if not evidence:
+            await persist_trace("error")
             yield es.error("RETRIEVAL_EMPTY", "知识库里还没有相关内容")
             yield es.done(stop_reason="error", latency_ms=elapsed_ms(), usage=llm.usage)
             return
@@ -271,11 +307,11 @@ async def agent_stream(
                         )
                         emitted_count += 1
                     if text:
-                        yield es.token(text)
+                        yield tok(text)
 
             rest = interceptor.flush()
             if rest:
-                yield es.token(rest)
+                yield tok(rest)
 
         except LLMError as e:
             # 限流和超时都走抽取式兜底：用户至少能看到检索到了什么。
@@ -284,19 +320,20 @@ async def agent_stream(
                 raise
             logger.warning("generator 降级（%s），改用抽取式兜底", e.code)
             for piece in _extractive_tokens(evidence, str(e)):
-                yield es.token(piece)
+                yield tok(piece)
             stop_reason = "error"
         except Exception:  # noqa: BLE001
             # 生成失败 → 抽取式兜底。让用户至少看到检索到了什么，而不是空答案。
             logger.exception("generator failed")
             for piece in _extractive_tokens(evidence, "生成失败"):
-                yield es.token(piece)
+                yield tok(piece)
             stop_reason = "error"
 
         yield es.step("citation", "ok", f"绑定 {emitted_count} 处引用")
         yield es.step("generator", "ok" if stop_reason == "normal" else "degraded", "生成完成")
 
         # ---------- 8. 结束 ----------
+        await persist_trace(stop_reason)
         yield es.done(
             stop_reason=stop_reason,  # type: ignore[arg-type]
             coverage=coverage,
@@ -308,6 +345,7 @@ async def agent_stream(
 
     except LLMError as e:
         logger.warning("agent llm error: %s", e)
+        await persist_trace("error")
         yield es.error(e.code, str(e))
         yield es.done(
             stop_reason="error",

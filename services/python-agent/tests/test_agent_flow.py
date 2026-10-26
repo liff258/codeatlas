@@ -22,6 +22,18 @@ from app.agent.llm import LLMResult, extract_json  # noqa: E402
 from app.rag.retrieve import RetrievedChunk  # noqa: E402
 
 
+@pytest.fixture(autouse=True)
+def _no_trace_persist(monkeypatch):
+    """单测不写数据库。
+
+    agent_stream 现在会把 trace 落库（供 /api/traces 回放）。但单测跑的是假模型，
+    写进去的是 t_test 这种垃圾数据——真跑一次测试就会污染演示用的 trace 列表。
+    """
+    from app.agent import trace as trace_mod
+
+    monkeypatch.setattr(trace_mod, "save", lambda **_kw: None)
+
+
 # ---------------------------------------------------------------- 假依赖
 
 
