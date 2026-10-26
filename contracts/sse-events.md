@@ -68,6 +68,7 @@ Java 转发时额外注入：
 | 字段 | 类型 | 说明 |
 |---|---|---|
 | `message_id` | int | 落库后的助手消息 ID。**只在 `done` 事件里出现**，前端用它做反馈和重新生成 |
+| `session_id` | int | 本次问答落在哪个会话。**只在 `done` 事件里出现**（Java 注入），前端存下来刷新后接着聊 |
 
 ## 4. 事件类型
 
@@ -241,6 +242,7 @@ Java 转发时额外注入：
 | 字段 | 类型 | 说明 |
 |---|---|---|
 | `message_id` | int | 仅 Java 侧有，Python 侧为 null |
+| `session_id` | int | 仅 Java 侧有，Python 侧为 null |
 | `stop_reason` | string | `normal` `step_limit` `rewrite_limit` `timeout` `budget` `error` |
 | `insufficient_evidence` | bool | 为 `true` 时前端在答案顶部显示「证据不足，以下为模型推断」 |
 | `usage.cost_cny` | float | 单次成本估算，产品透明度加分项 |

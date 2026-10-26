@@ -120,7 +120,7 @@ cd /tmp/jg && git sparse-checkout set --no-cone 'docs/java/basis/*.md' 'docs/jav
 拉完按 `sources.manifest.yaml` 的 `id` 归档到 `data/raw/<id>/`。
 `scripts/fetch_sources.py` 还没写——目前是手工执行，这一步还没自动化。
 
-**当前数据量**（2026-10-24）：141 个文档 / 880 个 parent chunk / 5365 个 child chunk，
+**当前数据量**（2026-10-26）：143 个文档 / 899 个 parent chunk / 5484 个 child chunk（全部有向量），
 覆盖 **双域**：后端 9 个学科 5228 条 + AI 4 个学科 137 条（向量检索 39 / RAG 41 / Agent 40 / LLM 基础 17）。
 child 平均 170 token，p95 290，超 256 预算的 8.5%——那些都是单个代码块或表格，
 为了语义完整刻意不切。全部 5365 条已有 1024 维向量（bge-m3 本地推理）。
@@ -138,7 +138,7 @@ AI 域素材分两类：
 | B+ 树和 HNSW 的区别是什么 | AI 域 5 条 + 后端域 3 条（MySQL / Redis） |
 | 向量索引和数据库索引有什么不同 | 后端域 6 条（MySQL）+ AI 域 1 条 |
 
-**检索评测**（33 题：25 道关键词题 + 8 道语义题，其中后端 20 道、AI 13 道，候选池 5456）
+**检索评测**（33 题：25 道关键词题 + 8 道语义题，其中后端 20 道、AI 13 道，候选池 5484）
 
 | 模式 | 总体 Hit@1 | 总体 Recall@5 | 后端 Recall@5 | AI Recall@5 | AI Hit@1 |
 |---|---|---|---|---|---|
@@ -387,6 +387,8 @@ python scripts/e2e_verify.py --strict-cross-domain
 右上是思考面板（每个节点逐一点亮，自评覆盖率 0.85，低分片段编号列出来），
 右下是知识图谱（`B+ 树` ←→ `HNSW` 之间的橙色虚线就是跨域边）。
 
+**演示脚本**：`docs/demo-script.md`（6 分钟分镜 + 30 秒电梯版 + 意外情况应对 + 评委 10 问）。
+
 **演示时值得讲的三点**：
 
 1. **跨域边是系统自己连的**。问题里没有「B+ 树」三个字，是检索同时命中了
@@ -406,6 +408,35 @@ DeepSeek V4.1-Flash · BGE-M3 · bge-reranker-v2-m3
 
 ---
 
+## 接口实现状态
+
+契约（`contracts/openapi.yaml`）定义了 16 个端点。**实现了 12 个，两个明确不实现**——
+宁可标成未实现，也不做一个返回空数组的假接口。
+
+| 端点 | 状态 | 说明 |
+|---|---|---|
+| `POST /api/chat/stream` | ✅ | SSE 主链路，Java 转发 + 注入 message_id / session_id |
+| `GET /api/sessions` | ✅ | 会话列表 |
+| `POST /api/sessions` | ✅ | 新建会话 |
+| `GET /api/sessions/{id}/messages` | ✅ | 会话消息 |
+| `GET /api/subjects` | ✅ | 15 个学科 + 各自切片数，前端显示"资料充足度" |
+| `GET /api/documents` | ✅ | 143 篇文档，支持按 status 过滤 |
+| `DELETE /api/documents/{id}` | ✅ | 级联删除切片与向量 |
+| `GET /api/chunks/{id}` | ✅ | 引用角标点开看原文，`c_102` 和 `102` 都收 |
+| `GET /api/traces/{id}` | ✅ | 轨迹回放：14 步、每步耗时、降级原因 |
+| `GET /api/eval/runs` | ✅ | 四种检索模式的评测结果 |
+| `POST /api/feedback` | ✅ | 点踩原因，rating 只允许 -1/1 |
+| `GET /api/health` | ✅ | 网关 / 数据库 / Agent 三处探活 |
+| `POST /api/documents` | ❌ | 文件上传要落盘 + 异步入库，当前用 `scripts/ingest.py` 批量入库 |
+| `GET /api/graph/overview` | ❌ | 全库图谱需要离线抽取实体关系（`entity`/`relation` 表还是空的） |
+| `GET /api/graph/neighbors` | ❌ | 同上 |
+| `POST /api/eval/runs` | ❌ | 评测结果由 `scripts/eval_retrieval.py` 直接写库，不需要 HTTP 入口 |
+
+**为什么没有 `/internal/ingest`**：契约里写了，但入库是离线批处理（`scripts/ingest.py`），
+做成 HTTP 接口只是把批处理包装成同步请求，反而更容易超时。
+
+---
+
 ## 开发进度
 
 - [x] P0 骨架与契约（数据库层 / Agent Mock / Java 网关 / E2E 20 项全过）
@@ -416,7 +447,7 @@ DeepSeek V4.1-Flash · BGE-M3 · bge-reranker-v2-m3
 - [x] P1-d 素材补齐：AI 域 6 篇外部 + 4 篇自写，双域打通
 - [x] P2 Agent 状态机（智谱 GLM-4.5-Flash，6 节点全链路）
 - [x] P3-b 前端接真实链路（表格渲染 / 标题层级 / 多轮对话）
-- [ ] P3-c 前端视觉打磨（图谱面板尺寸、动效细节）
+- [x] P3-c 前端视觉打磨（图谱面板尺寸 / 视野适配 / 会话刷新恢复）
 - [ ] P4 打磨与冻结
 - [ ] P5 参赛材料
 
