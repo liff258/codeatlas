@@ -5,9 +5,11 @@ import com.codeatlas.dto.ChunkDetailView;
 import com.codeatlas.dto.DocumentView;
 import com.codeatlas.dto.EvalRunView;
 import com.codeatlas.dto.FeedbackRequest;
+import com.codeatlas.dto.GraphDataView;
 import com.codeatlas.dto.SubjectView;
 import com.codeatlas.dto.TraceView;
 import com.codeatlas.service.CatalogService;
+import com.codeatlas.service.GraphService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,10 +29,10 @@ import java.util.List;
  * 这些端点在契约里一直写着，之前没实现——文档列表、学科分布、引用原文、
  * 轨迹回放都属于"产品该有的东西"，缺了它们，界面之外的部分就全是黑盒。
  *
- * 没有实现的两个（见 README 的接口状态表）：
+ * 没实现的两个（见 README 的接口状态表）：
  * - POST /api/documents   文件上传要落盘 + 异步入库，当前用 scripts/ingest.py 批量入库
- * - GET  /api/graph/*     全库图谱需要离线抽取实体关系，entity/relation 表还是空的
- * 这两个宁可标成未实现，也不做一个假接口出来。
+ * - POST /api/eval/runs   评测结果由脚本直接写库，不需要 HTTP 入口
+ * 宁可标成未实现，也不做一个假接口出来。
  */
 @RestController
 @RequestMapping("/api")
@@ -38,6 +40,7 @@ import java.util.List;
 public class CatalogController {
 
     private final CatalogService catalogService;
+    private final GraphService graphService;
 
     @GetMapping("/subjects")
     public Result<List<SubjectView>> subjects() {
@@ -70,6 +73,22 @@ public class CatalogController {
     @GetMapping("/eval/runs")
     public Result<List<EvalRunView>> evalRuns() {
         return Result.ok(catalogService.listEvalRuns());
+    }
+
+    /** 全库图谱：按度数取核心节点。传 subject 只看某个学科 */
+    @GetMapping("/graph/overview")
+    public Result<GraphDataView> graphOverview(
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) String subject) {
+        return Result.ok(graphService.overview(limit, subject));
+    }
+
+    /** 以某个概念为中心看它的邻居，depth 支持 1~2 跳 */
+    @GetMapping("/graph/neighbors")
+    public Result<GraphDataView> graphNeighbors(
+            @RequestParam String entity,
+            @RequestParam(required = false) Integer depth) {
+        return Result.ok(graphService.neighbors(entity, depth));
     }
 
     @PostMapping("/feedback")

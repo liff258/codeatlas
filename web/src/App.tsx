@@ -6,7 +6,7 @@
  * 否则剪视频还得来回切镜头。
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Layers, Maximize2, Minimize2, Network, RotateCcw, ScanEye, Sparkles } from 'lucide-react';
 import AgentRail from './components/AgentRail';
 import Conversation from './components/Conversation';
@@ -14,7 +14,10 @@ import Composer from './components/Composer';
 import ThinkingPanel from './components/ThinkingPanel';
 import GraphPanel from './components/GraphPanel';
 import SourceCard from './components/SourceCard';
-import { useChatStore } from './store/chatStore';import { isMockMode } from './lib/sse';
+import { useChatStore } from './store/chatStore';
+import type { GraphState } from './store/chatStore';
+import { isMockMode } from './lib/sse';
+import { fetchLibraryGraph } from './lib/libraryGraph';
 import type { CitationEvent } from './types/events';
 
 /* ────────────────────────── 首屏 ────────────────────────── */
@@ -152,7 +155,31 @@ export default function App() {
   const retry = useChatStore((s) => s.retry);
 
   const [cite, setCite] = useState<CitationEvent | null>(null);
-  const [graphFull, setGraphFull] = useState(false);
+  // 图谱浮层有三种状态：关着 / 看本题的 / 看全库的
+  const [graphView, setGraphView] = useState<'none' | 'message' | 'library'>('none');
+  const [libGraph, setLibGraph] = useState<GraphState | null>(null);
+  const [libStats, setLibStats] = useState<{ nodes: number; edges: number; cross: number; truncated: boolean } | null>(null);
+  const [libLoading, setLibLoading] = useState(false);
+  const [libError, setLibError] = useState<string | null>(null);
+
+  /** 打开全库图谱。数据只拉一次，之后切来切去不再请求 */
+  const openLibrary = useCallback(async () => {
+    setGraphView('library');
+    if (libGraph || libLoading) return;
+    setLibLoading(true);
+    setLibError(null);
+    try {
+      // 200 个节点：再多在 1920 宽下会糊成一团，再少 AI 域的概念就进不来
+      // （语料里后端占 95%，按度数排序时 AI 概念天然靠后）
+      const g = await fetchLibraryGraph(200);
+      setLibGraph(g.state);
+      setLibStats(g.stats);
+    } catch (e) {
+      setLibError((e as Error)?.message ?? '加载失败');
+    } finally {
+      setLibLoading(false);
+    }
+  }, [libGraph, libLoading]);
 
   const lastAssistant = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
@@ -179,13 +206,13 @@ export default function App() {
 
   // 全屏图谱按 Esc 退出
   useEffect(() => {
-    if (!graphFull) return;
+    if (graphView === 'none') return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setGraphFull(false);
+      if (e.key === 'Escape') setGraphView('none');
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [graphFull]);
+  }, [graphView]);
 
   return (
     <div className="flex h-full flex-col bg-paper-50">
@@ -214,6 +241,15 @@ export default function App() {
             {traceId && (
               <span className="hidden font-mono text-[10px] text-ink-400 lg:inline">{traceId}</span>
             )}
+            <button
+              type="button"
+              onClick={() => void openLibrary()}
+              title="看整个知识库的概念关联"
+              className="flex items-center gap-1 rounded-md border border-line bg-white/70 px-2 py-1 text-[11px] text-ink-500 transition-colors hover:border-ink-400/40 hover:text-ink-900"
+            >
+              <Network size={11} />
+              全库图谱
+            </button>
             <button
               type="button"
               onClick={reset}
@@ -276,7 +312,7 @@ export default function App() {
                   </span>
                   <button
                     type="button"
-                    onClick={() => setGraphFull(true)}
+                    onClick={() => setGraphView('message')}
                     title="全屏查看"
                     disabled={!lastAssistant || Object.keys(lastAssistant.graph.nodes).length === 0}
                     className="rounded p-[2px] text-ink-400 transition-colors hover:bg-paper-100 hover:text-ink-900 disabled:opacity-30"
@@ -294,26 +330,47 @@ export default function App() {
       </main>
 
       {/* 图谱全屏：演示时放大讲「跨域边」用 */}
-      {graphFull && (
-        <div className="fixed inset-0 z-40 flex flex-col bg-paper-50/97 backdrop-blur-sm">
+      {graphView !== 'none' && (
+        <div className="fixed inset-0 z-40 flex flex-col bg-paper-50">
           <div className="flex h-11 shrink-0 items-center justify-between border-b border-line px-5">
-            <div>
-              <span className="text-[13px] font-semibold text-ink-900">知识图谱</span>
-              <span className="ml-2 text-[11px] text-ink-400">
-                虚线 = 跨域边（两端属于不同学科域）
+            <div className="flex items-center gap-2">
+              <span className="text-[13px] font-semibold text-ink-900">
+                {graphView === 'library' ? '全库知识图谱' : '知识图谱'}
               </span>
+              {graphView === 'library' && libStats && (
+                <span className="text-[11px] text-ink-400">
+                  {libStats.nodes} 个概念 · {libStats.edges} 条关系 ·{' '}
+                  <span className="text-bridge">{libStats.cross} 条跨域</span>
+                  {libStats.truncated && ' · 仅展示核心节点'}
+                </span>
+              )}
+              {graphView === 'message' && (
+                <span className="text-[11px] text-ink-400">
+                  虚线 = 跨域边（两端属于不同学科域）
+                </span>
+              )}
             </div>
             <button
               type="button"
-              onClick={() => setGraphFull(false)}
+              onClick={() => setGraphView('none')}
               className="flex items-center gap-1 rounded-md border border-line bg-white px-2 py-1 text-[11px] text-ink-500 transition-colors hover:text-ink-900"
             >
               <Minimize2 size={11} />
               退出全屏
             </button>
           </div>
-          <div className="min-h-0 flex-1">
-            <GraphPanel graph={lastAssistant?.graph} />
+          <div className="relative min-h-0 flex-1">
+            {graphView === 'library' && libLoading && (
+              <div className="absolute inset-0 grid place-items-center text-[12.5px] text-ink-400">
+                正在加载全库图谱…
+              </div>
+            )}
+            {graphView === 'library' && libError && (
+              <div className="absolute inset-0 grid place-items-center text-[12.5px] text-red-600">
+                {libError}
+              </div>
+            )}
+            <GraphPanel graph={graphView === 'library' ? libGraph ?? undefined : lastAssistant?.graph} />
           </div>
         </div>
       )}

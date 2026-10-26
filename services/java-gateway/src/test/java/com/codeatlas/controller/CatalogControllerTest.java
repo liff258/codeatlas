@@ -5,6 +5,7 @@ import com.codeatlas.common.GlobalExceptionHandler;
 import com.codeatlas.dto.ChunkDetailView;
 import com.codeatlas.dto.SubjectView;
 import com.codeatlas.service.CatalogService;
+import com.codeatlas.service.GraphService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,13 +37,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CatalogControllerTest {
 
     private CatalogService service;
+    private GraphService graphService;
     private MockMvc mvc;
 
     @BeforeEach
     void setUp() {
         service = mock(CatalogService.class);
+        graphService = mock(GraphService.class);
         mvc = MockMvcBuilders
-                .standaloneSetup(new CatalogController(service))
+                .standaloneSetup(new CatalogController(service, graphService))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
     }

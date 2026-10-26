@@ -241,8 +241,8 @@ export default function GraphPanel({ graph }: { graph: GraphState | undefined })
                 ctx.fillText(node.label, x, ly);
               }
             }}
-            linkColor={(l: FGLink) => (l.cross ? BRIDGE : l.onPath ? '#171614' : '#d8d2c7')}
-            linkWidth={(l: FGLink) => (l.cross ? 1.6 : l.onPath ? 1.2 : 0.7)}
+            linkColor={(l: FGLink) => (l.cross ? BRIDGE : l.onPath ? '#171614' : '#c8c1b2')}
+            linkWidth={(l: FGLink) => (l.cross ? 1.8 : l.onPath ? 1.2 : 0.85)}
             linkLineDash={(l: FGLink) => (l.cross ? [4, 3] : null)}
             linkDirectionalParticles={(l: FGLink) => (l.onPath ? 3 : 0)}
             linkDirectionalParticleWidth={2}
