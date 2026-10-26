@@ -277,14 +277,20 @@ async def agent_stream(
             if rest:
                 yield es.token(rest)
 
-        except LLMError:
-            raise
+        except LLMError as e:
+            # 限流和超时都走抽取式兜底：用户至少能看到检索到了什么。
+            # 鉴权/参数错误才上抛——那种情况重试也没用，而且必须让人知道配错了。
+            if e.code not in ("LLM_TIMEOUT", "LLM_RATE_LIMIT"):
+                raise
+            logger.warning("generator 降级（%s），改用抽取式兜底", e.code)
+            for piece in _extractive_tokens(evidence, str(e)):
+                yield es.token(piece)
+            stop_reason = "error"
         except Exception:  # noqa: BLE001
             # 生成失败 → 抽取式兜底。让用户至少看到检索到了什么，而不是空答案。
             logger.exception("generator failed")
-            yield es.token("**生成失败，以下是检索到的原文片段：**\n\n")
-            for i, e in enumerate(evidence[:3], start=1):
-                yield es.token(f"[{i}] 《{e.doc_name}》{e.heading_path}\n\n{e.content[:300]}\n\n")
+            for piece in _extractive_tokens(evidence, "生成失败"):
+                yield es.token(piece)
             stop_reason = "error"
 
         yield es.step("citation", "ok", f"绑定 {emitted_count} 处引用")

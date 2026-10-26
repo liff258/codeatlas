@@ -120,21 +120,30 @@ TIMEOUT_REWRITER = 12.0
 
 
 async def _tolerant_json_call(llm: LLMClient, system: str, user: str, **kw) -> LLMResult:
-    """调模型要 JSON，超时就降级，不把异常抛给编排层。
+    """调模型要 JSON，瞬时故障就降级，不把异常抛给编排层。
 
-    为什么只吞超时：
-        超时是瞬时故障，节点用兜底逻辑照样能往下走（比如 grader 用重排分估覆盖率）。
-        但限流（429）和鉴权失败要如实上报——那不是"这一次慢了"，
-        是"根本调不通"，静默降级会让用户以为系统在工作，实际全是兜底结果。
+    吞掉的两类（都会让节点走兜底，流程继续）：
+    - LLM_TIMEOUT：节点有自己的兜底逻辑，比如 grader 用重排分估覆盖率
+    - LLM_RATE_LIMIT：免费额度下 429 是常态（实测一个下午撞三次），
+      LLMClient 内部已经重试 2 次，还失败说明这一阵就是挤不进去。
+      这时候把 12 条已召回的证据全丢掉、直接报错，是最糟的选择——
+      用户什么都看不到。降级成"按重排分估覆盖率"至少还能给出答案。
 
-    这个区分很重要：之前 grader 一次 30 秒超时就把整条流打断了，
-    明明已经召回到 12 条证据，却一条答案都没生成出来。
+    不吞的：鉴权失败、参数错误这类。那不是"这一次不通"，
+    是"永远不通"，静默降级会让用户以为系统在工作，实际全是兜底结果。
+
+    这个区分是被真实故障逼出来的：grader 一次超时/限流就把整条流打断，
+    明明证据都到手了，却一条答案都没生成出来。
     """
     try:
         return await llm.json_call(system, user, **kw)
     except LLMError as e:
         if e.code == "LLM_TIMEOUT":
             return LLMResult(text="", data=None, degraded=True, detail=f"模型超时：{e}")
+        if e.code == "LLM_RATE_LIMIT":
+            return LLMResult(
+                text="", data=None, degraded=True, detail=f"模型限流，已重试仍失败：{e}"
+            )
         raise
 
 

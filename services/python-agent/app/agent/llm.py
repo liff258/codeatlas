@@ -20,12 +20,19 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import re
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 
 from app.agent.events import Usage
 from app.config import settings
+
+# 限流重试。退避间隔取短值：5 次调用如果每次等 5 秒，累计比直接降级还慢。
+logger = logging.getLogger(__name__)
+
+RATE_LIMIT_RETRIES = 2
+RATE_LIMIT_BACKOFF = (1.5, 3.5)
 
 # 流式生成的请求超时。比 json_call 的 30 秒宽得多，理由见 stream_call 里的注释。
 STREAM_TIMEOUT_SECONDS = 120.0
@@ -240,6 +247,47 @@ class LLMClient:
         return self._usage.snapshot()
 
     async def _post(
+        self,
+        messages: list[dict],
+        *,
+        stream: bool,
+        temperature: float,
+        max_tokens: int,
+        json_mode: bool = False,
+        timeout: float | None = None,
+    ):
+        """带限流重试的调用入口。
+
+        为什么必须重试：免费额度下 429 是常态而不是异常——实测一个下午撞了三次，
+        每次都是 0.4 秒内立刻返回，然后把整条链路打断（前端只看到"模型超时"）。
+        演示当天撞上就是翻车，所以重试不是优化，是可用性底线。
+
+        只重试限流：超时重试会让用户多等一个完整周期（各节点超时 10~15 秒），
+        而且超时往往是模型真的慢，重试大概率还是慢。限流不同，它是瞬时的。
+        """
+        last: LLMError | None = None
+        for attempt in range(RATE_LIMIT_RETRIES + 1):
+            try:
+                return await self._post_once(
+                    messages,
+                    stream=stream,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    json_mode=json_mode,
+                    timeout=timeout,
+                )
+            except LLMError as e:
+                if e.code != "LLM_RATE_LIMIT" or attempt == RATE_LIMIT_RETRIES:
+                    raise
+                last = e
+                # 退避间隔故意压得比较短：整条链路有 5 次调用，
+                # 每次重试都等 5 秒的话累计能到 25 秒，比直接降级还慢。
+                delay = RATE_LIMIT_BACKOFF[attempt]
+                logger.warning("模型限流，%.1fs 后重试（第 %d 次）", delay, attempt + 1)
+                await asyncio.sleep(delay)
+        raise last or LLMError("LLM_RATE_LIMIT", "模型限流")
+
+    async def _post_once(
         self,
         messages: list[dict],
         *,
