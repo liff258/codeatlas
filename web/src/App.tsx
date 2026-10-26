@@ -148,6 +148,7 @@ export default function App() {
   const ask = useChatStore((s) => s.ask);
   const stop = useChatStore((s) => s.stop);
   const reset = useChatStore((s) => s.reset);
+  const restore = useChatStore((s) => s.restore);
   const retry = useChatStore((s) => s.retry);
 
   const [cite, setCite] = useState<CitationEvent | null>(null);
@@ -159,6 +160,14 @@ export default function App() {
     }
     return null;
   }, [messages]);
+
+  // 刷新后恢复上一次的对话。
+  // 必须在 ?q= 之前跑：带问题打开时是"开新一轮"，不该被旧快照盖掉。
+  useEffect(() => {
+    restore();
+    // 只在挂载时跑一次
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 支持 ?q=xxx 直接带问题打开，方便分享与演示（也方便自动化截图）
   useEffect(() => {

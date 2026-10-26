@@ -179,6 +179,8 @@ export interface Usage {
 export interface DoneEvent extends Envelope {
   /** 仅 Java 侧有，Python 侧为 null */
   message_id: number | null;
+  /** 仅 Java 侧有。前端存下来，刷新后才能接着上一轮对话 */
+  session_id?: number | null;
   stop_reason: StopReason;
   coverage: number;
   rewrite_count: number;

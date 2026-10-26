@@ -82,10 +82,14 @@ export interface ChatMessage {
 
 interface ChatStore {
   messages: ChatMessage[];
+  /** 当前会话 id。null 表示还没建（第一次提问时由后端创建） */
+  sessionId: number | null;
   streaming: boolean;
   /** 当前流的 trace_id，页头显示，方便排查 */
   traceId: string | null;
   ask: (question: string) => Promise<void>;
+  /** 从本地快照恢复上一次的对话（刷新页面时调） */
+  restore: () => void;
   stop: () => void;
   reset: () => void;
   retry: () => Promise<void>;
@@ -109,6 +113,65 @@ const newAssistant = (id: string): ChatMessage => ({
 });
 
 const edgeKey = (e: GraphEdge) => `${e.source}->${e.target}`;
+
+/* ────────────────────────── 本地快照 ────────────────────────── */
+
+/**
+ * 为什么存在浏览器而不是只靠后端：
+ *
+ * 后端确实有 session / message 表，也能按会话取回正文。但它只存了正文——
+ * 引用（citations）和知识图谱是流式过程中拼出来的，没有落库。
+ * 如果刷新后只从后端恢复正文，答案里的 [1][2] 会全部渲染成红色的「无出处」，
+ * 那比不恢复更糟：看起来像是这些论断根本没找到依据。
+ *
+ * 所以这里存整条消息（含 citations / graph / done）。代价是换设备或清缓存后
+ * 只剩服务端那份正文，但演示场景下"刷新不丢"比"跨设备同步"重要得多。
+ */
+const STORAGE_KEY = 'codeatlas.session.v1';
+/** 只留最近 20 条：localStorage 有 5MB 上限，图谱和引用累积起来不小 */
+const MAX_PERSISTED = 20;
+
+interface Snapshot {
+  sessionId: number | null;
+  messages: ChatMessage[];
+}
+
+function loadSnapshot(): Snapshot | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Snapshot;
+    if (!Array.isArray(parsed?.messages)) return null;
+    return {
+      sessionId: typeof parsed.sessionId === 'number' ? parsed.sessionId : null,
+      messages: parsed.messages,
+    };
+  } catch {
+    // 快照坏了就当没有——不能因为缓存问题让页面白屏
+    return null;
+  }
+}
+
+function saveSnapshot(sessionId: number | null, messages: ChatMessage[]) {
+  try {
+    // 只存已完成的：正在流式的那条内容不完整，恢复出来是半句话
+    const done = messages.filter((m) => m.phase === 'done' || m.phase === 'error');
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ sessionId, messages: done.slice(-MAX_PERSISTED) } satisfies Snapshot),
+    );
+  } catch {
+    // 配额满了就放弃持久化，不影响当前这轮对话
+  }
+}
+
+function clearSnapshot() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
+}
 
 /* ────────────────────────── 模块级可变状态 ────────────────────────── */
 
@@ -153,8 +216,21 @@ export const useChatStore = create<ChatStore>((set, get) => {
 
   return {
     messages: [],
+    sessionId: null,
     streaming: false,
     traceId: null,
+
+    restore() {
+      const snap = loadSnapshot();
+      if (!snap || snap.messages.length === 0) return;
+      // 快照里只可能是已完成的消息，但历史版本可能存过中间态，
+      // 这里统一收口成 done，避免恢复出一堆永远转圈的气泡
+      const messages = snap.messages.map((m) => ({
+        ...m,
+        phase: m.phase === 'thinking' || m.phase === 'answering' ? 'done' : m.phase,
+      })) as ChatMessage[];
+      set({ messages, sessionId: snap.sessionId });
+    },
 
     async ask(question: string) {
       const q = question.trim();
@@ -196,7 +272,9 @@ export const useChatStore = create<ChatStore>((set, get) => {
 
       try {
         for await (const evt of postAgentStream(
-          { question: q, history },
+          // 带上 session_id：不带的话后端每次都会新建会话，历史永远接不上。
+          // 之前这里没传，表现是"刷新后对话全丢、而且库里多了一堆单条会话"。
+          { question: q, session_id: get().sessionId ? String(get().sessionId) : null, history },
           {
             signal: abort.signal,
             onOpen: () => set({ traceId: null }),
@@ -348,6 +426,9 @@ export const useChatStore = create<ChatStore>((set, get) => {
                 done: evt,
                 phase: evt.stop_reason === 'error' ? 'error' : 'done',
               }));
+              if (typeof evt.session_id === 'number') {
+                set({ sessionId: evt.session_id });
+              }
               break;
 
             default:
@@ -387,6 +468,9 @@ export const useChatStore = create<ChatStore>((set, get) => {
         if (currentAbort === abort) currentAbort = null;
         activeMsgId = null;
         set({ streaming: false });
+        // 一轮结束才落快照：流式过程中存下来的是半截答案
+        const { sessionId, messages } = get();
+        saveSnapshot(sessionId, messages);
       }
     },
 
@@ -406,7 +490,8 @@ export const useChatStore = create<ChatStore>((set, get) => {
         cancelAnimationFrame(rafId);
         rafId = 0;
       }
-      set({ messages: [], streaming: false, traceId: null });
+      set({ messages: [], sessionId: null, streaming: false, traceId: null });
+      clearSnapshot();
     },
 
     async retry() {
