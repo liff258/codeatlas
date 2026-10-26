@@ -235,3 +235,34 @@ cases:
     kind: semantic
     question: 大模型记不住太多东西怎么办
     expect_heading: [Memory, 记忆]
+
+  # ---- Prompt工程 / LLM基础 题（2026-10-26 补）----
+  # 补这两篇笔记的动机不是"提分"，是 Prompt工程 这个学科原本 0 个切片——
+  # 评委点开学科列表会直接看到"有学科没资料"。出题是为了验证补的素材真的能被检索到。
+  - id: p01
+    domain: ai
+    question: 怎么防止提示词注入
+    subject: Prompt工程
+    must_have: [注入]
+    any_of: [定界, 指令, 数据, 防御]
+
+  - id: p02
+    domain: ai
+    question: 为什么要求模型输出 JSON 还要做容错解析
+    subject: Prompt工程
+    must_have: [JSON]
+    any_of: [容错, 括号, 截断, 解析]
+
+  - id: p03
+    domain: ai
+    question: 注意力计算里为什么要除以根号 d
+    subject: LLM基础
+    must_have: [softmax]
+    any_of: [方差, 梯度, 缩放]
+
+  - id: p04
+    domain: ai
+    question: RoPE 和可学习位置编码有什么区别
+    subject: LLM基础
+    must_have: [RoPE]
+    any_of: [外推, 旋转, 相对位置]

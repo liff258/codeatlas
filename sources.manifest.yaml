@@ -316,6 +316,29 @@ sources:
     fetch_mode: fulltext
     attribution: 本人原创
     expected_chunks: 45
+
+  # ---- 2026-10-26 补：Prompt工程 学科 0 切片，LLM基础 只有一篇英文论文 ----
+  - id: own-prompt-engineering
+    domain: ai
+    subject: Prompt工程
+    title: 【自写】Prompt 工程：从"会写提示词"到"能验证提示词"
+    url: local://notes/prompt-engineering.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 40
+    covers: [系统提示词分层, 结构化输出容错, 提示词注入防御, 提示词评估集]
+
+  - id: own-llm-basics
+    domain: ai
+    subject: LLM基础
+    title: 【自写】Transformer 的注意力机制到底在算什么
+    url: local://notes/llm-basics.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 40
+    covers: [QKV 直觉, 缩放点积, 多头注意力, 位置编码, 残差与 LayerNorm]
     covers: [状态机 vs 黑盒 AgentExecutor, 预算设计, 查询哈希去重, 降级策略]
 
   - id: own-g1-satb
