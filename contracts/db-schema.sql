@@ -272,6 +272,40 @@ CREATE TABLE eval_result (
 );
 CREATE INDEX idx_eval_result_run ON eval_result (run_id);
 
+-- ----------------------------------------------------------------------------
+-- knowledge_point：知识点（派生表）
+--
+-- 为什么要这张表，而不是查询时从 chunk 现算：
+--   1. 前端要用稳定 id 做 URL（#/kp/kp_xxxxxxxx），现算的 hash 没法反查
+--   2. 一道题的完整答案常常跨多个 child chunk，必须按 heading_path 聚合，
+--      而 parent chunk 是 1024 token 滑窗、787/903 个跨多个标题，拿它当答案会串题
+--   3. 题库要按 is_question 筛，这个标记要预先算好并建索引
+--
+-- 所有权：Python 写（由 scripts/build_knowledge_points.py 重建），Java 只读。
+-- 幂等：每次重建 TRUNCATE 后重灌，不是增量更新。
+-- ----------------------------------------------------------------------------
+CREATE TABLE knowledge_point (
+    id            VARCHAR(20) PRIMARY KEY,     -- kp_ + md5(subject|doc|heading)[:10]
+    subject       VARCHAR(40) REFERENCES subject_taxonomy(code),
+    document_id   BIGINT      NOT NULL REFERENCES document(id) ON DELETE CASCADE,
+    heading_path  TEXT        NOT NULL,
+    title         TEXT        NOT NULL,        -- 末级标题，已去掉 ⭐️/emoji/编号
+    breadcrumb    TEXT,                        -- 上级路径，前端面包屑
+    answer        TEXT        NOT NULL,        -- 该标题下所有 child 按 ordinal 拼接
+    chunk_ids     BIGINT[]    NOT NULL DEFAULT '{}',
+    chunk_count   INT         NOT NULL DEFAULT 0,
+    char_count    INT         NOT NULL DEFAULT 0,
+    is_question   BOOLEAN     NOT NULL DEFAULT false,
+    entity_names  TEXT[]      NOT NULL DEFAULT '{}',  -- 用于「相关知识点」推荐
+    ordinal_start INT
+);
+-- 板块页：按学科列知识点，题库只看 is_question
+CREATE INDEX idx_kp_subject ON knowledge_point (subject, is_question, char_count DESC);
+-- 详情页的前后篇导航
+CREATE INDEX idx_kp_doc ON knowledge_point (document_id, ordinal_start);
+-- 「相关知识点」用数组重叠查询（&&），走 GIN
+CREATE INDEX idx_kp_entities ON knowledge_point USING gin (entity_names);
+
 -- ============================================================================
 -- 三、初始数据（开发期占位，正式快照在 db/snapshots/）
 -- ============================================================================
