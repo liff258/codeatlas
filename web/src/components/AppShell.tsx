@@ -11,6 +11,7 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { BookOpen, HelpCircle, MessageSquare, Minimize2, Network } from 'lucide-react';
 import GraphPanel from './GraphPanel';
+import AssistantDock from './AssistantDock';
 import { navigate, useRoute } from '../lib/router';
 import { fetchLibraryGraph } from '../lib/libraryGraph';
 import type { GraphState } from '../store/chatStore';
@@ -124,6 +125,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
       </header>
 
       <main className="flex min-h-0 flex-1">{children}</main>
+
+      {/* 助手在对话页不显示——那里本来就是全屏对话，再挂一个浮层是重复 */}
+      {route.name !== 'chat' && <AssistantDock />}
 
       {libOpen && (
         <div className="fixed inset-0 z-40 flex flex-col bg-paper-50">

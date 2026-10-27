@@ -10,7 +10,7 @@
  * 这样改造风险最小：聊天是已经验证过的链路，不能因为改布局而回归。
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Maximize2, Minimize2, RotateCcw, Sparkles } from 'lucide-react';
 import AgentRail from '../components/AgentRail';
 import Conversation from '../components/Conversation';
@@ -22,14 +22,13 @@ import { useChatStore } from '../store/chatStore';
 import { useRoute } from '../lib/router';
 import type { CitationEvent } from '../types/events';
 
-/** 示例问题。放几个"能体现跨域"的，比空着好——用户不知道该问什么 */
-const EXAMPLES = [
-  '向量检索为什么不能用 B+ 树加速？',
-  'G1 的 SATB 是什么，为什么需要它',
-  'Redis 的持久化会不会阻塞主线程',
-];
-
-function ChatIntro({ onAsk }: { onAsk: (q: string) => void }) {
+/**
+ * 空状态引导。
+ *
+ * 不再重复列示例问题——Composer 上方已经有一排（那是全局的），
+ * 两处都放会显得啰嗦。这里只留定位说明。
+ */
+function ChatIntro() {
   return (
     <div className="flex h-full items-center justify-center px-8">
       <div className="w-full max-w-xl animate-fade-up">
@@ -44,18 +43,6 @@ function ChatIntro({ onAsk }: { onAsk: (q: string) => void }) {
           它会先规划查询、再自评证据够不够，不够就改写重查——整个过程摊在右栏给你看。
         </p>
 
-        <div className="mt-5 space-y-1.5">
-          {EXAMPLES.map((q) => (
-            <button
-              key={q}
-              type="button"
-              onClick={() => onAsk(q)}
-              className="block w-full rounded-md border border-line bg-white px-3 py-2 text-left text-[12.5px] text-ink-600 transition-colors hover:border-ink-400/40 hover:text-ink-900"
-            >
-              {q}
-            </button>
-          ))}
-        </div>
       </div>
     </div>
   );
@@ -108,8 +95,6 @@ export default function ChatPage() {
     return () => window.removeEventListener('keydown', onKey);
   }, [graphFull]);
 
-  const onAsk = useCallback((q: string) => void ask(q), [ask]);
-
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* 工具栏：只在对话页出现，全局导航在 AppShell */}
@@ -137,7 +122,7 @@ export default function ChatPage() {
         <section className="flex min-w-0 flex-1 flex-col">
           <div className="min-h-0 flex-1">
             {messages.length === 0 ? (
-              <ChatIntro onAsk={onAsk} />
+              <ChatIntro />
             ) : (
               <Conversation messages={messages} onCite={setCite} onRetry={retry} />
             )}
