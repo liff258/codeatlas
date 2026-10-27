@@ -63,7 +63,17 @@ function useSize<T extends HTMLElement>() {
   return [ref, size] as const;
 }
 
-export default function GraphPanel({ graph }: { graph: GraphState | undefined }) {
+export default function GraphPanel({
+  graph,
+  onNodeClick,
+  highlightIds,
+}: {
+  graph: GraphState | undefined;
+  /** 传了就能点节点。聊天页不传，行为完全不变 */
+  onNodeClick?: (n: GraphNode) => void;
+  /** 需要强调的节点（比如当前知识点涉及的实体），画一圈琥珀色描边 */
+  highlightIds?: string[];
+}) {
   const [boxRef, size] = useSize<HTMLDivElement>();
   const fgRef = useRef<any>(null);
 
@@ -193,11 +203,30 @@ export default function GraphPanel({ graph }: { graph: GraphState | undefined })
               if (data.nodes.length === 0) return;
               fitView();
             }}
+            onNodeClick={(n: FGNode) => onNodeClick?.(n)}
+            onNodeHover={(n: FGNode | null) => {
+              // 能点的时候给个手型，否则用户不知道节点可交互
+              if (!onNodeClick) return;
+              document.body.style.cursor = n ? 'pointer' : 'auto';
+            }}
             nodeRelSize={1}
             nodeVal={(n: FGNode) => n.val}
             nodeColor={nodeColor as any}
             nodeLabel={(n: FGNode) => `${n.label} · ${n.subject}`}
             nodeCanvasObjectMode={() => 'replace'}
+            /**
+             * 自定义绘制节点后，命中区域仍是库默认的小圆点（按 node.val 算），
+             * 和我们画出来的半径对不上——表现为「看得到节点但点不中」。
+             * 这里按绘制半径 + 2px 余量重画一遍透明命中区。
+             */
+            nodePointerAreaPaint={(node: FGNode, color: string, ctx: CanvasRenderingContext2D) => {
+              const scale = fgRef.current?.zoom?.() ?? 1;
+              const r = (4.5 + node.val * 1.35) / scale + 2 / scale;
+              ctx.beginPath();
+              ctx.arc(node.x ?? 0, node.y ?? 0, r, 0, Math.PI * 2);
+              ctx.fillStyle = color;
+              ctx.fill();
+            }}
             nodeCanvasObject={(node: FGNode, ctx: CanvasRenderingContext2D, scale: number) => {
               const x = node.x ?? 0;
               const y = node.y ?? 0;
@@ -220,6 +249,16 @@ export default function GraphPanel({ graph }: { graph: GraphState | undefined })
                 ctx.arc(x, y, r, 0, Math.PI * 2);
                 ctx.lineWidth = 1.4 / scale;
                 ctx.strokeStyle = '#ffffff';
+                ctx.stroke();
+              }
+
+              // 当前知识点涉及的实体：琥珀色外环。
+              // 画在节点外面而不是改填充色，是为了不破坏「颜色=学科域」这个编码。
+              if (highlightIds?.includes(node.id)) {
+                ctx.beginPath();
+                ctx.arc(x, y, r + 3 / scale, 0, Math.PI * 2);
+                ctx.lineWidth = 1.6 / scale;
+                ctx.strokeStyle = BRIDGE;
                 ctx.stroke();
               }
 

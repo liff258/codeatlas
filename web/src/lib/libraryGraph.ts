@@ -10,7 +10,7 @@ import type { GraphState } from '../store/chatStore';
  * 数据来自 GET /api/graph/overview，服务端按度数取前 N 个节点。
  */
 
-interface ApiNode {
+export interface ApiNode {
   id: string;
   label: string;
   type: string;
@@ -19,7 +19,7 @@ interface ApiNode {
   weight: number;
 }
 
-interface ApiEdge {
+export interface ApiEdge {
   source: string;
   target: string;
   rel: string;
@@ -27,7 +27,7 @@ interface ApiEdge {
   cross_domain: boolean;
 }
 
-interface ApiGraph {
+export interface ApiGraph {
   nodes: ApiNode[];
   edges: ApiEdge[];
   truncated: boolean;
@@ -54,8 +54,18 @@ export async function fetchLibraryGraph(limit = 160, subject?: string): Promise<
     throw new Error(body.message || '图谱数据为空');
   }
 
+  return buildGraph(body.data);
+}
+
+/**
+ * 契约 GraphData → 前端 GraphState。
+ *
+ * 抽出来是因为实体页的关系图也要用同一套转换：
+ * 两处各写一遍，早晚会出现「一个页面能点、另一个页面点不了」这种不一致。
+ */
+export function buildGraph(data: ApiGraph): LibraryGraph {
   const nodes: Record<string, GraphNode> = {};
-  for (const n of body.data.nodes) {
+  for (const n of data.nodes) {
     nodes[n.id] = {
       id: n.id,
       label: n.label || n.id,
@@ -69,7 +79,7 @@ export async function fetchLibraryGraph(limit = 160, subject?: string): Promise<
 
   const edges: Record<string, GraphEdge> = {};
   let cross = 0;
-  for (const e of body.data.edges) {
+  for (const e of data.edges) {
     // 两端有一端不在节点集合里就丢掉——悬空边会让力导向图把节点甩到画布外
     if (!nodes[e.source] || !nodes[e.target]) continue;
     if (e.cross_domain) cross += 1;
@@ -88,7 +98,7 @@ export async function fetchLibraryGraph(limit = 160, subject?: string): Promise<
       nodes: Object.keys(nodes).length,
       edges: Object.keys(edges).length,
       cross,
-      truncated: body.data.truncated,
+      truncated: data.truncated,
     },
   };
 }
