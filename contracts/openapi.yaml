@@ -321,6 +321,140 @@ paths:
                         type: array
                         items: { $ref: '#/components/schemas/Subject' }
 
+  /api/knowledge-points:
+    get:
+      tags: [knowledge]
+      summary: 知识点列表（板块页 / 题库页共用）
+      description: |
+        按学科列知识点。`type=question` 只看面试题——标题是问句、正文是答案的那种。
+        **题库页和板块页走同一个接口**，只是 type 不同，避免两套分页逻辑各写一遍。
+      parameters:
+        - name: subject
+          in: query
+          schema: { type: string, example: 并发 }
+          description: 学科 code，不传表示全库
+        - name: type
+          in: query
+          schema: { type: string, enum: [all, question], default: all }
+        - name: q
+          in: query
+          schema: { type: string }
+          description: 标题关键词，ILIKE 匹配
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: size
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Result'
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: '#/components/schemas/PageResult'
+                          - type: object
+                            properties:
+                              items:
+                                type: array
+                                items: { $ref: '#/components/schemas/KnowledgePointBrief' }
+
+  /api/knowledge-points/{id}:
+    get:
+      tags: [knowledge]
+      summary: 知识点详情
+      description: |
+        正文 + 前后篇 + 相关知识点 + 涉及实体。
+        `related` 按共享实体数排序——共享实体越多，两个知识点讲的事越接近。
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, example: kp_3f9a1c0b2d }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Result'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/KnowledgePointDetail' }
+        '404':
+          description: 知识点不存在
+
+  /api/questions:
+    get:
+      tags: [knowledge]
+      summary: 面试题库
+      description: 等价于 `GET /api/knowledge-points?type=question`，单独开一个路径只是为了让语义更直白。
+      parameters:
+        - name: subject
+          in: query
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: size
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Result'
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: '#/components/schemas/PageResult'
+                          - type: object
+                            properties:
+                              items:
+                                type: array
+                                items: { $ref: '#/components/schemas/KnowledgePointBrief' }
+
+  /api/entities:
+    get:
+      tags: [graph]
+      summary: 实体详情（图谱节点点开后进这里）
+      description: |
+        用 query 参数而不是 path：实体名可能含 `+`、`#`、`/`（如 `B+ 树`、`C++`），
+        放 path 里编码问题很多。
+
+        `description` 的 `description_source` 说明来源：
+        `curated` = 人工/AI 写的描述；`extracted` = 从原文摘的（当前全部是这种）。
+        前端必须标「摘自原文」，不能让人以为是权威定义。
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema: { type: string, example: AQS }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Result'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/EntityDetail' }
+        '404':
+          description: 实体不存在
+
   /api/chunks/{chunkId}:
     get:
       tags: [document]
@@ -643,6 +777,77 @@ components:
           default: false
           description: 两端属于不同 domain。前端高亮显示——这是本产品相对纯向量检索的核心价值证据
 
+    PageResult:
+      type: object
+      description: 分页包装。total 是过滤后的总数，不是当前页条数
+      properties:
+        items: { type: array, items: {} }
+        total: { type: integer }
+        page: { type: integer }
+        size: { type: integer }
+        has_more: { type: boolean }
+
+    KnowledgePointBrief:
+      type: object
+      description: 列表项。preview 是正文前 140 字，列表页用来显示摘要
+      properties:
+        id: { type: string, example: kp_3f9a1c0b2d }
+        title: { type: string, example: 'Spring 循环依赖了解吗，怎么解决？' }
+        breadcrumb: { type: string, example: 'Spring常见面试题总结 > ⭐️Spring 的循环依赖' }
+        subject: { type: string, example: Spring }
+        is_question: { type: boolean }
+        chunk_count: { type: integer, description: 由多少个 child chunk 拼成 }
+        char_count: { type: integer, description: 正文字数，前端显示"约 N 字" }
+        preview: { type: string }
+        doc_name: { type: string, description: 来源文档，用于标注出处 }
+
+    KnowledgePointDetail:
+      allOf:
+        - $ref: '#/components/schemas/KnowledgePointBrief'
+        - type: object
+          properties:
+            answer: { type: string, description: 完整正文（多个 child 按 ordinal 拼接） }
+            chunk_ids: { type: array, items: { type: string }, description: 对外是 c_102 形式 }
+            document_id: { type: integer, format: int64 }
+            entities:
+              type: array
+              description: 本文提到的实体，前端画局部图谱
+              items: { $ref: '#/components/schemas/GraphNode' }
+            related:
+              type: array
+              description: 相关知识点，按共享实体数排序
+              items: { $ref: '#/components/schemas/KnowledgePointBrief' }
+            prev: { $ref: '#/components/schemas/KnowledgePointBrief' }
+            next: { $ref: '#/components/schemas/KnowledgePointBrief' }
+
+    EntityDetail:
+      type: object
+      properties:
+        name: { type: string, example: AQS }
+        entity_type: { type: string, enum: [概念, 组件, 算法, 参数, 问题] }
+        subject: { type: string }
+        domain: { type: string, enum: [backend, ai, common] }
+        doc_freq: { type: integer, description: 在多少篇文档里出现过 }
+        description: { type: string }
+        description_source:
+          type: string
+          enum: [curated, extracted]
+          description: curated=人工写的；extracted=从原文摘的。前端必须标"摘自原文"
+        mentions:
+          type: array
+          description: 提及它的原文片段（description 为 extracted 时的来源）
+          items:
+            type: object
+            properties:
+              chunk_id: { type: string }
+              kp_id: { type: string, description: 对应知识点，可点进去 }
+              kp_title: { type: string }
+              snippet: { type: string }
+        relations:
+          type: array
+          description: 一跳邻居，前端画关系网
+          items: { $ref: '#/components/schemas/GraphEdge' }
+
     Subject:
       type: object
       description: 学科分类项，来自 `subject_taxonomy` 表
@@ -653,6 +858,8 @@ components:
         sort_order: { type: integer }
         color: { type: string, example: '#ec4899' }
         chunk_count: { type: integer, description: 该学科下已有多少切片，用于前端显示"资料充足度" }
+        kp_count: { type: integer, description: 该学科下有多少知识点（板块页显示） }
+        question_count: { type: integer, description: 其中有多少道面试题（为 0 时前端标"建设中"） }
 
     GraphData:
       type: object

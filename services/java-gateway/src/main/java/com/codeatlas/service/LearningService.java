@@ -100,7 +100,7 @@ public class LearningService {
         // 原文片段常常以 `### 4.1 xxx` 开头，直接展示很难看，
         // 而且会让「描述」变成一行标题而不是一句话
         for (EntityDetail.Mention m : mentions) {
-            m.setSnippet(stripLeadingHeading(m.getSnippet()));
+            m.setSnippet(cleanSnippet(m.getSnippet()));
         }
         detail.setMentions(mentions);
 
@@ -169,6 +169,30 @@ public class LearningService {
         }
         String out = sb.toString().trim();
         return out.length() > 200 ? out.substring(0, 200) : out;
+    }
+
+    /**
+     * 清理原文片段：去标题、去围栏标记。
+     *
+     * 语料是 markdown，200 字的截断经常正好切在代码块里，
+     * 界面上就会看到孤零零的 ` ```java ` 和半截代码。
+     * 这里把围栏行去掉——片段只是「让你知道这段在讲什么」，
+     * 不需要保留代码块结构。
+     */
+    private String cleanSnippet(String text) {
+        String t = stripLeadingHeading(text);
+        if (t == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String line : t.split("\n", -1)) {
+            // 围栏可能带引用前缀（`> ```java`），先剥掉 > 和空白再判断
+            if (line.trim().replaceAll("^[>\\s]+", "").startsWith("```")) {
+                continue;
+            }
+            sb.append(line).append('\n');
+        }
+        return sb.toString().trim();
     }
 
     /**
