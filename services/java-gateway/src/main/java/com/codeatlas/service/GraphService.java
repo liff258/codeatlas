@@ -1,6 +1,7 @@
 package com.codeatlas.service;
 
 import com.codeatlas.common.BizException;
+import com.codeatlas.common.DomainRule;
 import com.codeatlas.dto.GraphDataView;
 import com.codeatlas.dto.GraphEdgeView;
 import com.codeatlas.dto.GraphNodeView;
@@ -67,16 +68,9 @@ public class GraphService {
         return view;
     }
 
-    /**
-     * 跨域判定。两端都必须是已知域——common 是"没归类"，
-     * 拿它和任何域比都会得到"不同"，于是造出假边。
-     */
+    /** 跨域判定统一走 DomainRule，和实体详情页保持同一套规则 */
     private void markCrossDomain(GraphEdgeView e) {
-        String a = e.getSrcDomain();
-        String b = e.getDstDomain();
-        boolean bothKnown = a != null && b != null
-                && !"common".equals(a) && !"common".equals(b);
-        e.setCrossDomain(bothKnown && !a.equals(b));
+        e.setCrossDomain(DomainRule.isCross(e.getSrcDomain(), e.getDstDomain()));
     }
 
     private static int clamp(int v, int lo, int hi) {

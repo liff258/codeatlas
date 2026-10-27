@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -18,6 +19,18 @@ public class GlobalExceptionHandler {
                 .map(e -> e.getField() + ": " + e.getDefaultMessage())
                 .orElse("参数校验失败");
         return ResponseEntity.badRequest().body(Result.fail(400, msg));
+    }
+
+    /**
+     * 缺少必填 query 参数。
+     *
+     * 不单独处理的话会落到下面的 Exception 兜底，返回 500——
+     * 但那明明是调用方的问题，500 会让人以为是服务挂了。
+     */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<Result<Void>> handleMissingParam(MissingServletRequestParameterException ex) {
+        return ResponseEntity.badRequest()
+                .body(Result.fail(400, "缺少必填参数：" + ex.getParameterName()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

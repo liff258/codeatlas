@@ -34,10 +34,13 @@ public interface CatalogMapper {
      */
     @Select("""
             SELECT st.code, st.domain, st.display_name, st.sort_order, st.color,
-                   count(c.id) AS chunk_count
+                   (SELECT count(*) FROM chunk c
+                     WHERE c.subject = st.code AND c.level = 'child')            AS chunk_count,
+                   (SELECT count(*) FROM knowledge_point k
+                     WHERE k.subject = st.code)                                  AS kp_count,
+                   (SELECT count(*) FROM knowledge_point k
+                     WHERE k.subject = st.code AND k.is_question)                AS question_count
             FROM subject_taxonomy st
-            LEFT JOIN chunk c ON c.subject = st.code AND c.level = 'child'
-            GROUP BY st.code, st.domain, st.display_name, st.sort_order, st.color
             ORDER BY st.sort_order, st.code
             """)
     List<SubjectView> listSubjects();

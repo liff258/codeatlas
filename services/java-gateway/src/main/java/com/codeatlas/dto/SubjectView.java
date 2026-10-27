@@ -24,4 +24,8 @@ public class SubjectView {
     private String color;
     /** 该学科下已有多少 child chunk，前端用它显示"资料充足度" */
     private Integer chunkCount;
+    /** 该学科下有多少知识点（板块页显示） */
+    private Integer kpCount;
+    /** 其中有多少道面试题；为 0 时前端标"建设中" */
+    private Integer questionCount;
 }

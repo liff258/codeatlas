@@ -485,7 +485,7 @@ python scripts/build_graph.py --load-only  # 只把缓存灌进库
 
 ## 接口实现状态
 
-契约（`contracts/openapi.yaml`）定义了 16 个端点。**实现了 14 个，两个明确不实现**——
+契约（`contracts/openapi.yaml`）定义了 20 个端点。**实现了 18 个，两个明确不实现**——
 宁可标成未实现，也不做一个返回空数组的假接口。
 
 | 端点 | 状态 | 说明 |
@@ -502,6 +502,10 @@ python scripts/build_graph.py --load-only  # 只把缓存灌进库
 | `GET /api/eval/runs` | ✅ | 四种检索模式的评测结果 |
 | `POST /api/feedback` | ✅ | 点踩原因，rating 只允许 -1/1 |
 | `GET /api/health` | ✅ | 网关 / 数据库 / Agent 三处探活 |
+| `GET /api/knowledge-points` | ✅ | 知识点列表，板块页/题库页共用，支持 `type=question` 过滤 |
+| `GET /api/knowledge-points/{id}` | ✅ | 知识点详情：正文 + 相关推荐 + 前后篇 + 涉及实体 |
+| `GET /api/questions` | ✅ | 面试题库（`knowledge-points?type=question` 的语义化入口） |
+| `GET /api/entities?name=` | ✅ | 实体详情：原文摘录 + 提及片段 + 关系网 |
 | `POST /api/documents` | ❌ | 文件上传要落盘 + 异步入库，当前用 `scripts/ingest.py` 批量入库 |
 | `GET /api/graph/overview` | ✅ | 全库图谱，按度数取核心节点，支持按学科过滤 |
 | `GET /api/graph/neighbors` | ✅ | 以某概念为中心看 1~2 跳邻居 |
@@ -523,6 +527,8 @@ python scripts/build_graph.py --load-only  # 只把缓存灌进库
 - [x] P2 Agent 状态机（智谱 GLM-4.5-Flash，6 节点全链路）
 - [x] P3-b 前端接真实链路（表格渲染 / 标题层级 / 多轮对话）
 - [x] P3-c 前端视觉打磨（图谱面板尺寸 / 视野适配 / 会话刷新恢复）
+- [x] P6-a 知识平台后端（knowledge_point 表 / 2167 个知识点 / 763 道面试题 / 4 个接口）
+- [ ] P6-b 知识平台前端（板块页 / 知识点页 / 实体页 / 全局助手）
 - [ ] P4 打磨与冻结
 - [ ] P5 参赛材料
 
