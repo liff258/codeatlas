@@ -174,7 +174,8 @@ def test_interceptor_flush_returns_remainder():
 
 
 @pytest.mark.asyncio
-async def test_route_degrades_on_bad_json():
+async def test_route_degrades_on_bad_json(monkeypatch):
+    monkeypatch.setattr(nodes.settings, "agent_rule_router", False)
     r = await nodes.route(FakeLLM("这不是 JSON"), "问题", [])
     assert r.degraded is True
     assert r.intent == "concept"
@@ -182,7 +183,9 @@ async def test_route_degrades_on_bad_json():
 
 
 @pytest.mark.asyncio
-async def test_route_parses_valid():
+async def test_route_parses_valid(monkeypatch):
+    # 这两个测试验证的是「模型路径」的解析，所以要显式关掉规则路由
+    monkeypatch.setattr(nodes.settings, "agent_rule_router", False)
     r = await nodes.route(FakeLLM({"intent": "compare", "need_retrieval": True}), "问题", [])
     assert r.intent == "compare"
     assert r.degraded is False
@@ -453,3 +456,96 @@ def test_entities_from_evidence_strips_numbering():
     assert "HNSW：用图代替树" not in names  # 标点被清掉
     assert any("HNSW" in n for n in names)
     assert len(names) == len(set(names)), "必须去重"
+
+
+# ---------------------------------------------------------------- 速度优化
+
+def test_rule_route_chitchat_only_for_short_questions():
+    """问候词只在短问题里判 chitchat。
+
+    「你好，请问 AQS 是什么」这种带礼貌用语的技术问题如果被判成 chitchat，
+    会直接跳过检索——答非所问比慢更糟。
+    """
+    short = nodes._rule_route("你好")
+    assert short is not None and short.intent == "chitchat"
+    assert short.need_retrieval is False
+
+    long = nodes._rule_route("你好，请问 AQS 的 state 是怎么保证可见性的")
+    assert long.intent != "chitchat"
+
+
+def test_rule_route_compare_and_debug():
+    assert nodes._rule_route("B+ 树和 HNSW 的区别").intent == "compare"
+    assert nodes._rule_route("线上 OOM 怎么排查").intent == "debug"
+
+
+def test_rule_route_defaults_to_concept():
+    """规则永远给结论，默认按概念题处理。
+
+    不留"拿不准交给模型"的口子：router 的输出只影响 planner 提示词和一个界面标签，
+    为这点精度付 0.8~10 秒的调用不划算。
+    """
+    assert nodes._rule_route("SATB 是什么").intent == "concept"
+    assert nodes._rule_route("向量检索为什么不能用 B+ 树加速").intent == "concept"
+    assert nodes._rule_route("给我出几道 JVM 的题").intent == "quiz"
+
+
+@pytest.mark.asyncio
+async def test_grade_skips_model_when_evidence_is_strong():
+    """证据足且分高时不调模型——这一次调用实测能占 12 秒。
+
+    用一个会抛异常的 FakeLLM 来证明它根本没被调用。
+    """
+
+    class ExplodingLLM:
+        async def json_call(self, *_a, **_kw):
+            raise AssertionError("证据充足时不该调模型")
+
+    evidence = [ev(i, content="x") for i in range(1, 7)]
+    for e in evidence:
+        e.score = 0.9
+
+    g = await nodes.grade(ExplodingLLM(), "问题", evidence, 0.6)
+    assert g.decision == "proceed"
+    assert g.degraded is False
+    assert "跳过模型自评" in g.reason
+    assert g.coverage <= 0.85, "启发式覆盖率不能声称证据绝对充分"
+
+
+@pytest.mark.asyncio
+async def test_grade_falls_back_to_model_when_evidence_is_weak():
+    """证据少或分低时才问模型——那才是真正需要判断要不要改写的场景。"""
+    calls = {"n": 0}
+
+    class CountingLLM:
+        async def json_call(self, *_a, **_kw):
+            calls["n"] += 1
+            return LLMResult(text="", data={"coverage": 0.3, "decision": "rewrite", "reason": "不够"})
+
+    evidence = [ev(i, content="x") for i in range(1, 4)]
+    for e in evidence:
+        e.score = 0.4
+
+    g = await nodes.grade(CountingLLM(), "问题", evidence, 0.6)
+    assert calls["n"] == 1, "证据弱时必须问模型"
+    assert g.coverage == 0.3
+
+
+@pytest.mark.asyncio
+async def test_generate_only_feeds_limited_evidence():
+    """只喂前 6 条证据：12 条里有一半模型根本不会引用，却拖慢首 token。"""
+    seen = {}
+
+    class CapturingLLM:
+        async def stream_call(self, _sys, user, **_kw):
+            seen["user"] = user
+            seen["max_tokens"] = _kw.get("max_tokens")
+            yield "答案[1]"
+
+    evidence = [ev(i, content=f"证据内容{i}") for i in range(1, 13)]
+    out = [p async for p in nodes.generate(CapturingLLM(), "问题", evidence)]
+
+    assert out
+    assert "[6]" in seen["user"]
+    assert "[7]" not in seen["user"], "第 7 条之后不该出现在 prompt 里"
+    assert seen["max_tokens"] == 900

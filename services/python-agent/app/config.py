@@ -63,6 +63,14 @@ class Settings(BaseSettings):
     # 每次思考多 2~4 秒，累计能到十几秒。而且这些任务都是结构化抽取，
     # 不需要深度推理。如果发现生成质量不够，可以只给 generator 单独打开。
     agent_thinking: bool = False
+    # 启动时预热 BM25 / embedding / rerank 三个本地模型。
+    # 代价是启动慢约 15 秒，换来第一个提问不用吃 40~60 秒冷启动。
+    # 开发时 --reload 每次改代码都会重跑，可以设 AGENT_WARMUP=false。
+    agent_warmup: bool = True
+    # 用关键词规则代替 LLM 做意图分类。router 的输出只有 5 个枚举值，
+    # 规则能判对绝大多数，省掉一次 0.8~10 秒的模型调用（直接改善首字延迟）。
+    # 想对比规则和模型的效果时可以关掉。
+    agent_rule_router: bool = True
     # 图谱是否用 LLM 抽关系。默认关——实测 LLM 版要 9~13 秒，
     # 而且效果还不如「共现 + 关键词推断关系」的确定性版本
     # （7 节点/10 边/5 跨域 vs 6 节点/5 边/1 跨域）。慢且更差，没有开的理由。

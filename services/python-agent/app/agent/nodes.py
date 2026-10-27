@@ -222,7 +222,54 @@ def _norm(s: str) -> str:
 # ---------------------------------------------------------------- 1. 路由
 
 
+# 规则路由的关键词表。
+#
+# 为什么值得用规则代替模型：router 的输出只有 5 个枚举值，判断依据基本就是
+# 「有没有出现对比词/报错词/问候词」。用模型做这件事，等于花 0.8~10 秒
+# （免费额度下还可能超时）去买一个关键词匹配就能得到的结果。
+# 而 router 是链路的第一个节点，它的耗时 100% 计入首字延迟。
+_CHITCHAT_WORDS = ("你好", "谢谢", "在吗", "hi", "hello", "嗯", "好的", "再见", "早上好", "晚上好")
+_COMPARE_WORDS = ("区别", "对比", "不同", "vs", "哪个好", "差别", "异同", "相比")
+_DEBUG_WORDS = ("报错", "异常", "失败", "不生效", "怎么解决", "排查", "崩溃", "oom", "死锁")
+_QUIZ_WORDS = ("出题", "考考我", "给我几道", "出几道", "几道题", "面试题", "八股", "自测")
+
+# 问候判定只看短问题：技术问题里也可能出现"你好"（比如"你好，请问 AQS 是什么"），
+# 那种情况绝不能判成 chitchat——chitchat 会直接跳过检索，等于答非所问。
+_CHITCHAT_MAX_LEN = 12
+
+
+def _rule_route(question: str) -> RouterResult:
+    """关键词路由，永远给出结论，不返回"拿不准"。
+
+    为什么不留"拿不准就交给模型"的口子：
+        实测 router 一次调用 0.8~10 秒（免费额度下还会超时降级），
+        而它的输出只有 5 个枚举值。intent 的实际作用只有两个——
+        拼进 planner 的提示词、在界面上显示一个标签。
+        判错 compare 最多让子查询风格差一点，判错 concept 几乎没有代价。
+        所以默认 concept 是安全的，没必要为这点精度付一次模型调用。
+
+    唯一要小心的是 chitchat：它会让整条检索被跳过，所以只在短问题里判。
+    """
+    q = question.strip().lower()
+    if not q:
+        return RouterResult(intent="concept")
+
+    if len(q) <= _CHITCHAT_MAX_LEN and any(w in q for w in _CHITCHAT_WORDS):
+        return RouterResult(intent="chitchat", need_retrieval=False)
+    if any(w in q for w in _COMPARE_WORDS):
+        return RouterResult(intent="compare")
+    if any(w in q for w in _DEBUG_WORDS):
+        return RouterResult(intent="debug")
+    if any(w in q for w in _QUIZ_WORDS):
+        return RouterResult(intent="quiz")
+    return RouterResult(intent="concept")
+
+
 async def route(llm: LLMClient, question: str, history: list[dict]) -> RouterResult:
+    # 先走规则。命中就不调模型，省下的时间直接体现在首字延迟上。
+    if settings.agent_rule_router:
+        return _rule_route(question)
+
     hist_text = "\n".join(f"{h['role']}: {h['content'][:120]}" for h in history[-4:]) or "（无）"
 
     result = await _tolerant_json_call(
@@ -373,7 +420,38 @@ def retrieve(
 # ---------------------------------------------------------------- 4. 自评
 
 
+# 证据充足时跳过模型自评的判据。
+#
+# 为什么可以跳过：grader 的任务是判断「这些证据够不够回答问题」，输出只有
+# coverage + proceed/rewrite。而重排分本身就是「这条证据和问题有多相关」，
+# 前三条都 ≥0.75 时，结论必然是 proceed——这时候花 3~12 秒问一次模型，
+# 买到的只是同一个结论。
+#
+# 实测这一次调用经常是整个链路最慢的一段（基线跑出 12 秒超时，最后用的
+# 还是兜底值）。跳过它直接改善首字延迟。
+#
+# 保留模型路径的场景才是真正需要判断的：证据少、分数低，
+# 这时候要不要改写、改写角度是什么，模型比阈值靠谱。
+GRADE_FAST_EVIDENCE = 6
+GRADE_FAST_SCORE = 0.75
+GRADE_CAP = 0.85
+
+
 async def grade(llm: LLMClient, question: str, evidence: list[Evidence], threshold: float) -> GradeResult:
+    # 快路径：证据够多且分够高 → 直接判定，不调模型
+    if len(evidence) >= GRADE_FAST_EVIDENCE:
+        top3 = sorted((e.score for e in evidence), reverse=True)[:3]
+        mean = sum(top3) / len(top3) if top3 else 0.0
+        if mean >= GRADE_FAST_SCORE:
+            cov = min(GRADE_CAP, mean)
+            return GradeResult(
+                coverage=cov,
+                decision="proceed",
+                reason=f"证据充足（前 3 条重排分均值 {mean:.2f}），跳过模型自评",
+                # 不标 degraded：没有任何东西失败，这是一次正常的快速判定。
+                # 但 reason 里必须说清是启发式——否则界面上看起来像模型判的。
+            )
+
     result = await _tolerant_json_call(
         llm,
         prompts.GRADER_SYSTEM,
@@ -395,7 +473,7 @@ async def grade(llm: LLMClient, question: str, evidence: list[Evidence], thresho
         # 直接当覆盖率会得到 0.97 这种比 LLM 判断（0.75）还高的数，
         # 让系统在证据不足时也显得过度自信。降级路径不该声称"证据充分"。
         top = sorted((e.score for e in evidence), reverse=True)[:3]
-        cov = min(0.85, sum(top) / len(top) if top else 0.0)
+        cov = min(GRADE_CAP, sum(top) / len(top) if top else 0.0)
         return GradeResult(
             coverage=cov,
             decision="proceed" if cov >= threshold else "rewrite",
@@ -475,12 +553,25 @@ async def rewrite(
 # ---------------------------------------------------------------- 6. 生成
 
 
+# 喂给生成的证据条数。检索会召回 12 条，但答案实际只引用前 6 条左右。
+# 12 条 × 200 字 = 2400 字输入，其中一半是模型根本不会引用的——
+# 而输入长度直接决定首 token 延迟。6 条能把输入砍掉一半。
+#
+# 编号对齐：format_evidence 从 1 开始编号，只喂前 6 条时编号是 1~6，
+# 而编排层的 cite_meta 是按完整列表建的（1~12），前 6 个索引正好对应同一批证据。
+GENERATE_EVIDENCE_LIMIT = 6
+# 提示词里已经要求「300~600 字」，这里再设一个硬上限防止偶发跑飞。
+# 实测正常输出约 500 token，900 留了足够余量。
+GENERATE_MAX_TOKENS = 900
+
+
 async def generate(llm: LLMClient, question: str, evidence: list[Evidence]):
     """流式生成。逐个 delta 吐文本。"""
+    used = evidence[:GENERATE_EVIDENCE_LIMIT]
     async for piece in llm.stream_call(
         prompts.GENERATOR_SYSTEM,
-        prompts.GENERATOR_USER.format(question=question, evidence=format_evidence(evidence)),
-        max_tokens=1600,
+        prompts.GENERATOR_USER.format(question=question, evidence=format_evidence(used)),
+        max_tokens=GENERATE_MAX_TOKENS,
     ):
         yield piece
 

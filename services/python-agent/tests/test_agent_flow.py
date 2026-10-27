@@ -32,6 +32,11 @@ def _no_trace_persist(monkeypatch):
     from app.agent import trace as trace_mod
 
     monkeypatch.setattr(trace_mod, "save", lambda **_kw: None)
+    # 编排测试用脚本化的 FakeLLM 驱动，规则路由会让队列错位一个，
+    # 所以这里关掉——规则路由本身在 test_agent_nodes 里单独测。
+    from app.agent import nodes as nodes_mod
+
+    monkeypatch.setattr(nodes_mod.settings, "agent_rule_router", False)
 
 
 # ---------------------------------------------------------------- 假依赖
