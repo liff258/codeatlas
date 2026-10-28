@@ -10,8 +10,8 @@
 #   任何 CC-NC（不可商用）、未声明许可证、或来源不明的材料，一律不得 fulltext 入库。
 
 version: 1
-updated: 2026-10-23
-total_documents: 24
+updated: 2026-10-28
+total_documents: 37
 target_chunks: 3500-4000
 
 license_policy:
@@ -353,19 +353,185 @@ sources:
     covers: [三色标记, 漏标问题, SATB 快照, 写屏障, 浮动垃圾]
     note: 演示第二问的答案主要来自这里，也是唯一有「深度」的自写材料
 
+
+  # ==========================================================================
+  # 2026-10-28 补：AI 域题库（22 题 → 约 100 题）
+  #
+  # 动机不是"提分"：LLM基础 / RAG / 向量检索 / Prompt工程 四个学科合计只有 16 道题，
+  # 学科页点进去几乎是空的，而 AI 是项目的第二根支柱。
+  #
+  # 写法：每个二级标题就是一个面试题（含"什么/如何/为什么/怎么/区别"），
+  # 正文 200~400 字给出可背的答案。这样切片脚本按 heading_path 聚合之后，
+  # 天然得到"标题是问题、正文是答案"的知识点，不需要额外标注。
+  # ==========================================================================
+
+  - id: own-llm-kv-cache
+    domain: ai
+    subject: LLM基础
+    title: 【自写】LLM 推理：两个阶段与 KV Cache
+    url: local://notes/llm-kv-cache.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 12
+    covers: [KV Cache 显存估算, MQA 与 GQA, prefill/decode 瓶颈, 长上下文平方级, PagedAttention]
+
+  - id: own-llm-finetune
+    domain: ai
+    subject: LLM基础
+    title: 【自写】微调、LoRA 与对齐：什么时候该动模型
+    url: local://notes/llm-finetune.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 12
+    covers: [微调与 RAG 的边界, LoRA 低秩原理, QLoRA 的 NF4, SFT 与 RLHF, DPO, 灾难性遗忘]
+
+  - id: own-llm-inference-opt
+    domain: ai
+    subject: LLM基础
+    title: 【自写】推理优化：量化、投机解码与采样参数
+    url: local://notes/llm-inference-opt.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 11
+    covers: [INT8 与 INT4, 投机解码无损性, PagedAttention, temperature/top-p, 复现性]
+
+  - id: own-prompt-structured
+    domain: ai
+    subject: Prompt工程
+    title: 【自写】结构化输出：让模型稳定吐出可解析的结果
+    url: local://notes/prompt-structured.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 12
+    covers: [JSON 四层保障, JSON mode 与 function calling, few-shot 选样, 思维链的代价, 否定指令失效]
+
+  - id: own-prompt-injection
+    domain: ai
+    subject: Prompt工程
+    title: 【自写】提示词注入：为什么防不住，以及能做什么
+    url: local://notes/prompt-injection.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 11
+    covers: [注入的本质, 直接与间接注入, 分层防御, 系统提示词泄露, 工具调用放大危害]
+
+  - id: own-prompt-eval
+    domain: ai
+    subject: Prompt工程
+    title: 【自写】提示词评估：怎么知道改得更好
+    url: local://notes/prompt-eval.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 10
+    covers: [三层指标, LLM 裁判的四种偏差, 评估集分层, 回归集, 提示词版本化]
+
+  - id: own-rag-chunking
+    domain: ai
+    subject: RAG
+    title: 【自写】RAG 切片：切坏了，后面全白搭
+    url: local://notes/rag-chunking.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 12
+    covers: [切片长度的三个约束, 父子块, 标题切分, 表格与代码, overlap 的代价, 切片质量验证]
+
+  - id: own-rag-retrieval
+    domain: ai
+    subject: RAG
+    title: 【自写】混合检索与重排：为什么单路召回不够
+    url: local://notes/rag-retrieval.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 14
+    covers: [BM25 与向量的失效模式, RRF 的缺陷, 交叉编码器重排, query 改写五种做法, HyDE 翻车场景, 召回与精确的权衡]
+
+  - id: own-rag-eval
+    domain: ai
+    subject: RAG
+    title: 【自写】RAG 失败归因：答错了，是哪一步错的
+    url: local://notes/rag-eval.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 11
+    covers: [oracle 实验定位, 忠实度衡量, 分层评估, 回归测试四层, 幻觉的边界]
+
+  - id: own-vector-ann
+    domain: ai
+    subject: 向量检索
+    title: 【自写】ANN 索引：HNSW、IVF 与 PQ 的取舍
+    url: local://notes/vector-ann.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 14
+    covers: [HNSW 分层图, M 与 ef 参数, IVF 对比, PQ 量化, 近似漏检, 调参配方]
+
+  - id: own-vector-embedding
+    domain: ai
+    subject: 向量检索
+    title: 【自写】Embedding 模型：选型、归一化与维度
+    url: local://notes/vector-embedding.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 13
+    covers: [选型四维, 归一化与三种度量的等价, 维度灾难, 多语言与跨语言检索, 微调时机, query/document 非对称]
+
+  - id: own-vector-metric
+    domain: ai
+    subject: 向量检索
+    title: 【自写】距离度量与过滤检索：向量库最容易翻车的两处
+    url: local://notes/vector-metric.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 13
+    covers: [余弦与内积, 归一化恒等式, 带过滤的两种策略, 向量库与业务库的三种架构, ef_search 调优]
+
+  - id: own-agent-tools
+    domain: ai
+    subject: Agent
+    title: 【自写】工具调用：怎么让模型用对工具
+    url: local://notes/agent-tools.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 12
+    covers: [工具描述四条规则, 三类失败处理, 并行调用, 工具收敛, 参数三层校验]
+
+  - id: own-agent-eval
+    domain: ai
+    subject: Agent
+    title: 【自写】Agent 评估与成本控制：怎么知道它真的在工作
+    url: local://notes/agent-eval.md
+    license: 原创
+    fetch_mode: fulltext
+    attribution: 本人原创
+    expected_chunks: 12
+    covers: [轨迹评估, 防死循环四道闸, 成本两个乘数, 六种失败模式, 多轮上下文预算]
+
 # ============================================================================
 # 统计与验收
 # ============================================================================
 
 summary:
   backend_documents: 11
-  ai_documents: 8
-  own_documents: 4
-  total: 23
-  # 按 domain 字段统计（自写笔记里有 3 篇属 AI 域、1 篇属后端域）
-  by_domain: { backend: 12, ai: 11 }
-  expected_total_chunks: 3950
-  fulltext_sources: 15
+  ai_documents: 22
+  own_documents: 18
+  total: 37
+  # 按 domain 字段统计（自写笔记里 17 篇属 AI 域、1 篇属后端域）
+  by_domain: { backend: 12, ai: 25 }
+  expected_total_chunks: 4120
+  fulltext_sources: 29
   excerpt_sources: 8
 
 acceptance_criteria:
