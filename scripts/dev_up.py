@@ -9,6 +9,7 @@
     python scripts/dev_up.py              # 起全套，等全部就绪后打印地址表
     python scripts/dev_up.py --preheat    # 起完再跑一次真实问答，把链路和模型都热透
     python scripts/dev_up.py --check      # 只报告状态，不动任何东西
+    python scripts/dev_up.py --hold       # 起完留在前台，Ctrl+C 一起停
     python scripts/dev_up.py --stop       # 停掉三个应用进程（数据库容器保留）
 
 设计上的两个取舍：
@@ -65,15 +66,28 @@ _OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 # ---------------------------------------------------------------- 基础探测
 
-def port_open(port: int, host: str = "127.0.0.1", timeout: float = 1.0) -> bool:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.settimeout(timeout)
-        return s.connect_ex((host, port)) == 0
+def port_open(port: int, timeout: float = 1.0) -> bool:
+    """IPv4 和 IPv6 都试一遍。
+
+    为什么必须两个都试：Vite 默认只绑 IPv6（`::1`），用 127.0.0.1 探测永远失败。
+    这个坑在分镜里写过（"localhost 能开、127.0.0.1 打不开"），脚本自己又踩了一次。
+    """
+    for family, host in ((socket.AF_INET, "127.0.0.1"), (socket.AF_INET6, "::1")):
+        try:
+            with socket.socket(family, socket.SOCK_STREAM) as s:
+                s.settimeout(timeout)
+                if s.connect_ex((host, port)) == 0:
+                    return True
+        except OSError:
+            continue
+    return False
 
 
-def http_get(url: str, timeout: float = 5.0) -> tuple[int, str]:
+def http_get(url: str, timeout: float = 5.0,
+             headers: dict[str, str] | None = None) -> tuple[int, str]:
     try:
-        with _OPENER.open(url, timeout=timeout) as r:
+        req = urllib.request.Request(url, headers=headers or {})
+        with _OPENER.open(req, timeout=timeout) as r:
             return r.status, r.read().decode("utf-8", errors="replace")
     except urllib.error.HTTPError as e:
         return e.code, e.read().decode("utf-8", errors="replace")
@@ -82,7 +96,8 @@ def http_get(url: str, timeout: float = 5.0) -> tuple[int, str]:
 
 
 def wait_for(name: str, port: int, health_url: str | None = None,
-             timeout: int = 180, quiet: bool = False) -> bool:
+             timeout: int = 180, quiet: bool = False,
+             headers: dict[str, str] | None = None) -> bool:
     """等端口（或健康接口）就绪。超时返回 False，不抛异常。"""
     start = time.time()
     tick = 0
@@ -90,7 +105,7 @@ def wait_for(name: str, port: int, health_url: str | None = None,
         if port_open(port):
             if health_url is None:
                 return True
-            code, _ = http_get(health_url)
+            code, _ = http_get(health_url, headers=headers)
             if code == 200:
                 if not quiet:
                     print(f"  ✓ {name} 就绪（{time.time() - start:.1f}s）")
@@ -116,7 +131,12 @@ def spawn(name: str, cmd: list[str], cwd: Path) -> subprocess.Popen:
     # 关掉窗口：Windows 下不隐藏会弹黑框，录屏时很难看
     kwargs: dict = {}
     if IS_WIN:
-        kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
+        # DETACHED_PROCESS：脱离当前控制台。少了它，父进程一退出子进程就跟着死
+        # （第一次实测就是这样：脚本超时退出，Agent 也一起没了）。
+        # CREATE_NEW_PROCESS_GROUP 让 Ctrl+C 不会同时打死三个服务。
+        kwargs["creationflags"] = (
+            subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS
+        )
     env = {**os.environ, **{k: v for k, v in ENV.items() if k.isupper()}}
     p = subprocess.Popen(cmd, cwd=str(cwd), stdout=log, stderr=subprocess.STDOUT,
                          stdin=subprocess.DEVNULL, env=env, **kwargs)
@@ -269,7 +289,8 @@ def status() -> None:
         mark = "✓" if up else "✗"
         extra = ""
         if up and health:
-            code, _ = http_get(health)
+            hdrs = {"X-Internal-Token": ENV.get("INTERNAL_TOKEN", "dev_internal_token")}
+            code, _ = http_get(health, headers=hdrs)
             extra = f"  健康接口 {code}"
             if code != 200:
                 mark = "!"
@@ -285,6 +306,8 @@ def main() -> int:
     ap.add_argument("--stop", action="store_true", help="停掉三个应用进程")
     ap.add_argument("--preheat", action="store_true", help="起完跑一次真实问答")
     ap.add_argument("--start-db", action="store_true", help="数据库未起时尝试 docker start")
+    ap.add_argument("--hold", action="store_true",
+                    help="起完不退出，留在前台守着（Ctrl+C 停掉三个服务）")
     args = ap.parse_args()
 
     if args.check:
@@ -308,8 +331,10 @@ def main() -> int:
 
     print("\n[2/4] Python Agent（含模型预热，约 25s）")
     start_agent()
+    token = ENV.get("INTERNAL_TOKEN", "dev_internal_token")
     if not wait_for("Agent", AGENT_PORT,
-                    f"http://127.0.0.1:{AGENT_PORT}/internal/health", timeout=180):
+                    f"http://127.0.0.1:{AGENT_PORT}/internal/health",
+                    timeout=180, headers={"X-Internal-Token": token}):
         print("  ✗ Agent 没起来，看 logs/agent.log")
         return 1
 
@@ -332,6 +357,18 @@ def main() -> int:
     print()
     status()
     print("\n提示：录屏前先 localStorage.clear() 再刷新，否则开场不是首页。")
+
+    if args.hold:
+        print("监督模式：Ctrl+C 停止三个服务。")
+        try:
+            while True:
+                time.sleep(2)
+        except KeyboardInterrupt:
+            print("\n正在停止…")
+            for port in (WEB_PORT, GATEWAY_PORT, AGENT_PORT):
+                kill_port(port)
+            return 0
+
     print("停止：python scripts/dev_up.py --stop")
     return 0
 
